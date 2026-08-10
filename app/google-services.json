@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "804342489370",
+    "project_id": "baytul-ilm-ai",
+    "storage_bucket": "baytul-ilm-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804342489370:android:7f68f4c6e620e1a1a18ca3",
+        "android_client_info": {
+          "package_name": "com.baytulilmai.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "804342489370-egbiufdf9ak0f7tqnao8aga7se2c2fvv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.baytulilmai.app",
+            "certificate_hash": "e578df48de1cb9aa0f9ee6ec6dcf9b0214f33a9d"
+          }
+        },
+        {
+          "client_id": "804342489370-fcgoualffogi2612ke713kv20i0dmkkp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7lRKirWAyW3WKIWe1E43E_WmovZ4ihmc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "804342489370-fcgoualffogi2612ke713kv20i0dmkkp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Baytul Ilm AI",
+  "description": "Your Complete AI-Powered Islamic Library & Learning Platform featuring Dars-e-Nizami digital library, AI Scholar, PDF Reader, Smart Quizzes, Islamic Tools, and cloud synchronization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

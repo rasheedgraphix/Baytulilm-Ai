@@ -1,0 +1,66 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Super Admin']
+      );
+    }
+
+    function isTeacher() {
+      return isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['Teacher', 'Admin', 'Super Admin']
+      );
+    }
+
+    // Public readable assets (Books, Covers, Media)
+    match /books/{allPaths=**} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    match /pdfs/{allPaths=**} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    match /covers/{allPaths=**} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    match /media/{allPaths=**} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    // Authenticated user uploads
+    match /profile_images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /notes_exports/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /ai_exports/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}

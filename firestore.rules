@@ -1,0 +1,156 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for Role-Based Access Control
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        getUserData().role == 'Admin' || getUserData().role == 'Super Admin' || request.auth.token.admin == true
+      );
+    }
+
+    function isTeacher() {
+      return isAuthenticated() && (
+        getUserData().role == 'Teacher' || getUserData().role == 'Admin' || getUserData().role == 'Super Admin'
+      );
+    }
+
+    function isStudent() {
+      return isAuthenticated() && getUserData().role == 'Student';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Darjat & Subjects (Syllabus Structure)
+    match /darjat/{darjaId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Books, Shurooh, Translations, PDFs, Lessons
+    match /books/{bookId} {
+      allow read: if true;
+      allow create, update: if isTeacher() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /lessons/{lessonId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isTeacher() || isAdmin();
+    }
+
+    match /shurooh/{sharhId} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    match /translations/{transId} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    match /pdfs/{pdfId} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    // Quizzes & Quiz Results
+    match /quizzes/{quizId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isTeacher() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /quiz_results/{resultId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    // User Personal Data: Notes, Bookmarks, Favorites, Reading History, AI Chat History, Flashcards, Downloads
+    match /notes/{noteId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    match /ai_chat_history/{chatId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    match /flashcards/{cardId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    match /bookmarks/{bookmarkId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    match /favorites/{favoriteId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    match /reading_history/{historyId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    match /downloads/{downloadId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // Daily Hadith & Ayah
+    match /daily_hadith/{hadithId} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    match /daily_ayah/{ayahId} {
+      allow read: if true;
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    // Announcements & Notifications
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Settings / Remote Config
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Certificates
+    match /certificates/{certId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}
