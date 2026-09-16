@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,6 +36,7 @@ import com.example.ui.viewmodel.AuthViewModel
 import com.example.ui.viewmodel.MainViewModel
 import com.example.util.LanguageManager
 import com.example.util.LocalAppLanguage
+import com.example.util.lStr
 
 @Composable
 fun ProfileScreen(
@@ -53,9 +56,11 @@ fun ProfileScreen(
     var showLanguagePicker by remember { mutableStateOf(false) }
     var showThemePicker by remember { mutableStateOf(false) }
 
-    val currentLang by LanguageManager.currentLanguage.collectAsState()
+    val currentLangState by LanguageManager.currentLanguage.collectAsState()
     val currentTheme by LanguageManager.currentTheme.collectAsState()
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val appLanguage = LocalAppLanguage.current
+    val langCode = appLanguage.code
+    val isRtl = appLanguage.isRtl
 
     Column(
         modifier = Modifier
@@ -82,8 +87,8 @@ fun ProfileScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.img_app_icon_1784865359662),
-                        contentDescription = if (isUrdu) "صارف کی تصویر" else "User Avatar",
+                        painter = painterResource(id = R.drawable.img_baytul_ilm_icon_1784999011685),
+                        contentDescription = if (langCode == "ps") "د کارونکي انځور" else if (isRtl) "صارف کی تصویر" else "User Avatar",
                         modifier = Modifier
                             .size(72.dp)
                             .clip(CircleShape)
@@ -121,21 +126,35 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val roleDisplay = if (isUrdu) {
-                        when (userProfile.role) {
+                    val roleDisplay = when (langCode) {
+                        "ps" -> when (userProfile.role) {
+                            UserRole.STUDENT -> "زده کوونکی"
+                            UserRole.TEACHER -> "استاد / مدرس"
+                            UserRole.ADMIN -> "اډمین"
+                            UserRole.SUPER_ADMIN -> "سپر اډمین"
+                            else -> userProfile.role
+                        }
+                        "ur" -> when (userProfile.role) {
                             UserRole.STUDENT -> "طالب علم"
                             UserRole.TEACHER -> "مدرس / استاد"
                             UserRole.ADMIN -> "ایڈمن"
                             UserRole.SUPER_ADMIN -> "سپر ایڈمن"
                             else -> userProfile.role
                         }
-                    } else userProfile.role
+                        else -> userProfile.role
+                    }
+
+                    val roleLabelText = when (langCode) {
+                        "ps" -> "دنده: $roleDisplay"
+                        "ur" -> "حیثیت: $roleDisplay"
+                        else -> "Role: ${userProfile.role}"
+                    }
 
                     SuggestionChip(
                         onClick = { },
                         label = {
                             Text(
-                                text = if (isUrdu) "حیثیت: $roleDisplay" else "Role: ${userProfile.role}",
+                                text = roleLabelText,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -157,16 +176,26 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.width(6.dp))
 
                     if (userProfile.emailVerified) {
+                        val verifiedText = when (langCode) {
+                            "ps" -> "تصدیق شوی"
+                            "ur" -> "تصدیق شدہ"
+                            else -> "Verified"
+                        }
                         SuggestionChip(
                             onClick = { },
-                            label = { Text(if (isUrdu) "تصدیق شدہ" else "Verified", fontSize = 11.sp, color = Color(0xFF2E7D32)) },
+                            label = { Text(verifiedText, fontSize = 11.sp, color = Color(0xFF2E7D32)) },
                             icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(14.dp)) },
                             colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFFE8F5E9))
                         )
                     } else {
+                        val verifyText = when (langCode) {
+                            "ps" -> "ایمیل تصدیق کړئ"
+                            "ur" -> "ای میل تصدیق کریں"
+                            else -> "Verify Email"
+                        }
                         SuggestionChip(
                             onClick = { authViewModel.sendEmailVerification() },
-                            label = { Text(if (isUrdu) "ای میل تصدیق کریں" else "Verify Email", fontSize = 11.sp, color = Color(0xFFC62828)) },
+                            label = { Text(verifyText, fontSize = 11.sp, color = Color(0xFFC62828)) },
                             icon = { Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFC62828), modifier = Modifier.size(14.dp)) },
                             colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFFFFEBEE))
                         )
@@ -184,10 +213,10 @@ fun ProfileScreen(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ProfileStatCard(number = "${favorites.size}", title = if (isUrdu) "پسندیدہ" else "Favorites", modifier = Modifier.weight(1f))
-            ProfileStatCard(number = "${bookmarks.size}", title = if (isUrdu) "بک مارکس" else "Bookmarks", modifier = Modifier.weight(1f))
-            ProfileStatCard(number = "${downloads.size}", title = if (isUrdu) "ڈاؤن لوڈ شدہ" else "Downloaded", modifier = Modifier.weight(1f))
-            ProfileStatCard(number = "${recentReadings.size}", title = if (isUrdu) "مطالعہ" else "Readings", modifier = Modifier.weight(1f))
+            ProfileStatCard(number = "${favorites.size}", title = lStr("favorites"), modifier = Modifier.weight(1f))
+            ProfileStatCard(number = "${bookmarks.size}", title = lStr("bookmarks"), modifier = Modifier.weight(1f))
+            ProfileStatCard(number = "${downloads.size}", title = lStr("downloads"), modifier = Modifier.weight(1f))
+            ProfileStatCard(number = "${recentReadings.size}", title = lStr("recent_reading"), modifier = Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -202,134 +231,178 @@ fun ProfileScreen(
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
                 ProfileOptionRow(
-                    if (isUrdu) "پروفائل کی تفصیلات میں ترمیم" else "Edit Profile Details",
+                    lStr("edit_profile"),
                     Icons.Default.Edit,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     showEditDialog = true
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "ایپ کی زبان (${currentLang.flagEmoji} ${currentLang.nativeName})" else "App Language (${currentLang.flagEmoji} ${currentLang.nativeName})",
+                    "${lStr("app_language")} (${currentLangState.flagEmoji} ${currentLangState.nativeName})",
                     Icons.Default.Language,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     showLanguagePicker = true
                 }
 
-                val themeText = if (isUrdu) {
-                    when (currentTheme) {
-                        "Light" -> "روشن"
-                        "Dark" -> "تاریک"
-                        else -> "سسٹم"
-                    }
-                } else currentTheme
+                val themeText = when (currentTheme) {
+                    "Light" -> lStr("light_theme")
+                    "Dark" -> lStr("dark_theme")
+                    else -> lStr("system_theme")
+                }
 
                 ProfileOptionRow(
-                    if (isUrdu) "تھیم کی ترتیبات ($themeText)" else "Theme Settings ($currentTheme)",
+                    "${lStr("theme_settings")} ($themeText)",
                     Icons.Default.ColorLens,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     showThemePicker = true
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "پاس ورڈ تبدیل کریں" else "Change Password",
+                    when (langCode) {
+                        "ps" -> "پاسورډ بدل کړئ"
+                        "ur" -> "پاس ورڈ تبدیل کریں"
+                        else -> "Change Password"
+                    },
                     Icons.Default.LockReset,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     showPasswordDialog = true
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "میرے بک مارکس" else "My Bookmarks",
+                    lStr("my_bookmarks"),
                     Icons.Default.Bookmark,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     onNavigate(Screen.Bookmarks.route)
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "پسندیدہ کتب" else "Favorite Kutub",
+                    lStr("my_favorites"),
                     Icons.Default.Favorite,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     onNavigate(Screen.Favorites.route)
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "مطالعے کی تاریخ" else "Reading History",
+                    lStr("recent_history"),
                     Icons.Default.History,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     onNavigate(Screen.Recent.route)
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "آف لائن ڈاؤن لوڈز" else "Offline Downloads",
+                    lStr("downloaded_books"),
                     Icons.Default.Download,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     onNavigate(Screen.Downloads.route)
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "ایپ کی ترتیبات" else "App Settings",
+                    lStr("settings"),
                     Icons.Default.Settings,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     onNavigate(Screen.Settings.route)
                 }
                 ProfileOptionRow(
-                    if (isUrdu) "تعارف و رابطہ" else "About & Contact",
+                    lStr("about"),
                     Icons.Default.Info,
-                    isUrdu = isUrdu
+                    isRtl = isRtl
                 ) {
                     onNavigate(Screen.About.route)
+                }
+                ProfileOptionRow(
+                    if (langCode == "ur") "رازداری کی پالیسی (Privacy Policy)" else "Privacy Policy",
+                    Icons.Default.Lock,
+                    isRtl = isRtl
+                ) {
+                    onNavigate(Screen.PrivacyPolicy.route)
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Auth Action Button (Logout / Delete)
+        val isGuest = userProfile.uid.isEmpty() || userProfile.uid == "guest_learner" || runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }.getOrNull() == null
+
+        // Auth Action Button (Login for Guest / Logout for User)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (isGuest) {
                 Button(
-                    onClick = {
-                        authViewModel.logout()
-                        onNavigate(Screen.Login.route)
-                    },
+                    onClick = { onNavigate(Screen.Login.route) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Icon(
-                        Icons.Default.ExitToApp,
+                        Icons.Default.Login,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onErrorContainer
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        if (isUrdu) "اکاؤنٹ سے سائن آؤٹ کریں" else "Sign Out Account",
+                        text = when (langCode) {
+                            "ps" -> "ننوتل / نوی اکاونټ جوړول"
+                            "ur" -> "لاگ ان کریں / نیا اکاؤنٹ بنائیں"
+                            else -> "Sign In / Create Account"
+                        },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Button(
+                        onClick = {
+                            authViewModel.logout()
+                            onNavigate(Screen.Login.route)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Icon(
+                            Icons.Default.ExitToApp,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            lStr("sign_out"),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
 
-                OutlinedButton(
-                    onClick = { showDeleteConfirm = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(44.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        if (isUrdu) "اکاؤنٹ اور ڈیٹا حذف کریں" else "Delete Account & Data",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    OutlinedButton(
+                        onClick = { showDeleteConfirm = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        val deleteText = when (langCode) {
+                            "ps" -> "اکاونټ او معلومات حذف کړئ"
+                            "ur" -> "اکاؤنٹ اور ڈیٹا حذف کریں"
+                            else -> "Delete Account & Data"
+                        }
+                        Text(
+                            deleteText,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
@@ -347,14 +420,36 @@ fun ProfileScreen(
 
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
-            title = { Text(if (isUrdu) "پروفائل کی تفصیلات میں ترمیم" else "Edit Profile") },
+            title = { Text(lStr("edit_profile")) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = editName, onValueChange = { editName = it }, label = { Text(if (isUrdu) "مکمل نام" else "Full Name") })
-                    OutlinedTextField(value = editPhone, onValueChange = { editPhone = it }, label = { Text(if (isUrdu) "موبائل نمبر" else "Mobile Number") })
-                    OutlinedTextField(value = editCountry, onValueChange = { editCountry = it }, label = { Text(if (isUrdu) "ملک" else "Country") })
-                    OutlinedTextField(value = editProvince, onValueChange = { editProvince = it }, label = { Text(if (isUrdu) "صوبہ" else "Province") })
-                    OutlinedTextField(value = editCity, onValueChange = { editCity = it }, label = { Text(if (isUrdu) "شہر" else "City") })
+                    val labelName = lStr("full_name")
+                    val labelPhone = when (langCode) {
+                        "ps" -> "تلیفون شمیره"
+                        "ur" -> "موبائل نمبر"
+                        else -> "Mobile Number"
+                    }
+                    val labelCountry = when (langCode) {
+                        "ps" -> "هیواد"
+                        "ur" -> "ملک"
+                        else -> "Country"
+                    }
+                    val labelProvince = when (langCode) {
+                        "ps" -> "ولایت / صوبہ"
+                        "ur" -> "صوبہ"
+                        else -> "Province"
+                    }
+                    val labelCity = when (langCode) {
+                        "ps" -> "ښار"
+                        "ur" -> "شہر"
+                        else -> "City"
+                    }
+
+                    OutlinedTextField(value = editName, onValueChange = { editName = it }, label = { Text(labelName) })
+                    OutlinedTextField(value = editPhone, onValueChange = { editPhone = it }, label = { Text(labelPhone) })
+                    OutlinedTextField(value = editCountry, onValueChange = { editCountry = it }, label = { Text(labelCountry) })
+                    OutlinedTextField(value = editProvince, onValueChange = { editProvince = it }, label = { Text(labelProvince) })
+                    OutlinedTextField(value = editCity, onValueChange = { editCity = it }, label = { Text(labelCity) })
                 }
             },
             confirmButton = {
@@ -370,11 +465,11 @@ fun ProfileScreen(
                     )
                     showEditDialog = false
                 }) {
-                    Text(if (isUrdu) "تبدیلیاں محفوظ کریں" else "Save Changes")
+                    Text(lStr("save_changes"))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) { Text(if (isUrdu) "منسوخ کریں" else "Cancel") }
+                TextButton(onClick = { showEditDialog = false }) { Text(lStr("cancel")) }
             }
         )
     }
@@ -383,51 +478,118 @@ fun ProfileScreen(
     if (showPasswordDialog) {
         var oldPass by remember { mutableStateOf("") }
         var newPass by remember { mutableStateOf("") }
+        var passwordError by remember { mutableStateOf<String?>(null) }
+        var isOldPasswordVisible by remember { mutableStateOf(false) }
+        var isNewPasswordVisible by remember { mutableStateOf(false) }
+
+        val titleChangePass = when (langCode) {
+            "ps" -> "پاسورډ بدل کړئ"
+            "ur" -> "پاس ورڈ تبدیل کریں"
+            else -> "Change Password"
+        }
 
         AlertDialog(
             onDismissRequest = { showPasswordDialog = false },
-            title = { Text(if (isUrdu) "پاس ورڈ تبدیل کریں" else "Change Password") },
+            title = { Text(titleChangePass) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val labelOld = when (langCode) {
+                        "ps" -> "اوسنی پاسورډ"
+                        "ur" -> "موجودہ پاس ورڈ"
+                        else -> "Current Password"
+                    }
+                    val labelNew = when (langCode) {
+                        "ps" -> "نوی پاسورډ (لږ تر لږه ۸ توري)"
+                        "ur" -> "نیا پاس ورڈ (کم از کم 8 حروف)"
+                        else -> "New Password (min 8 chars)"
+                    }
                     OutlinedTextField(
                         value = oldPass,
                         onValueChange = { oldPass = it },
-                        label = { Text(if (isUrdu) "موجودہ پاس ورڈ" else "Current Password") },
-                        visualTransformation = PasswordVisualTransformation()
+                        label = { Text(labelOld) },
+                        trailingIcon = {
+                            IconButton(onClick = { isOldPasswordVisible = !isOldPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (isOldPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (isOldPasswordVisible) "Hide password" else "Show password"
+                                )
+                            }
+                        },
+                        visualTransformation = if (isOldPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
                     )
                     OutlinedTextField(
                         value = newPass,
-                        onValueChange = { newPass = it },
-                        label = { Text(if (isUrdu) "نیا پاس ورڈ (کم از کم 6 حروف)" else "New Password (min 6 chars)") },
-                        visualTransformation = PasswordVisualTransformation()
+                        onValueChange = {
+                            newPass = it
+                            passwordError = null
+                        },
+                        label = { Text(labelNew) },
+                        trailingIcon = {
+                            IconButton(onClick = { isNewPasswordVisible = !isNewPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (isNewPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (isNewPasswordVisible) "Hide password" else "Show password"
+                                )
+                            }
+                        },
+                        visualTransformation = if (isNewPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        isError = passwordError != null
                     )
+                    if (passwordError != null) {
+                        Text(
+                            text = passwordError!!,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             },
             confirmButton = {
                 Button(onClick = {
+                    val validationError = com.example.util.PasswordValidator.validatePassword(newPass)
+                    if (validationError != null) {
+                        passwordError = validationError
+                        return@Button
+                    }
                     authViewModel.changePassword(oldPass, newPass)
                     showPasswordDialog = false
                 }) {
-                    Text(if (isUrdu) "پاس ورڈ اپ ڈیٹ کریں" else "Update Password")
+                    val updateText = when (langCode) {
+                        "ps" -> "پاسورډ اپ ډیټ کړئ"
+                        "ur" -> "پاس ورڈ اپ ڈیٹ کریں"
+                        else -> "Update Password"
+                    }
+                    Text(updateText)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showPasswordDialog = false }) { Text(if (isUrdu) "منسوخ کریں" else "Cancel") }
+                TextButton(onClick = { showPasswordDialog = false }) { Text(lStr("cancel")) }
             }
         )
     }
 
     // Delete Account Confirmation Dialog
     if (showDeleteConfirm) {
+        val titleDelete = when (langCode) {
+            "ps" -> "اکاونټ حذف کوئ؟"
+            "ur" -> "اکاؤنٹ حذف کریں؟"
+            else -> "Delete Account?"
+        }
+        val bodyDelete = when (langCode) {
+            "ps" -> "ایا تاسو ډاډه یاست چې خپل اکاونټ حذف کول غواړئ؟ دا عمل بېرته نشي کیدی او ستاسو محفوظ شوي ټول معلومات، بک مارکونه او تاريخ به حذف شي."
+            "ur" -> "کیا آپ واقعی اپنا اکاؤنٹ حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں ہو سکتا اور آپ کے محفوظ کردہ نوٹس، بک مارکس اور تاریخ ختم ہو جائے گی۔"
+            else -> "Are you sure you want to delete your account? This action cannot be undone and will erase your saved notes, bookmarks, and sync history."
+        }
+        val confirmDeleteText = when (langCode) {
+            "ps" -> "هو، زما اکاونټ حذف کړئ"
+            "ur" -> "جی ہاں، میرا اکاؤنٹ حذف کریں"
+            else -> "Yes, Delete My Account"
+        }
+
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text(if (isUrdu) "اکاؤنٹ حذف کریں؟" else "Delete Account?") },
-            text = {
-                Text(
-                    if (isUrdu) "کیا آپ واقعی اپنا اکاؤنٹ حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں ہو سکتا اور آپ کے محفوظ کردہ نوٹس، بک مارکس اور تاریخ ختم ہو جائے گی۔"
-                    else "Are you sure you want to delete your account? This action cannot be undone and will erase your saved notes, bookmarks, and sync history."
-                )
-            },
+            title = { Text(titleDelete) },
+            text = { Text(bodyDelete) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -437,11 +599,11 @@ fun ProfileScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text(if (isUrdu) "جی ہاں، میرا اکاؤنٹ حذف کریں" else "Yes, Delete My Account")
+                    Text(confirmDeleteText)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) { Text(if (isUrdu) "منسوخ کریں" else "Cancel") }
+                TextButton(onClick = { showDeleteConfirm = false }) { Text(lStr("cancel")) }
             }
         )
     }
@@ -514,7 +676,7 @@ private fun ProfileStatCard(number: String, title: String, modifier: Modifier = 
 }
 
 @Composable
-private fun ProfileOptionRow(title: String, icon: ImageVector, isUrdu: Boolean = false, onClick: () -> Unit) {
+private fun ProfileOptionRow(title: String, icon: ImageVector, isRtl: Boolean = false, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -529,7 +691,7 @@ private fun ProfileOptionRow(title: String, icon: ImageVector, isUrdu: Boolean =
             Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
         }
 
-        Icon(imageVector = Icons.Default.ChevronRight, contentDescription = if (isUrdu) "کھولیں" else "Open", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = if (isRtl) "خلاص کړئ" else "Open", tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

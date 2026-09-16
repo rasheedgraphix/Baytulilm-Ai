@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_clean_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Simple & Clean Islamic Clock Card (سادہ اور نفاست بھرا انداز) -->
+    <LinearLayout
+        android:id="@+id/ll_clean_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_widget_minimal_clean"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp">
+
+        <!-- Left Side: Large Clean Time (12:45) + Gregorian Date -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:gravity="start|center_vertical"
+            android:orientation="vertical">
+
+            <!-- Big Modern Time -->
+            <TextClock
+                android:id="@+id/tc_clean_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format12Hour="h:mm"
+                android:format24Hour="HH:mm"
+                android:includeFontPadding="false"
+                android:textColor="#FFFFFF"
+                android:textSize="34sp"
+                android:textStyle="bold" />
+
+            <!-- Clean Gregorian Date (e.g. 19/01/2026 · Tuesday) -->
+            <TextClock
+                android:id="@+id/tc_clean_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:format12Hour="dd/MM/yyyy · EEEE"
+                android:format24Hour="dd/MM/yyyy · EEEE"
+                android:includeFontPadding="false"
+                android:textColor="#CBD5E1"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+
+        <!-- Right Side: Simple Hijri Date + Location + Weather -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1.1"
+            android:gravity="end|center_vertical"
+            android:orientation="vertical">
+
+            <!-- Simple Hijri Date in Warm Gold / White -->
+            <TextView
+                android:id="@+id/tv_clean_hijri"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="۲۹ ربیع الاول ۱۴۴۸ ھ"
+                android:textColor="#FBBF24"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <!-- Temperature & Weather Icon -->
+            <TextView
+                android:id="@+id/tv_clean_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:includeFontPadding="false"
+                android:text="20°C ☀️"
+                android:textColor="#38BDF8"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <!-- Location Badge -->
+            <TextView
+                android:id="@+id/tv_clean_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:gravity="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="📍 اسلام آباد"
+                android:textColor="#94A3B8"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

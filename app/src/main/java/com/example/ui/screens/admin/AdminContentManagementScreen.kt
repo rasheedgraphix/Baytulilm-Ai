@@ -105,15 +105,18 @@ fun AdminContentManagementScreen(
             }
         }
 
+        val lang = com.example.util.LocalAppLanguage.current
+        val langCode = lang.code
+
         TabRow(selectedTabIndex = selectedTab) {
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text("Notes (PDF/Img)", modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                Text(when (langCode) { "ps" -> "نوټونه (PDF/انځور)"; "ur" -> "نوٹس (PDF/تصویر)"; else -> "Notes (PDF/Img)" }, modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
             }
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                Text("Videos", modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                Text(when (langCode) { "ps" -> "ویډیوګانې"; "ur" -> "ویڈیوز"; else -> "Videos" }, modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
             }
             Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }) {
-                Text("Audios (MP3)", modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                Text(when (langCode) { "ps" -> "صوتی درسونه (MP3)"; "ur" -> "آڈیو اسباق (MP3)"; else -> "Audios (MP3)" }, modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
             }
         }
 

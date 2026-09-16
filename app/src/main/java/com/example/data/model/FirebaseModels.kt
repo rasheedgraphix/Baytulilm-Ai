@@ -36,8 +36,10 @@ data class BookDoc(
     val id: String = "",
     val title: String = "",
     val titleArabic: String = "",
+    val titleUrdu: String = "",
     val author: String = "",
     val description: String = "",
+    val descriptionUrdu: String = "",
     val darja: String = "Darja-e-Ula",
     val subject: String = "Nahw",
     val language: String = "Arabic/Urdu",
@@ -56,7 +58,15 @@ data class BookDoc(
     val isTranslation: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
-)
+) {
+    fun getDisplayName(langCode: String): String {
+        return if ((langCode == "ps" || langCode == "ur") && titleUrdu.isNotBlank()) {
+            titleUrdu
+        } else {
+            title
+        }
+    }
+}
 
 data class DarjaDoc(
     val id: String = "",
@@ -71,11 +81,25 @@ data class DarjaDoc(
     val order: Int = 1,
     val progress: Float = 0.0f
 ) {
+    fun getDisplayName(langCode: String): String {
+        return if ((langCode == "ps" || langCode == "ur") && urduName.isNotBlank()) {
+            urduName
+        } else {
+            name
+        }
+    }
     fun getDisplayName(isUrdu: Boolean = true): String {
-        return if (isUrdu && urduName.isNotBlank()) urduName else name
+        return getDisplayName(if (isUrdu) "ur" else "en")
+    }
+    fun getDisplayDescription(langCode: String): String {
+        return if ((langCode == "ps" || langCode == "ur") && descriptionUrdu.isNotBlank()) {
+            descriptionUrdu
+        } else {
+            description
+        }
     }
     fun getDisplayDescription(isUrdu: Boolean = true): String {
-        return if (isUrdu && descriptionUrdu.isNotBlank()) descriptionUrdu else description
+        return getDisplayDescription(if (isUrdu) "ur" else "en")
     }
 }
 
@@ -84,15 +108,27 @@ data class SubjectDoc(
     val name: String = "",
     val arabicName: String = "",
     val category: String = "Islamic Sciences",
-    val booksCount: Int = 0
-)
+    val booksCount: Int = 0,
+    val nameUrdu: String = ""
+) {
+    fun getDisplayName(langCode: String): String {
+        return if ((langCode == "ps" || langCode == "ur") && nameUrdu.isNotBlank()) {
+            nameUrdu
+        } else {
+            name
+        }
+    }
+}
 
 data class McqQuestion(
     val id: Int = 1,
     val question: String = "",
+    val questionUrdu: String = "",
     val options: List<String> = emptyList(),
+    val optionsUrdu: List<String> = emptyList(),
     val correctAnswer: Int = 0,
     val explanation: String = "",
+    val explanationUrdu: String = "",
     val marks: Int = 10
 )
 

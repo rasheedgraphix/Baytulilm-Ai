@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.BookEntity
+import com.example.ui.components.BookCoverThumbnailView
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
 
@@ -86,6 +87,9 @@ fun DownloadsScreen(
             }
         }
 
+        val lang = com.example.util.LocalAppLanguage.current
+        val langCode = lang.code
+
         // Navigation Tabs
         ScrollableTabRow(
             selectedTabIndex = selectedTab,
@@ -96,35 +100,40 @@ fun DownloadsScreen(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp)) {
                     Icon(Icons.Default.Downloading, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Active (${activeDownloads.size})", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    val title = when (langCode) { "ps" -> "فعال (${activeDownloads.size})"; "ur" -> "جاری ڈاؤنلوڈز (${activeDownloads.size})"; else -> "Active (${activeDownloads.size})" }
+                    Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp)) {
                     Icon(Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Offline Library (${downloadedBooks.size})", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    val title = when (langCode) { "ps" -> "افلاین کتب (${downloadedBooks.size})"; "ur" -> "آف لائن لائبریری (${downloadedBooks.size})"; else -> "Offline Library (${downloadedBooks.size})" }
+                    Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp)) {
                     Icon(Icons.Default.Storage, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Storage", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    val title = when (langCode) { "ps" -> "ذخیره / حافظه"; "ur" -> "اسٹوریج"; else -> "Storage" }
+                    Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Tab(selected = selectedTab == 3, onClick = { selectedTab = 3 }) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp)) {
                     Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Rules", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    val title = when (langCode) { "ps" -> "تنظیمات"; "ur" -> "قواعد و سیٹنگ"; else -> "Rules" }
+                    Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Tab(selected = selectedTab == 4, onClick = { selectedTab = 4 }) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp)) {
                     Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("History", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    val title = when (langCode) { "ps" -> "تاریخچه"; "ur" -> "ڈاؤنلوڈ ہسٹری"; else -> "History" }
+                    Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -136,7 +145,12 @@ fun DownloadsScreen(
                 onResume = { item -> item.status = "Downloading"; item.speedKbps = 1450 },
                 onCancel = { item -> activeDownloads.remove(item) }
             )
-            1 -> OfflineLibraryView(downloadedBooks = downloadedBooks, onNavigate = onNavigate, onDelete = { viewModel.deleteDownload(it) })
+            1 -> OfflineLibraryView(
+                downloadedBooks = downloadedBooks,
+                onNavigate = onNavigate,
+                onDelete = { viewModel.deleteDownload(it) },
+                onLoadThumbnail = { viewModel.getThumbnail(it) }
+            )
             2 -> StorageManagerView(
                 downloadedCount = downloadedBooks.size,
                 onClearCache = { cacheClearedToast = true },
@@ -237,7 +251,8 @@ private fun ActiveDownloadsView(
 private fun OfflineLibraryView(
     downloadedBooks: List<BookEntity>,
     onNavigate: (String) -> Unit,
-    onDelete: (String) -> Unit
+    onDelete: (String) -> Unit,
+    onLoadThumbnail: suspend (BookEntity) -> android.graphics.Bitmap?
 ) {
     if (downloadedBooks.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -252,6 +267,11 @@ private fun OfflineLibraryView(
     } else {
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(downloadedBooks, key = { it.id }) { book ->
+                var thumbnail by remember(book.id) { mutableStateOf<android.graphics.Bitmap?>(null) }
+                LaunchedEffect(book.id) {
+                    thumbnail = onLoadThumbnail(book)
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
@@ -262,12 +282,17 @@ private fun OfflineLibraryView(
                         modifier = Modifier.fillMaxWidth().padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
+                        BookCoverThumbnailView(
+                            book = book,
+                            thumbnail = thumbnail,
+                            width = 46.dp,
+                            height = 64.dp
+                        )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(book.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Text("${book.darja} • ${book.subject} • ${book.pageCount} Pages", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("Ready Offline (PDF & Notes Cached)", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                            Text("Ready Offline (First Page Cover)", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                         }
                         Button(
                             onClick = { onNavigate(Screen.BookViewer.createRoute(book.id)) },

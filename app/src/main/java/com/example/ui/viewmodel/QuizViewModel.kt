@@ -1,6 +1,7 @@
 package com.example.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.model.ChapterProgress
 import com.example.data.model.ComprehensiveQuizQuestion
@@ -21,9 +22,9 @@ enum class QuizViewState {
     QUIZ_RESULT
 }
 
-class QuizViewModel : ViewModel() {
+class QuizViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = QuizRepository()
+    private val repository = QuizRepository(application.applicationContext)
 
     val chapterProgressMap: StateFlow<Map<String, List<ChapterProgress>>> = repository.chapterProgressMap
 

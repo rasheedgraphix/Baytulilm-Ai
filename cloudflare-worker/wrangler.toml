@@ -1,0 +1,11 @@
+name = "baytul-ilm-ai-proxy"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+# Free Plan Configuration:
+# - Runs on Cloudflare Workers Free (100,000 requests/day free tier)
+# - No billing or credit card required
+# - Secrets (GEMINI_API_KEY) are provisioned securely via Wrangler CLI or Cloudflare Dashboard
+
+[vars]
+GEMINI_MODEL = "gemini-2.5-flash"

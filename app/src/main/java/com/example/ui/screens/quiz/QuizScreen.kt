@@ -52,6 +52,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,6 +69,7 @@ import com.example.data.model.ChapterProgress
 import com.example.data.model.ComprehensiveQuizQuestion
 import com.example.data.model.DifficultyLevel
 import com.example.data.repository.ChapterResultOutcome
+import com.example.data.repository.DarsENizamiQuizGenerator
 import com.example.ui.viewmodel.QuizViewModel
 import com.example.ui.viewmodel.QuizViewState
 import com.example.util.LocalAppLanguage
@@ -96,7 +98,7 @@ fun QuizScreen(
             }
 
             QuizViewState.CHAPTER_LIST -> {
-                val progressList = viewModel.getChapterProgressList(selectedDifficulty.id)
+                val progressList = chapterProgressMap[selectedDifficulty.id] ?: viewModel.getChapterProgressList(selectedDifficulty.id)
                 ChapterListView(
                     difficulty = selectedDifficulty,
                     chapters = progressList,
@@ -148,7 +150,7 @@ private fun DifficultySelectionView(
     chapterProgressMap: Map<String, List<ChapterProgress>>,
     onSelectDifficulty: (DifficultyLevel) -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val langCode = LocalAppLanguage.current.code
 
     Column(
         modifier = Modifier
@@ -182,13 +184,13 @@ private fun DifficultySelectionView(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = if (isUrdu) "اسلامی کوئز سسٹم" else "Islamic Quiz System",
+                            text = quizText("title", langCode),
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                         Text(
-                            text = if (isUrdu) "درسِ نظامی جامع نصاب" else "Dars-e-Nizami Master Curriculum",
+                            text = quizText("sub", langCode),
                             fontSize = 13.sp,
                             color = Color.White.copy(alpha = 0.85f)
                         )
@@ -196,7 +198,7 @@ private fun DifficultySelectionView(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = if (isUrdu) "50 ابواب ان لاک کرنے کے لیے اپنی مشکل کی سطح منتخب کریں۔ اگلا باب کھولنے کے لیے ہر باب میں 90% یا اس سے زائد اسکور حاصل کریں۔" else "Select your difficulty level to unlock 50 chapters per level. Complete each chapter with 90%+ score to unlock the next chapter.",
+                    text = quizText("desc", langCode),
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.9f),
                     lineHeight = 16.sp
@@ -207,7 +209,7 @@ private fun DifficultySelectionView(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = if (isUrdu) "مشکل کی سطح منتخب کریں" else "Select Difficulty Level",
+            text = quizText("select_level", langCode),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -255,7 +257,7 @@ private fun DifficultySelectionView(
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = level.getDisplayName(isUrdu),
+                                text = level.getDisplayName(langCode),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -263,7 +265,7 @@ private fun DifficultySelectionView(
                         }
 
                         Text(
-                            text = level.getDescription(isUrdu),
+                            text = level.getDescription(langCode),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,
@@ -281,7 +283,7 @@ private fun DifficultySelectionView(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = if (isUrdu) "$unlockedCount / 50 ابواب ان لاک ہیں" else "$unlockedCount / 50 Chapters Unlocked",
+                                text = quizText("unlocked_fmt", langCode, unlockedCount),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary
@@ -290,7 +292,7 @@ private fun DifficultySelectionView(
                             if (completedCount > 0) {
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = if (isUrdu) "• $completedCount کامیاب" else "• $completedCount Passed",
+                                    text = quizText("passed_fmt", langCode, completedCount),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF4CAF50)
@@ -321,7 +323,7 @@ private fun ChapterListView(
     onChapterClick: (Int) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val langCode = LocalAppLanguage.current.code
     val unlockedCount = chapters.count { it.isUnlocked }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -347,13 +349,13 @@ private fun ChapterListView(
             Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (isUrdu) "لیول ${difficulty.getDisplayName(isUrdu)}" else "${difficulty.displayName} Level",
+                    text = "${difficulty.getDisplayName(langCode)}",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = if (isUrdu) "50 ابواب • $unlockedCount ان لاک" else "50 Chapters • $unlockedCount Unlocked",
+                    text = quizText("chapters_unlocked_fmt", langCode, unlockedCount),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -361,7 +363,7 @@ private fun ChapterListView(
         }
 
         LinearProgressIndicator(
-            progress = { unlockedCount.toFloat() / 50f },
+            progress = { unlockedCount.toFloat() / 10f },
             modifier = Modifier.fillMaxWidth(),
             color = Color(difficulty.colorHex),
             trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -374,6 +376,7 @@ private fun ChapterListView(
             items(chapters) { item ->
                 ChapterCardItem(
                     chapter = item,
+                    difficultyId = difficulty.id,
                     onClick = {
                         if (item.isUnlocked) {
                             onChapterClick(item.chapterNumber)
@@ -388,13 +391,31 @@ private fun ChapterListView(
 @Composable
 private fun ChapterCardItem(
     chapter: ChapterProgress,
+    difficultyId: String,
     onClick: () -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val langCode = LocalAppLanguage.current.code
     val cardBg = if (chapter.isUnlocked) {
         MaterialTheme.colorScheme.surface
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    }
+
+    val meta = remember(difficultyId, chapter.chapterNumber) {
+        DarsENizamiQuizGenerator.chaptersDirectory.find {
+            it.stepId == difficultyId.lowercase() && it.chapterNumber == chapter.chapterNumber
+        }
+    }
+
+    val chapterTitle = when (langCode) {
+        "ur" -> meta?.titleUrdu ?: "باب ${chapter.chapterNumber}"
+        "ps" -> meta?.titleUrdu ?: "څپرکی ${chapter.chapterNumber}"
+        else -> meta?.titleEn ?: "Chapter ${chapter.chapterNumber}"
+    }
+
+    val bookInfo = meta?.let {
+        if (langCode == "en") "${it.bookName} • ${it.assignedDarjatEn}"
+        else "${it.bookName} • ${it.assignedDarjatUrdu}"
     }
 
     Card(
@@ -451,11 +472,16 @@ private fun ChapterCardItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = if (isUrdu) "باب نمبر ${chapter.chapterNumber}" else "Chapter ${chapter.chapterNumber}",
-                        fontSize = 16.sp,
+                        text = chapterTitle,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (chapter.isUnlocked) MaterialTheme.colorScheme.onSurface else Color.Gray
+                        color = if (chapter.isUnlocked) MaterialTheme.colorScheme.onSurface else Color.Gray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
+
+                    Spacer(modifier = Modifier.width(6.dp))
 
                     if (chapter.isCompleted) {
                         Box(
@@ -465,7 +491,7 @@ private fun ChapterCardItem(
                                 .padding(horizontal = 8.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = if (isUrdu) "کامیاب (${chapter.highestPercentage.toInt()}%)" else "PASSED (${chapter.highestPercentage.toInt()}%)",
+                                text = quizText("passed_pct", langCode, chapter.highestPercentage.toInt()),
                                 color = Color.White,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -473,31 +499,41 @@ private fun ChapterCardItem(
                         }
                     } else if (chapter.isUnlocked) {
                         Text(
-                            text = if (isUrdu) "ان لاک" else "Unlocked",
+                            text = quizText("unlocked", langCode),
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                     } else {
                         Text(
-                            text = if (isUrdu) "لاک ہے" else "Locked",
+                            text = quizText("locked", langCode),
                             color = Color.Gray,
                             fontSize = 11.sp
                         )
                     }
                 }
 
+                if (bookInfo != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "📖 $bookInfo",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = if (chapter.isUnlocked) MaterialTheme.colorScheme.primary else Color.Gray
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(4.dp))
 
                 if (chapter.attempts > 0) {
                     Text(
-                        text = if (isUrdu) "بہترین اسکور: ${chapter.highestScore}/50 • کوششیں: ${chapter.attempts} • درستگی: ${chapter.accuracyPercentage.toInt()}%" else "Highest Score: ${chapter.highestScore}/50 • Attempts: ${chapter.attempts} • Acc: ${chapter.accuracyPercentage.toInt()}%",
+                        text = quizText("stats_fmt", langCode, chapter.highestScore, chapter.attempts, chapter.accuracyPercentage.toInt()),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
                     Text(
-                        text = if (isUrdu) "50 سوالات • 20 سیکنڈ فی سوال • اگلا باب کھولنے کے لیے 90%+ درکار" else "50 MCQs • 20s per question • 90%+ to unlock next",
+                        text = quizText("ch_req", langCode),
                         fontSize = 11.sp,
                         color = if (chapter.isUnlocked) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
                     )
@@ -516,7 +552,7 @@ private fun ActiveQuizView(
     viewModel: QuizViewModel,
     onBackClick: () -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val langCode = LocalAppLanguage.current.code
     val questions by viewModel.chapterQuestions.collectAsStateWithLifecycle()
     val currentIndex by viewModel.currentQuestionIndex.collectAsStateWithLifecycle()
     val timerSeconds by viewModel.questionTimeRemaining.collectAsStateWithLifecycle()
@@ -550,12 +586,12 @@ private fun ActiveQuizView(
                 }
                 Column {
                     Text(
-                        text = if (isUrdu) "${selectedDifficulty.getDisplayName(isUrdu)} - باب $chapterNum" else "${selectedDifficulty.displayName} - Chapter $chapterNum",
+                        text = quizText("level_ch_fmt", langCode, selectedDifficulty.getDisplayName(langCode), chapterNum),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = if (isUrdu) "سوال ${currentIndex + 1} از 50" else "Question ${currentIndex + 1} of 50",
+                        text = quizText("q_num_fmt", langCode, currentIndex + 1, questions.size),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -580,7 +616,7 @@ private fun ActiveQuizView(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (isUrdu) "${timerSeconds} سیکنڈ" else "${timerSeconds}s",
+                        text = quizText("sec_fmt", langCode, timerSeconds),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -591,7 +627,7 @@ private fun ActiveQuizView(
 
         // Question Progress Bar
         LinearProgressIndicator(
-            progress = { (currentIndex + 1).toFloat() / 50f },
+            progress = { if (questions.isNotEmpty()) (currentIndex + 1).toFloat() / questions.size.toFloat() else 0f },
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -660,7 +696,7 @@ private fun ActiveQuizView(
                     }
 
                     Text(
-                        text = currentQ.question,
+                        text = currentQ.getDisplayQuestion(langCode),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -672,7 +708,8 @@ private fun ActiveQuizView(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Options (4 Options)
-            currentQ.options.forEachIndexed { optIdx, optionText ->
+            val displayOptions = currentQ.getDisplayOptions(langCode)
+            displayOptions.forEachIndexed { optIdx, optionText ->
                 val isSelected = selectedOption == optIdx
                 val isCorrect = optIdx == currentQ.correctAnswerIndex
 
@@ -787,7 +824,7 @@ private fun ActiveQuizView(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = if (isUrdu) (if (selectedOption == currentQ.correctAnswerIndex) "درست جواب!" else "وضاحت و حوالہ") else (if (selectedOption == currentQ.correctAnswerIndex) "Correct Answer!" else "Explanation & Reference"),
+                                    text = if (selectedOption == currentQ.correctAnswerIndex) quizText("correct_ans_title", langCode) else quizText("exp_title", langCode),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
                                     color = if (selectedOption == currentQ.correctAnswerIndex) Color(0xFF2E7D32) else Color(0xFFE65100)
@@ -797,7 +834,7 @@ private fun ActiveQuizView(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = if (isUrdu) "درست جواب: ${currentQ.options.getOrNull(currentQ.correctAnswerIndex) ?: ""}" else "Correct Answer: ${currentQ.options.getOrNull(currentQ.correctAnswerIndex) ?: ""}",
+                                text = quizText("correct_ans_lbl", langCode, displayOptions.getOrNull(currentQ.correctAnswerIndex) ?: ""),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -806,7 +843,7 @@ private fun ActiveQuizView(
                             Spacer(modifier = Modifier.height(6.dp))
 
                             Text(
-                                text = currentQ.explanation,
+                                text = currentQ.getDisplayExplanation(langCode),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 17.sp
@@ -831,7 +868,7 @@ private fun ActiveQuizView(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = if (isUrdu) "${currentQ.bookName} • ${currentQ.chapter} (صفحہ ${currentQ.pageNumber})" else "${currentQ.bookName} • ${currentQ.chapter} (Page ${currentQ.pageNumber})",
+                                        text = currentQ.getDisplayCitation(langCode),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.primary
@@ -852,7 +889,7 @@ private fun ActiveQuizView(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = if (isUrdu) (if (currentIndex + 1 < questions.size) "اگلا سوال" else "نتائج دیکھیں") else (if (currentIndex + 1 < questions.size) "Next Question" else "View Results"),
+                            text = if (currentIndex + 1 < questions.size) quizText("next_q", langCode) else quizText("view_res", langCode),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -880,13 +917,15 @@ private fun QuizResultView(
     onNextChapterClick: () -> Unit,
     onBackToChaptersClick: () -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val langCode = LocalAppLanguage.current.code
     val score by viewModel.score.collectAsStateWithLifecycle()
     val chapterNum by viewModel.selectedChapter.collectAsStateWithLifecycle()
     val selectedDifficulty by viewModel.selectedDifficulty.collectAsStateWithLifecycle()
     val totalTimeSecs by viewModel.totalQuizTimeSpentSecs.collectAsStateWithLifecycle()
 
-    val percentage = outcome?.percentage ?: ((score.toFloat() / 50f) * 100f)
+    val questions by viewModel.chapterQuestions.collectAsStateWithLifecycle()
+    val totalQ = if (questions.isNotEmpty()) questions.size else 20
+    val percentage = outcome?.percentage ?: ((score.toFloat() / totalQ.toFloat()) * 100f)
     val isPassed = outcome?.isPassed ?: (percentage >= 90f)
 
     Column(
@@ -919,14 +958,14 @@ private fun QuizResultView(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = if (isUrdu) (if (isPassed) "باب $chapterNum میں کامیابی!" else "باب $chapterNum نامکمل") else (if (isPassed) "Chapter $chapterNum Passed!" else "Chapter $chapterNum Incomplete"),
+            text = if (isPassed) quizText("ch_passed", langCode, chapterNum) else quizText("ch_incomp", langCode, chapterNum),
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
 
         Text(
-            text = if (isUrdu) "لیول ${selectedDifficulty.getDisplayName(isUrdu)} • 50 سوالات" else "${selectedDifficulty.displayName} Level • 50 MCQs",
+            text = quizText("level_50_mcq", langCode, selectedDifficulty.getDisplayName(langCode), totalQ),
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -954,7 +993,7 @@ private fun QuizResultView(
                 )
 
                 Text(
-                    text = if (isUrdu) "50/ $score سوالات درست" else "$score / 50 Questions Correct",
+                    text = quizText("correct_count_fmt", langCode, score, totalQ),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -967,17 +1006,17 @@ private fun QuizResultView(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(if (isUrdu) "درستگی" else "Accuracy", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(quizText("accuracy", langCode), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("${percentage.toInt()}%", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(if (isUrdu) "کل وقت" else "Time Taken", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(quizText("time_taken", langCode), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(formatDuration(totalTimeSecs), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(if (isUrdu) "کامیابی کا ہدف" else "Pass Target", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(quizText("pass_target", langCode), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("90%", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
@@ -1005,13 +1044,13 @@ private fun QuizResultView(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = if (isUrdu) "اگلا باب ان لاک ہو گیا! 🎉" else "Next Chapter Unlocked! 🎉",
+                            text = quizText("next_unlocked", langCode),
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = Color(0xFF2E7D32)
                         )
                         Text(
-                            text = if (isUrdu) "آپ نے 90%+ اسکور حاصل کیا! باب ${chapterNum + 1} اب آپ کے لیے دستیاب ہے۔" else "You scored 90%+! Chapter ${chapterNum + 1} is now ready for you.",
+                            text = quizText("score_90_desc", langCode, chapterNum + 1),
                             fontSize = 12.sp,
                             color = Color(0xFF1B5E20)
                         )
@@ -1036,13 +1075,13 @@ private fun QuizResultView(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = if (isUrdu) "مشق جاری رکھیں!" else "Keep Practicing!",
+                            text = quizText("keep_practicing", langCode),
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = Color(0xFFE65100)
                         )
                         Text(
-                            text = if (isUrdu) "باب ${chapterNum + 1} کھولنے کے لیے آپ کو 90% (45/50 درست) اسکور درکار ہے۔ اسکور بہتر بنانے کے لیے دوبارہ کوشش کریں!" else "You need 90% (45/50 correct) to unlock Chapter ${chapterNum + 1}. Try again to improve your score!",
+                            text = quizText("need_90_desc", langCode, chapterNum + 1),
                             fontSize = 12.sp,
                             color = Color(0xFFBF360C)
                         )
@@ -1054,7 +1093,7 @@ private fun QuizResultView(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Action Buttons
-        if (isPassed && chapterNum < 50) {
+        if (isPassed && chapterNum < 10) {
             Button(
                 onClick = onNextChapterClick,
                 modifier = Modifier
@@ -1064,7 +1103,7 @@ private fun QuizResultView(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
             ) {
                 Text(
-                    text = if (isUrdu) "باب ${chapterNum + 1} شروع کریں" else "Start Chapter ${chapterNum + 1}",
+                    text = quizText("start_next_ch", langCode, chapterNum + 1),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1086,7 +1125,7 @@ private fun QuizResultView(
             Icon(imageVector = Icons.Default.Refresh, contentDescription = "Retry")
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (isUrdu) "باب $chapterNum دوبارہ کیجیے" else "Retry Chapter $chapterNum",
+                text = quizText("retry_ch", langCode, chapterNum),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -1102,10 +1141,129 @@ private fun QuizResultView(
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = if (isUrdu) "تمام ابواب پر واپس جائیں" else "Back to All Chapters",
+                text = quizText("back_to_all", langCode),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
             )
+        }
+    }
+}
+
+private fun quizText(key: String, langCode: String, vararg args: Any): String {
+    return when (langCode) {
+        "ps" -> when (key) {
+            "title" -> "اسلامي ازموینې سیسټم"
+            "sub" -> "د درسِ نظامي هراړخیز نصاب"
+            "desc" -> "د ۱۰ څپرکو خلاصولو لپاره د کچې انتخاب وکړئ. د بل څپرکي خلاصولو لپاره ۹۰٪ نمرې ترلاسه کړئ."
+            "select_level" -> "د ازموینې کچه وټاکئ"
+            "unlocked_fmt" -> "${args[0]} / ۱۰ څپرکي خلاص دي"
+            "passed_fmt" -> "• ${args[0]} بریالي"
+            "chapters_unlocked_fmt" -> "۱۰ څپرکي • ${args[0]} خلاص دي"
+            "ch_num" -> "څپرکی ${args[0]}"
+            "passed_pct" -> "بریالی (${args[0]}%)"
+            "unlocked" -> "خلاص دی"
+            "locked" -> "بند دی"
+            "stats_fmt" -> "غوره نمره: ${args[0]} • هڅې: ${args[1]} • دقت: ${args[2]}%"
+            "ch_req" -> "۱۰ پوښتنې • ۲۰ ثانیې فی پوښتنه • د بل څپرکي لپاره ۹۰٪ اړین دي"
+            "level_ch_fmt" -> "${args[0]} - ${args[1]} څپرکی"
+            "q_num_fmt" -> "پوښتنه ${args[0]} له ${args.getOrElse(1) { "۱۰" }} څخه"
+            "sec_fmt" -> "${args[0]} ثانیې"
+            "correct_ans_title" -> "سم ځواب!"
+            "exp_title" -> "تشریح او سرچینه"
+            "correct_ans_lbl" -> "سم ځواب: ${args[0]}"
+            "next_q" -> "بله پوښتنه"
+            "view_res" -> "پایلې وګورئ"
+            "ch_passed" -> "څپرکی ${args[0]} بریالی شو!"
+            "ch_incomp" -> "څپرکی ${args[0]} ناپشپړ دی"
+            "level_50_mcq" -> "کچه ${args[0]} • ${args.getOrElse(1) { "۱۰" }} پوښتنې"
+            "correct_count_fmt" -> "${args.getOrElse(1) { "۱۰" }}/ ${args[0]} پوښتنې سمې دي"
+            "accuracy" -> "دقت او درستی"
+            "time_taken" -> "تېر شوی وخت"
+            "pass_target" -> "د بریا هدف"
+            "next_unlocked" -> "بل څپرکی خلاص شو! 🎉"
+            "score_90_desc" -> "تاسو ۹۰٪+ نمرې ترلاسه کړې! ${args[0]} څپرکی اوس خلاص دی."
+            "keep_practicing" -> "تمرین او هڅه جاري وساتئ!"
+            "need_90_desc" -> "د ${args[0]} څپرکي خلاصولو لپاره ۹۰٪ نمرو ته اړتیا لرئ."
+            "start_next_ch" -> "${args[0]} څپرکی پیل کړئ"
+            "retry_ch" -> "${args[0]} څپرکی بیا و ازمویئ"
+            "back_to_all" -> "ټولو څپرکو ته بېرته ستانه شئ"
+            else -> ""
+        }
+        "ur" -> when (key) {
+            "title" -> "اسلامی کوئز سسٹم"
+            "sub" -> "درسِ نظامی جامع نصاب"
+            "desc" -> "10 ابواب ان لاک کرنے کے لیے اپنی مشکل کی سطح منتخب کریں۔ اگلا باب کھولنے کے لیے ہر باب میں 90% یا اس سے زائد اسکور حاصل کریں۔"
+            "select_level" -> "مشکل کی سطح منتخب کریں"
+            "unlocked_fmt" -> "${args[0]} / 10 ابواب ان لاک ہیں"
+            "passed_fmt" -> "• ${args[0]} کامیاب"
+            "chapters_unlocked_fmt" -> "10 ابواب • ${args[0]} ان لاک"
+            "ch_num" -> "باب نمبر ${args[0]}"
+            "passed_pct" -> "کامیاب (${args[0]}%)"
+            "unlocked" -> "ان لاک"
+            "locked" -> "لاک ہے"
+            "stats_fmt" -> "بہترین اسکور: ${args[0]} • کوششیں: ${args[1]} • درستگی: ${args[2]}%"
+            "ch_req" -> "10 سوالات • 20 سیکنڈ فی سوال • اگلا باب کھولنے کے لیے 90%+ درکار"
+            "level_ch_fmt" -> "${args[0]} - باب ${args[1]}"
+            "q_num_fmt" -> "سوال ${args[0]} از ${args.getOrElse(1) { 10 }}"
+            "sec_fmt" -> "${args[0]} سیکنڈ"
+            "correct_ans_title" -> "درست جواب!"
+            "exp_title" -> "وضاحت و حوالہ"
+            "correct_ans_lbl" -> "درست جواب: ${args[0]}"
+            "next_q" -> "اگلا سوال"
+            "view_res" -> "نتائج دیکھیں"
+            "ch_passed" -> "باب ${args[0]} میں کامیابی!"
+            "ch_incomp" -> "باب ${args[0]} نامکمل"
+            "level_50_mcq" -> "لیول ${args[0]} • ${args.getOrElse(1) { 10 }} سوالات"
+            "correct_count_fmt" -> "${args[0]} / ${args.getOrElse(1) { 10 }} سوالات درست"
+            "accuracy" -> "درستگی"
+            "time_taken" -> "کل وقت"
+            "pass_target" -> "کامیابی کا ہدف"
+            "next_unlocked" -> "اگلا باب ان لاک ہو گیا! 🎉"
+            "score_90_desc" -> "آپ نے 90%+ اسکور حاصل کیا! باب ${args[0]} اب آپ کے لیے دستیاب ہے۔"
+            "keep_practicing" -> "مشق جاری رکھیں!"
+            "need_90_desc" -> "باب ${args[0]} کھولنے کے لیے آپ کو 90% درست اسکور درکار ہے۔ اسکور بہتر بنانے کے لیے دوبارہ کوشش کریں!"
+            "start_next_ch" -> "باب ${args[0]} شروع کریں"
+            "retry_ch" -> "باب ${args[0]} دوبارہ کیجیے"
+            "back_to_all" -> "تمام ابواب پر واپس جائیں"
+            else -> ""
+        }
+        else -> when (key) {
+            "title" -> "Islamic Quiz System"
+            "sub" -> "Dars-e-Nizami Master Curriculum"
+            "desc" -> "Select your difficulty level to unlock 10 chapters per level. Complete each chapter with 90%+ score to unlock the next chapter."
+            "select_level" -> "Select Difficulty Level"
+            "unlocked_fmt" -> "${args[0]} / 10 Chapters Unlocked"
+            "passed_fmt" -> "• ${args[0]} Passed"
+            "chapters_unlocked_fmt" -> "10 Chapters • ${args[0]} Unlocked"
+            "ch_num" -> "Chapter ${args[0]}"
+            "passed_pct" -> "PASSED (${args[0]}%)"
+            "unlocked" -> "Unlocked"
+            "locked" -> "Locked"
+            "stats_fmt" -> "Highest Score: ${args[0]} • Attempts: ${args[1]} • Acc: ${args[2]}%"
+            "ch_req" -> "10 MCQs • 20s per question • 90%+ to unlock next"
+            "level_ch_fmt" -> "${args[0]} - Chapter ${args[1]}"
+            "q_num_fmt" -> "Question ${args[0]} of ${args.getOrElse(1) { 10 }}"
+            "sec_fmt" -> "${args[0]}s"
+            "correct_ans_title" -> "Correct Answer!"
+            "exp_title" -> "Explanation & Reference"
+            "correct_ans_lbl" -> "Correct Answer: ${args[0]}"
+            "next_q" -> "Next Question"
+            "view_res" -> "View Results"
+            "ch_passed" -> "Chapter ${args[0]} Passed!"
+            "ch_incomp" -> "Chapter ${args[0]} Incomplete"
+            "level_50_mcq" -> "${args[0]} Level • ${args.getOrElse(1) { 10 }} MCQs"
+            "correct_count_fmt" -> "${args[0]} / ${args.getOrElse(1) { 10 }} Questions Correct"
+            "accuracy" -> "Accuracy"
+            "time_taken" -> "Time Taken"
+            "pass_target" -> "Pass Target"
+            "next_unlocked" -> "Next Chapter Unlocked! 🎉"
+            "score_90_desc" -> "You scored 90%+! Chapter ${args[0]} is now ready for you."
+            "keep_practicing" -> "Keep Practicing!"
+            "need_90_desc" -> "You need 90% to unlock Chapter ${args[0]}. Try again to improve your score!"
+            "start_next_ch" -> "Start Chapter ${args[0]}"
+            "retry_ch" -> "Retry Chapter ${args[0]}"
+            "back_to_all" -> "Back to All Chapters"
+            else -> ""
         }
     }
 }

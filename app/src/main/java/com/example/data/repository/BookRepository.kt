@@ -8,7 +8,9 @@ import com.example.data.model.BookEntity
 import com.example.data.model.BookmarkEntity
 import com.example.data.model.RecentReadingEntity
 import com.example.data.model.TasbeehRecordEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class BookRepository(
     private val bookDao: BookDao,
@@ -24,14 +26,17 @@ class BookRepository(
     val recentReadings: Flow<List<RecentReadingEntity>> = recentReadingDao.getRecentReadings()
     val tasbeehRecords: Flow<List<TasbeehRecordEntity>> = tasbeehDao.getAllRecords()
 
-    suspend fun seedInitialDataIfEmpty() {
-        // Simple seed check
+    suspend fun getBooksCount(): Int = withContext(Dispatchers.IO) {
+        bookDao.getBooksCount()
+    }
+
+    suspend fun seedInitialDataIfEmpty() = withContext(Dispatchers.IO) {
         val books = InitialDataSeed.sampleBooks
         bookDao.insertAll(books)
         bookDao.deleteBook("rabia_al_miraat_maqamat")
     }
 
-    suspend fun insertBooks(books: List<BookEntity>) {
+    suspend fun insertBooks(books: List<BookEntity>) = withContext(Dispatchers.IO) {
         bookDao.insertAll(books)
     }
 

@@ -130,6 +130,9 @@ fun AiTeacherScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            val lang = com.example.util.LocalAppLanguage.current
+            val langCode = lang.code
+
             TabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = MaterialTheme.colorScheme.surface
@@ -137,25 +140,25 @@ fun AiTeacherScreen(
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text("AI Teachers", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
+                    text = { Text(when (langCode) { "ps" -> "ای ای ښوونکي"; "ur" -> "اساتذہ AI"; else -> "AI Teachers" }, fontSize = 12.sp, fontWeight = FontWeight.Bold) },
                     icon = { Icon(Icons.Default.School, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    text = { Text("Voice Tutor", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
+                    text = { Text(when (langCode) { "ps" -> "غږیز استاد"; "ur" -> "صوتی استاد"; else -> "Voice Tutor" }, fontSize = 12.sp, fontWeight = FontWeight.Bold) },
                     icon = { Icon(Icons.Default.Mic, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
                 Tab(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    text = { Text("Smart Study", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
+                    text = { Text(when (langCode) { "ps" -> "سمارټ مطالعه"; "ur" -> "سمارٹ مطالعہ"; else -> "Smart Study" }, fontSize = 12.sp, fontWeight = FontWeight.Bold) },
                     icon = { Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
                 Tab(
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
-                    text = { Text("Analytics", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
+                    text = { Text(when (langCode) { "ps" -> "تجزیه او راپور"; "ur" -> "تجزیات و جائزہ"; else -> "Analytics" }, fontSize = 12.sp, fontWeight = FontWeight.Bold) },
                     icon = { Icon(Icons.Default.Analytics, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
             }

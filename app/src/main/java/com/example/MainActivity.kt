@@ -1,37 +1,77 @@
 package com.example
 
 import android.os.Bundle
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.example.util.NotificationPermissionHelper
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Quiz
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,10 +100,25 @@ import com.example.ui.screens.admin.AdminShuroohTranslationsScreen
 import com.example.ui.screens.admin.AdminUserManagementScreen
 import com.example.ui.screens.ai.AiAssistantScreen
 import com.example.ui.screens.ai.AiTeacherScreen
+import com.example.ui.screens.islamic.AsmaUlHusnaScreen
+import com.example.ui.screens.islamic.AsmaUnNabiScreen
+import com.example.ui.screens.islamic.HaramainLiveScreen
+import com.example.ui.screens.islamic.IslamicCalendarScreen
+import com.example.ui.screens.islamic.QiblaCompassScreen
+import com.example.ui.screens.islamic.TasbeehScreen
+import com.example.ui.screens.islamic.QuranScreen
+import com.example.ui.screens.islamic.TafseerScreen
+import com.example.ui.screens.islamic.TafseerDetailScreen
+import com.example.ui.screens.islamic.FatawaScreen
+import com.example.ui.screens.islamic.FatawaDetailScreen
+import com.example.ui.screens.islamic.LughatScreen
+import com.example.ui.screens.islamic.FamousDuasScreen
+import com.example.ui.screens.islamic.GenericPdfScreen
 import com.example.ui.screens.auth.EmailVerificationScreen
 import com.example.ui.screens.auth.ForgotPasswordScreen
 import com.example.ui.screens.auth.LoginScreen
 import com.example.ui.screens.auth.RegisterScreen
+import com.example.ui.screens.auth.SignupScreen
 import com.example.ui.screens.book.BookDetailScreen
 import com.example.ui.screens.book.BookViewerScreen
 import com.example.ui.screens.bookmarks.BookmarksScreen
@@ -89,6 +144,7 @@ import com.example.ui.screens.language.LanguageSelectionScreen
 import com.example.ui.screens.recent.RecentScreen
 import com.example.ui.screens.search.SearchScreen
 import com.example.ui.screens.settings.AboutContactScreen
+import com.example.ui.screens.settings.PrivacyPolicyScreen
 import com.example.ui.screens.settings.SettingsScreen
 import com.example.ui.screens.subjects.SubjectsScreen
 import com.example.ui.screens.madrasa.AdminBulkOpsScreen
@@ -102,6 +158,7 @@ import com.example.ui.screens.madrasa.ParentDashboardScreen
 import com.example.ui.screens.madrasa.VideoCoursesScreen
 import com.example.ui.theme.BaytulIlmTheme
 import com.example.ui.theme.RasheedIslamicTheme
+import android.view.KeyEvent
 import com.example.ui.viewmodel.AiViewModel
 import com.example.ui.viewmodel.AuthViewModel
 import android.content.Intent
@@ -110,7 +167,6 @@ import com.example.ui.viewmodel.QuizViewModel
 import com.example.util.LanguageManager
 import com.example.util.LocalizedApp
 import com.example.util.lStr
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 
@@ -118,6 +174,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LanguageManager.init(this)
+        try {
+            com.example.data.fcm.BaytulIlmFirebaseMessagingService.initializeFCM(this)
+        } catch (t: Throwable) {
+            // Log as info/debug, or ignore to avoid noise, as this is expected in some environments
+            android.util.Log.d("MainActivity", "FCM init skipped: ${t.message}")
+        }
         enableEdgeToEdge()
         setContent {
             LocalizedApp(context = this) {
@@ -132,164 +194,262 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
     }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
+            keyCode == KeyEvent.KEYCODE_HEADSETHOOK) {
+
+            var silenced = false
+            if (com.example.util.PrayerAudioNotifier.isPlayingAllahuAkbar.value) {
+                com.example.util.PrayerAudioNotifier.dismissAlert(this)
+                silenced = true
+            }
+            if (com.example.util.KalimaShahadatPlayer.isPlaying.value) {
+                com.example.util.KalimaShahadatPlayer.stop()
+                silenced = true
+            }
+            if (silenced) {
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            val keyCode = event.keyCode
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
+                keyCode == KeyEvent.KEYCODE_HEADSETHOOK) {
+
+                if (com.example.util.PrayerAudioNotifier.isPlayingAllahuAkbar.value) {
+                    com.example.util.PrayerAudioNotifier.dismissAlert(this)
+                    return true
+                }
+                if (com.example.util.KalimaShahadatPlayer.isPlaying.value) {
+                    com.example.util.KalimaShahadatPlayer.stop()
+                    return true
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaytulIlmApp() {
     val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            NotificationPermissionHelper.recordPrompt(context)
+        }
+    )
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (NotificationPermissionHelper.shouldPrompt(context)) {
+            NotificationPermissionHelper.recordPrompt(context)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    val isKalimaPlaying by com.example.util.KalimaShahadatPlayer.isPlaying.collectAsState()
+    val isPrayerPlaying by com.example.util.PrayerAudioNotifier.isPlayingAllahuAkbar.collectAsState()
+    val prayerAlertText by com.example.util.PrayerAudioNotifier.currentPrayerAlert.collectAsState()
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        com.example.util.KalimaShahadatPlayer.playOnAppLaunch(context)
+    }
+
     val mainViewModel: MainViewModel = viewModel()
-    val aiViewModel: AiViewModel = viewModel()
-    val quizViewModel: QuizViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Home.route
 
     val bottomNavItems = listOf(
-        Screen.Home to Icons.Default.Home,
-        Screen.Library to Icons.Default.LocalLibrary,
-        Screen.Offline to Icons.Default.DownloadDone,
-        Screen.Quiz to Icons.Default.Quiz,
-        Screen.AiAssistant to Icons.Default.AutoAwesome,
-        Screen.Profile to Icons.Default.Person
+        com.example.ui.components.BottomNavItem(Screen.Library, Icons.Default.LocalLibrary, "library", "nav_library"),
+        com.example.ui.components.BottomNavItem(Screen.HaramainLive, Icons.Default.LiveTv, "haramain_live", "nav_live"),
+        com.example.ui.components.BottomNavItem(Screen.Home, Icons.Default.Home, "home", "nav_home"),
+        com.example.ui.components.BottomNavItem(Screen.Quiz, Icons.Default.Quiz, "quiz", "nav_quiz"),
+        com.example.ui.components.BottomNavItem(Screen.Profile, Icons.Default.Person, "profile", "nav_profile")
     )
 
-    val isTopLevelRoute = bottomNavItems.any { it.first.route == currentRoute }
+    var isLiveFullscreen by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != Screen.HaramainLive.route) {
+            isLiveFullscreen = false
+        } else {
+            scope.launch { drawerState.close() }
+        }
+    }
+
+    LaunchedEffect(isLiveFullscreen) {
+        if (isLiveFullscreen) {
+            scope.launch { drawerState.close() }
+        }
+    }
+
+    val isTopLevelRoute = (bottomNavItems.any { it.screen.route == currentRoute } || currentRoute == Screen.AiAssistant.route) && !isLiveFullscreen
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = !isLiveFullscreen && currentRoute != Screen.HaramainLive.route,
+        scrimColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.45f),
         drawerContent = {
-            IslamicDrawerContent(
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+            if (!isLiveFullscreen && currentRoute != Screen.HaramainLive.route) {
+                ModalDrawerSheet(
+                    drawerShape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
+                    drawerContainerColor = MaterialTheme.colorScheme.surface,
+                    drawerTonalElevation = 6.dp,
+                    windowInsets = WindowInsets.statusBars,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(0.78f)
+                        .widthIn(min = 270.dp, max = 340.dp)
+                ) {
+                    IslamicDrawerContent(
+                        currentRoute = currentRoute,
+                        onNavigate = { route ->
+                            scope.launch { drawerState.close() }
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        onClose = {
+                            scope.launch { drawerState.close() }
                         }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    )
                 }
-            )
+            }
         }
     ) {
         Scaffold(
+            contentWindowInsets = if (isLiveFullscreen) WindowInsets(0, 0, 0, 0) else ScaffoldDefaults.contentWindowInsets,
             topBar = {
                 if (isTopLevelRoute && currentRoute != Screen.AiAssistant.route) {
                     TopAppBar(
                         title = {
-                            Text(
-                                text = lStr("app_name"),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(androidx.compose.ui.graphics.Color(0xFFECFDF5)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MenuBook,
+                                        contentDescription = null,
+                                        tint = androidx.compose.ui.graphics.Color(0xFF059669),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = lStr("app_name"),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    color = androidx.compose.ui.graphics.Color(0xFF0F172A)
+                                )
+                            }
                         },
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(
                                     imageVector = Icons.Default.Menu,
-                                    contentDescription = "Open Drawer Menu"
+                                    contentDescription = "Open Drawer Menu",
+                                    tint = androidx.compose.ui.graphics.Color(0xFF0F172A)
                                 )
                             }
                         },
                         actions = {
-                            val isUrdu = LocalAppLanguage.current.code == "ur"
-                            IconButton(
-                                onClick = {
-                                    val appName = if (isUrdu) "بیت العلم اے آئی (Baytul Ilm AI)" else "Baytul Ilm AI"
-                                    val description = if (isUrdu) "درس نظامی اور اسلامی اے آئی لرننگ ایپ" else "Dars-e-Nizami & Islamic AI Learning App"
-                                    val playStoreUrl = "https://play.google.com/store/apps/details?id=com.baytulilmai.app"
-                                    val downloadText = if (isUrdu) "ایپ ڈاؤن لوڈ کریں:\n$playStoreUrl" else "Download the app:\n$playStoreUrl"
-                                    
-                                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                                        putExtra(
-                                            Intent.EXTRA_TEXT,
-                                            "$appName\n$description\n\n$downloadText"
-                                        )
-                                        type = "text/plain"
+                            IconButton(onClick = {
+                                navController.navigate(Screen.AiAssistant.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
-                                    val shareIntent = Intent.createChooser(sendIntent, if (isUrdu) "شیئر کریں" else "Share Baytul Ilm AI")
-                                    context.startActivity(shareIntent)
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                            ) {
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoAwesome,
+                                    contentDescription = "AI Assistant",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            IconButton(onClick = {
+                                com.example.util.AppConfig.shareAppWithWebsite(context)
+                            }) {
                                 Icon(
                                     imageVector = Icons.Default.Share,
-                                    contentDescription = "Share App",
-                                    tint = androidx.compose.ui.graphics.Color.White
+                                    contentDescription = "Share Website",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            titleContentColor = androidx.compose.ui.graphics.Color.White,
-                            navigationIconContentColor = androidx.compose.ui.graphics.Color.White,
-                            actionIconContentColor = androidx.compose.ui.graphics.Color.White
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                            actionIconContentColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
             },
             bottomBar = {
-                if (isTopLevelRoute) {
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ) {
-                        bottomNavItems.forEach { (screen, icon) ->
-                            val selected = currentRoute == screen.route
-                            val labelText = when (screen) {
-                                Screen.Home -> lStr("home")
-                                Screen.Library -> lStr("library")
-                                Screen.Offline -> lStr("offline")
-                                Screen.Quiz -> lStr("quiz")
-                                Screen.AiAssistant -> lStr("ai_scholar")
-                                Screen.Profile -> lStr("profile")
-                                else -> lStr(screen.title)
+                if (isTopLevelRoute && currentRoute != Screen.AiAssistant.route) {
+                    com.example.ui.components.BaytulIlmBottomNavigationBar(
+                        items = bottomNavItems,
+                        currentRoute = currentRoute,
+                        onItemSelected = { screen ->
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            NavigationBarItem(
-                                selected = selected,
-                                onClick = {
-                                    navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    Icon(
-                                        imageVector = icon,
-                                        contentDescription = labelText
-                                    )
-                                },
-                                label = { Text(text = labelText, fontSize = 11.sp) },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                                )
-                            )
                         }
-                    }
+                    )
                 }
             },
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = Screen.Splash.route,
-                modifier = Modifier.padding(innerPadding)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (isLiveFullscreen) Modifier else Modifier.padding(innerPadding))
             ) {
+                NavHost(
+                    navController = navController,
+                    startDestination = Screen.Splash.route,
+                    modifier = Modifier.fillMaxSize()
+                ) {
                 composable(Screen.LanguageSelection.route) {
                     LanguageSelectionScreen(
                         onLanguageSelected = {
                             val currentUser = runCatching { FirebaseAuth.getInstance().currentUser }.getOrNull()
                             val targetRoute = when {
                                 currentUser != null && !currentUser.isEmailVerified -> Screen.EmailVerification.route
-                                currentUser != null && currentUser.isEmailVerified -> Screen.Home.route
+                                currentUser != null -> Screen.Home.route
                                 else -> Screen.Login.route
                             }
                             navController.navigate(targetRoute) {
@@ -308,7 +468,7 @@ fun BaytulIlmApp() {
                         val targetRoute = when {
                             isFirstLaunch -> Screen.LanguageSelection.route
                             currentUser != null && !currentUser.isEmailVerified -> Screen.EmailVerification.route
-                            currentUser != null && currentUser.isEmailVerified -> Screen.Home.route
+                            currentUser != null -> Screen.Home.route
                             else -> Screen.Login.route
                         }
                         navController.navigate(targetRoute) {
@@ -346,24 +506,18 @@ fun BaytulIlmApp() {
                     val userState by authViewModel.userState.collectAsState()
                     val currentUser = runCatching { FirebaseAuth.getInstance().currentUser }.getOrNull()
 
-                    androidx.compose.runtime.LaunchedEffect(currentUser, currentUser?.isEmailVerified) {
+                    androidx.compose.runtime.LaunchedEffect(currentUser?.uid, currentUser?.isEmailVerified) {
                         if (currentUser != null && !currentUser.isEmailVerified) {
                             navController.navigate(Screen.EmailVerification.route) {
-                                popUpTo(Screen.Home.route) { inclusive = true }
-                            }
-                        } else if (currentUser == null) {
-                            navController.navigate(Screen.Login.route) {
                                 popUpTo(Screen.Home.route) { inclusive = true }
                             }
                         }
                     }
 
-                    if (currentUser != null && currentUser.isEmailVerified) {
-                        HomeScreen(
-                            viewModel = mainViewModel,
-                            onNavigate = { route -> navController.navigate(route) }
-                        )
-                    }
+                    HomeScreen(
+                        viewModel = mainViewModel,
+                        onNavigate = { route -> navController.navigate(route) }
+                    )
                 }
 
                 composable(Screen.Library.route) {
@@ -381,6 +535,7 @@ fun BaytulIlmApp() {
                 }
 
                 composable(Screen.Quiz.route) {
+                    val quizViewModel: QuizViewModel = viewModel()
                     QuizScreen(
                         viewModel = quizViewModel,
                         onNavigate = { route -> navController.navigate(route) }
@@ -388,13 +543,95 @@ fun BaytulIlmApp() {
                 }
 
                 composable(Screen.AiAssistant.route) {
+                    val aiViewModel: AiViewModel = viewModel()
                     AiAssistantScreen(aiViewModel = aiViewModel, mainViewModel = mainViewModel)
                 }
 
                 composable(Screen.AiTeacher.route) {
+                    val aiViewModel: AiViewModel = viewModel()
                     AiTeacherScreen(
                         aiViewModel = aiViewModel,
                         mainViewModel = mainViewModel,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.AsmaUlHusna.route) {
+                    AsmaUlHusnaScreen(onNavigateBack = { navController.popBackStack() })
+                }
+                composable(Screen.AsmaUnNabi.route) {
+                    AsmaUnNabiScreen(onNavigateBack = { navController.popBackStack() })
+                }
+                composable(Screen.HaramainLive.route) {
+                    HaramainLiveScreen(
+                        onNavigateBack = {
+                            if (navController.previousBackStackEntry != null) {
+                                navController.popBackStack()
+                            }
+                        },
+                        isTopLevel = true,
+                        onFullscreenChange = { isLiveFullscreen = it }
+                    )
+                }
+                composable(Screen.IslamicCalendar.route) {
+                    IslamicCalendarScreen(onNavigateBack = { navController.popBackStack() })
+                }
+                composable(Screen.QiblaCompass.route) {
+                    QiblaCompassScreen(onNavigateBack = { navController.popBackStack() })
+                }
+                composable(Screen.Tasbeeh.route) {
+                    TasbeehScreen(onNavigateBack = { navController.popBackStack() })
+                }
+                composable(Screen.QuranPak.route) {
+                    QuranScreen(
+                        onNavigate = { route -> navController.navigate(route) },
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.DuaBook.route) {
+                    FamousDuasScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.FamousDuas.route) {
+                    FamousDuasScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.Tafaseer.route) {
+                    TafseerScreen(
+                        onNavigate = { route -> navController.navigate(route) },
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.TafseerDetail.route) { backStackEntry ->
+                    val tafseerId = backStackEntry.arguments?.getString("tafseerId") ?: ""
+                    TafseerDetailScreen(
+                        tafseerId = tafseerId,
+                        onNavigate = { route -> navController.navigate(route) },
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.Fatawa.route) {
+                    FatawaScreen(
+                        onNavigate = { route -> navController.navigate(route) },
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.FatawaDetail.route) { backStackEntry ->
+                    val fatawaId = backStackEntry.arguments?.getString("fatawaId") ?: ""
+                    FatawaDetailScreen(
+                        fatawaId = fatawaId,
+                        onNavigate = { route -> navController.navigate(route) },
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.Lughat.route) {
+                    LughatScreen(
+                        onNavigate = { route -> navController.navigate(route) },
                         onNavigateBack = { navController.popBackStack() }
                     )
                 }
@@ -403,7 +640,15 @@ fun BaytulIlmApp() {
                     ProfileScreen(
                         viewModel = mainViewModel,
                         authViewModel = authViewModel,
-                        onNavigate = { route -> navController.navigate(route) }
+                        onNavigate = { route ->
+                            if (route == Screen.Login.route) {
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            } else {
+                                navController.navigate(route)
+                            }
+                        }
                     )
                 }
 
@@ -414,18 +659,33 @@ fun BaytulIlmApp() {
                         onLoginSuccess = {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Login.route) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                     )
                 }
 
                 composable(Screen.Register.route) {
-                    RegisterScreen(
+                    SignupScreen(
                         authViewModel = authViewModel,
                         onNavigate = { route -> navController.navigate(route) },
-                        onRegisterSuccess = {
+                        onSignupSuccess = {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Register.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+
+                composable(Screen.Signup.route) {
+                    SignupScreen(
+                        authViewModel = authViewModel,
+                        onNavigate = { route -> navController.navigate(route) },
+                        onSignupSuccess = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Signup.route) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                     )
@@ -445,10 +705,21 @@ fun BaytulIlmApp() {
                     )
                 }
 
-                composable(Screen.DarjaDetail.route) { backStackEntry ->
+                composable(
+                    route = Screen.DarjaDetail.route,
+                    arguments = listOf(
+                        androidx.navigation.navArgument("darjaName") { type = androidx.navigation.NavType.StringType },
+                        androidx.navigation.navArgument("mode") {
+                            type = androidx.navigation.NavType.StringType
+                            defaultValue = "all"
+                        }
+                    )
+                ) { backStackEntry ->
                     val darjaName = backStackEntry.arguments?.getString("darjaName") ?: ""
+                    val initialMode = backStackEntry.arguments?.getString("mode") ?: "all"
                     BooksScreen(
                         darjaId = darjaName,
+                        initialMode = initialMode,
                         viewModel = mainViewModel,
                         onNavigate = { route -> navController.navigate(route) },
                         onBack = { navController.popBackStack() }
@@ -526,11 +797,20 @@ fun BaytulIlmApp() {
                 }
 
                 composable(Screen.Settings.route) {
-                    SettingsScreen(authViewModel = authViewModel)
+                    SettingsScreen(
+                        authViewModel = authViewModel,
+                        onNavigate = { route -> navController.navigate(route) }
+                    )
                 }
 
                 composable(Screen.About.route) {
                     AboutContactScreen()
+                }
+
+                composable(Screen.PrivacyPolicy.route) {
+                    PrivacyPolicyScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
                 }
 
                 // Student Dashboard & LMS Routes
@@ -616,6 +896,7 @@ fun BaytulIlmApp() {
                 }
 
                 composable(Screen.OcrAssistant.route) {
+                    val aiViewModel: AiViewModel = viewModel()
                     OcrAssistantScreen(
                         aiViewModel = aiViewModel,
                         onNavigateBack = { navController.popBackStack() }
@@ -687,8 +968,133 @@ fun BaytulIlmApp() {
                     AdminSecurityScreen(viewModel = mainViewModel)
                 }
             }
+
+            AnimatedVisibility(
+                visible = !isLiveFullscreen && (isPrayerPlaying || prayerAlertText != null),
+                enter = fadeIn() + slideInVertically { -it },
+                exit = fadeOut() + slideOutVertically { -it },
+                modifier = Modifier
+                    .align(androidx.compose.ui.Alignment.TopCenter)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                androidx.compose.material3.Surface(
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    shape = RoundedCornerShape(16.dp),
+                    shadowElevation = 8.dp,
+                    tonalElevation = 6.dp,
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "Allahu Akbar Prayer Alert",
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            androidx.compose.foundation.layout.Column {
+                                Text(
+                                    text = "اللهُ أَكْبَرُ - وقتِ نماز داخل ہو گیا",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                                Text(
+                                    text = prayerAlertText ?: "حی علی الصلاۃ - نماز کی تیاری کریں",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = { com.example.util.PrayerAudioNotifier.dismissAlert(context) },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "بند کریں (Dismiss)",
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            AnimatedVisibility(
+                visible = !isLiveFullscreen && (isKalimaPlaying && !isPrayerPlaying),
+                enter = fadeIn() + slideInVertically { -it },
+                exit = fadeOut() + slideOutVertically { -it },
+                modifier = Modifier
+                    .align(androidx.compose.ui.Alignment.TopCenter)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                androidx.compose.material3.Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(16.dp),
+                    shadowElevation = 6.dp,
+                    tonalElevation = 4.dp,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "Salawat Recitation",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            androidx.compose.foundation.layout.Column {
+                                Text(
+                                    text = "صَلُّوا عَلَى النَّبِيِّ ﷺ",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = "اَللّٰهُمَّ صَلِّ وَسَلِّمْ عَلَىٰ سَيِّدِنَا مُحَمَّدٍ",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = { com.example.util.KalimaShahadatPlayer.stop() },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "بند کریں (Stop)",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
+}
 }
 
 @Composable

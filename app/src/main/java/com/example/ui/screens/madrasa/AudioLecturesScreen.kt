@@ -170,6 +170,10 @@ fun AudioLecturesScreen(
                             }
                         }
                     }
+                    com.example.ui.components.CopyrightDisclaimerComponent(
+                        onContactClick = { onNavigateBack() }, // Assuming this navigation for now as a placeholder
+                        modifier = Modifier.padding(horizontal = 14.dp)
+                    )
                 }
             }
         }

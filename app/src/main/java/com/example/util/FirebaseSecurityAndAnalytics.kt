@@ -16,19 +16,30 @@ object FirebaseSecurityAndAnalytics {
 
     fun initAppCheck(context: Context) {
         try {
-            val firebaseAppCheck = FirebaseAppCheck.getInstance()
-            if (BuildConfig.DEBUG) {
-                firebaseAppCheck.installAppCheckProviderFactory(
-                    DebugAppCheckProviderFactory.getInstance()
-                )
-                Log.d(TAG, "App Check initialized with DebugAppCheckProviderFactory")
-            } else {
-                firebaseAppCheck.installAppCheckProviderFactory(
-                    PlayIntegrityAppCheckProviderFactory.getInstance()
-                )
-                Log.d(TAG, "App Check initialized with PlayIntegrityAppCheckProviderFactory")
+            val firebaseAppCheck = runCatching { FirebaseAppCheck.getInstance() }.getOrNull() ?: return
+            try {
+                if (BuildConfig.DEBUG) {
+                    firebaseAppCheck.installAppCheckProviderFactory(
+                        DebugAppCheckProviderFactory.getInstance()
+                    )
+                    Log.d(TAG, "App Check initialized with DebugAppCheckProviderFactory")
+                } else {
+                    try {
+                        firebaseAppCheck.installAppCheckProviderFactory(
+                            PlayIntegrityAppCheckProviderFactory.getInstance()
+                        )
+                        Log.d(TAG, "App Check initialized with PlayIntegrityAppCheckProviderFactory")
+                    } catch (e: Throwable) {
+                        Log.w(TAG, "PlayIntegrity failed, falling back to DebugAppCheckProviderFactory", e)
+                        firebaseAppCheck.installAppCheckProviderFactory(
+                            DebugAppCheckProviderFactory.getInstance()
+                        )
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.w(TAG, "App Check provider factory installation failed", e)
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e(TAG, "Failed to initialize Firebase App Check", e)
             FirebaseCrashlyticsLogger.logException(e, "AppCheckInitialization")
         }

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حرمین شریفین لائیو نشریات - مکہ مکرمہ و مدینہ منورہ</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Hls.js for HLS .m3u8 stream playback -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
+    body {
+      font-family: 'Noto Naskh Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #0b0f19;
+      color: #f3f4f6;
+    }
+    .gold-gradient {
+      background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #b45309 100%);
+    }
+    .gold-text {
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- Header -->
+  <header class="bg-slate-900/80 backdrop-blur border-b border-emerald-900/40 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3 space-x-reverse">
+        <div class="w-10 h-10 rounded-full bg-emerald-950 border border-amber-500/40 flex items-center justify-center text-xl shadow-lg">
+          🕋
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white flex items-center gap-2">
+            حرمین شریفین لائیو
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600/20 text-red-400 border border-red-500/30 animate-pulse">
+              ● براہِ راست
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400">سعودی قرآن و سنت ٹی وی کی 24 گھنٹے لائیو نشریات</p>
+        </div>
+      </div>
+      
+      <!-- Source Toggle / Refresh -->
+      <div class="flex items-center gap-2">
+        <button id="btnSwitchSource" onclick="switchServer()" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+          <i class="fa-solid fa-server ml-1"></i> سرور تبدیل کریں (<span id="currentServerLabel">سرور 1</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-1">
+    
+    <!-- Channel Tabs -->
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <!-- Makkah Tab -->
+      <button id="tabMakkah" onclick="selectChannel('makkah')" class="flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all duration-200 bg-slate-800/90 border-amber-500 text-white shadow-lg">
+        <span class="text-2xl">🕋</span>
+        <div class="text-right">
+          <div class="font-bold text-base">مکہ مکرمہ لائیو</div>
+          <div class="text-xs text-amber-300">سعودی قرآن ٹی وی (المسجد الحرام)</div>
+        </div>
+      </button>
+
+      <!-- Madinah Tab -->
+      <button id="tabMadinah" onclick="selectChannel('madinah')" class="flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all duration-200 bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700">
+        <span class="text-2xl">🕌</span>
+        <div class="text-right">
+          <div class="font-bold text-base">مدینہ منورہ لائیو</div>
+          <div class="text-xs text-slate-400">سعودی سنت ٹی وی (المسجد النبوی)</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Video Container -->
+    <div class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-800 group">
+      
+      <!-- HTML5 Video Element -->
+      <video id="liveVideo" class="w-full h-full object-contain" playsinline autoplay muted></video>
+
+      <!-- YouTube Iframe Fallback Container (Hidden by default) -->
+      <div id="youtubeContainer" class="hidden absolute inset-0 w-full h-full bg-black">
+        <iframe id="youtubeFrame" class="w-full h-full" src="" title="YouTube Live Stream" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div id="loadingSpinner" class="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity duration-300">
+        <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <div class="text-sm font-medium text-amber-400" id="loadingText">لائیو سٹریمنگ سے رابطہ کیا جا رہا ہے...</div>
+      </div>
+
+      <!-- Error State Overlay (Hidden by default) -->
+      <div id="errorOverlay" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-black/90 p-6 text-center">
+        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-4xl mb-3"></i>
+        <h3 class="text-lg font-bold text-white mb-1">سٹریم لوڈ نہیں ہو سکی</h3>
+        <p class="text-xs text-slate-400 max-w-md mb-4" id="errorMessage">انٹرنیٹ کنکشن چیک کریں یا متبادل سرور پر منتقل ہوں۔</p>
+        <div class="flex gap-3">
+          <button onclick="switchServer()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition">
+            متبادل سرور آزمائیں
+          </button>
+          <button onclick="openYouTubeMode()" class="bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2 rounded-lg text-xs transition">
+            یوٹیوب لائیو پلیئر کھولیں
+          </button>
+        </div>
+      </div>
+
+      <!-- Video Control Bar Overlay (Appears on Hover) -->
+      <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between text-white">
+        <div class="flex items-center gap-3">
+          <button onclick="togglePlay()" id="btnPlayPause" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
+            <i class="fa-solid fa-pause"></i>
+          </button>
+          <button onclick="toggleMute()" id="btnMute" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
+            <i class="fa-solid fa-volume-xmark"></i>
+          </button>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded bg-red-600 text-white">LIVE</span>
+          <span id="videoTitleLabel" class="text-xs text-slate-300 font-medium">مکہ مکرمہ - المسجد الحرام</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="reloadStream()" title="ریلوڈ کریں" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <button onclick="toggleFullscreen()" title="فل اسکرین" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Card -->
+    <div class="mt-5 bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-lg">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 id="channelHeading" class="text-lg font-bold text-white mb-1">مکہ مکرمہ Live - المسجد الحرام</h2>
+          <p id="channelDesc" class="text-sm text-slate-300 leading-relaxed">
+            سعودی قرآن ٹی وی - بیت اللہ شریف سے 24 گھنٹے براہِ راست نشریات و تلاوتِ کلامِ پاک
+          </p>
+        </div>
+        <a id="btnExternalYouTube" href="https://www.youtube.com/@SaudiQuranTv/live" target="_blank" rel="noopener noreferrer" class="hidden sm:flex items-center gap-2 text-xs bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/30 px-3 py-2 rounded-lg transition">
+          <i class="fa-brands fa-youtube text-base"></i> یوٹیوب آفیشل چینل
+        </a>
+      </div>
+
+      <!-- Quick Server Selector Badges -->
+      <div class="mt-4 pt-4 border-t border-slate-800 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+        <span>براہِ راست سرورز:</span>
+        <button onclick="setSourceIndex(0)" id="srvBadge0" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-medium">
+          سرور 1 (Akamai HLS)
+        </button>
+        <button onclick="setSourceIndex(1)" id="srvBadge1" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700">
+          سرور 2 (Saudi Gov CDN)
+        </button>
+        <button onclick="openYouTubeMode()" id="srvBadgeYT" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700">
+          یوٹیوب متبادل
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-950 border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
+    حرمین شریفین لائیو سٹریمنگ - بیت اللہ الحرام و مسجد نبوی شریف
+  </footer>
+
+  <!-- Streaming Logic Script -->
+  <script>
+    const CHANNELS = {
+      makkah: {
+        title: "مکہ مکرمہ Live - المسجد الحرام",
+        desc: "سعودی قرآن ٹی وی - بیت اللہ شریف سے 24 گھنٹے براہِ راست نشریات و تلاوتِ کلامِ پاک",
+        youtube: "https://www.youtube.com/@SaudiQuranTv/live",
+        youtubeEmbed: "https://www.youtube-nocookie.com/embed/live_stream?channel=UC8scK_R8H3s_fL4D1eLpM4w&autoplay=1",
+        sources: [
+          "https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8",
+          "https://m.live.net.sa:1935/live/quran/playlist.m3u8",
+          "https://m.live.net.sa:1935/live/quran/gmswf.m3u8"
+        ]
+      },
+      madinah: {
+        title: "مدینہ منورہ Live - المسجد النبوی",
+        desc: "سعودی سنت ٹی وی - روضۂ رسول ﷺ اور مسجدِ نبوی سے 24 گھنٹے براہِ راست نشریات و احادیثِ مبارکہ",
+        youtube: "https://www.youtube.com/@SaudiSunnahTv/live",
+        youtubeEmbed: "https://www.youtube-nocookie.com/embed/live_stream?channel=UCy2_N9V6bF8Q_RjA7G-2zCw&autoplay=1",
+        sources: [
+          "https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8",
+          "https://m.live.net.sa:1935/live/sunnah/playlist.m3u8",
+          "https://m.live.net.sa:1935/live/sunnah/gmswf.m3u8"
+        ]
+      }
+    };
+
+    let currentChannelKey = 'makkah';
+    let currentSourceIndex = 0;
+    let hls = null;
+    const video = document.getElementById('liveVideo');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const errorOverlay = document.getElementById('errorOverlay');
+    const youtubeContainer = document.getElementById('youtubeContainer');
+    const youtubeFrame = document.getElementById('youtubeFrame');
+
+    function initPlayer() {
+      const channel = CHANNELS[currentChannelKey];
+      const streamUrl = channel.sources[currentSourceIndex];
+
+      // Hide error & YouTube, show loading
+      errorOverlay.classList.add('hidden');
+      youtubeContainer.classList.add('hidden');
+      loadingSpinner.classList.remove('hidden');
+      document.getElementById('loadingText').innerText = "سٹریم لوڈ کی جا رہی ہے...";
+
+      // Destroy previous hls instance
+      if (hls) {
+        hls.destroy();
+        hls = null;
+      }
+
+      // Check if HLS.js is supported
+      if (Hls.isSupported()) {
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 90
+        });
+
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play().catch(() => {
+            console.log("Autoplay was prevented, click to play");
+          });
+          loadingSpinner.classList.add('hidden');
+        });
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            console.warn('HLS Fatal Error:', data.type);
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                // Auto switch to next server
+                if (currentSourceIndex < channel.sources.length - 1) {
+                  console.log("Network error, trying backup server...");
+                  currentSourceIndex++;
+                  initPlayer();
+                } else {
+                  showError("سٹریمنگ سرور سے رابطہ نہیں ہو سکا۔");
+                }
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                hls.recoverMediaError();
+                break;
+              default:
+                hls.destroy();
+                showError("سٹریمنگ میں غیر متوقع خرابی پیش آئی۔");
+                break;
+            }
+          }
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native Safari / iOS HLS support
+        video.src = streamUrl;
+        video.addEventListener('loadedmetadata', function () {
+          video.play();
+          loadingSpinner.classList.add('hidden');
+        });
+        video.addEventListener('error', function () {
+          showError("سٹریم پلے بیک میں مسئلہ ہے۔");
+        });
+      } else {
+        showError("آپ کا براؤزر HLS ویڈیو فارمیٹ سپورٹ نہیں کرتا۔");
+      }
+
+      updateUI();
+    }
+
+    function showError(msg) {
+      loadingSpinner.classList.add('hidden');
+      errorOverlay.classList.remove('hidden');
+      document.getElementById('errorMessage').innerText = msg;
+    }
+
+    function selectChannel(key) {
+      if (currentChannelKey === key) return;
+      currentChannelKey = key;
+      currentSourceIndex = 0;
+      initPlayer();
+    }
+
+    function switchServer() {
+      const channel = CHANNELS[currentChannelKey];
+      currentSourceIndex = (currentSourceIndex + 1) % channel.sources.length;
+      initPlayer();
+    }
+
+    function setSourceIndex(idx) {
+      currentSourceIndex = idx;
+      initPlayer();
+    }
+
+    function openYouTubeMode() {
+      const channel = CHANNELS[currentChannelKey];
+      if (hls) {
+        hls.destroy();
+        hls = null;
+      }
+      video.pause();
+      errorOverlay.classList.add('hidden');
+      loadingSpinner.classList.add('hidden');
+      youtubeContainer.classList.remove('hidden');
+      youtubeFrame.src = channel.youtubeEmbed;
+    }
+
+    function reloadStream() {
+      initPlayer();
+    }
+
+    function togglePlay() {
+      if (video.paused) {
+        video.play();
+        document.getElementById('btnPlayPause').innerHTML = '<i class="fa-solid fa-pause"></i>';
+      } else {
+        video.pause();
+        document.getElementById('btnPlayPause').innerHTML = '<i class="fa-solid fa-play"></i>';
+      }
+    }
+
+    function toggleMute() {
+      video.muted = !video.muted;
+      const btn = document.getElementById('btnMute');
+      if (video.muted) {
+        btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+      }
+    }
+
+    function toggleFullscreen() {
+      const container = video.parentElement;
+      if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function updateUI() {
+      const channel = CHANNELS[currentChannelKey];
+      
+      // Update Tab Styles
+      const tabMakkah = document.getElementById('tabMakkah');
+      const tabMadinah = document.getElementById('tabMadinah');
+
+      if (currentChannelKey === 'makkah') {
+        tabMakkah.className = "flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all duration-200 bg-slate-800/90 border-amber-500 text-white shadow-lg";
+        tabMadinah.className = "flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all duration-200 bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700";
+      } else {
+        tabMadinah.className = "flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all duration-200 bg-slate-800/90 border-amber-500 text-white shadow-lg";
+        tabMakkah.className = "flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all duration-200 bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700";
+      }
+
+      // Update Titles
+      document.getElementById('videoTitleLabel').innerText = channel.title;
+      document.getElementById('channelHeading').innerText = channel.title;
+      document.getElementById('channelDesc').innerText = channel.desc;
+      document.getElementById('btnExternalYouTube').href = channel.youtube;
+      document.getElementById('currentServerLabel').innerText = `سرور ${currentSourceIndex + 1}`;
+
+      // Update Server Badges
+      const b0 = document.getElementById('srvBadge0');
+      const b1 = document.getElementById('srvBadge1');
+      if (currentSourceIndex === 0) {
+        b0.className = "px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-medium";
+        b1.className = "px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700";
+      } else {
+        b1.className = "px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-medium";
+        b0.className = "px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700";
+      }
+    }
+
+    // Initialize player on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      initPlayer();
+    });
+  </script>
+</body>
+</html>

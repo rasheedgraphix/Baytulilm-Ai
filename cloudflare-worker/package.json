@@ -1,0 +1,14 @@
+{
+  "name": "baytul-ilm-ai-proxy",
+  "version": "1.4.1",
+  "description": "Secure, 100% Free Cloudflare Worker Server-Side Proxy for Gemini API",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "secret:put": "wrangler secret put GEMINI_API_KEY"
+  },
+  "devDependencies": {
+    "wrangler": "^3.109.2"
+  }
+}

@@ -35,13 +35,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
 import com.example.util.LocalAppLanguage
+import com.example.util.lStr
 
 @Composable
 fun BookmarksScreen(
     viewModel: MainViewModel,
     onNavigate: (String) -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val appLanguage = LocalAppLanguage.current
+    val langCode = appLanguage.code
+    val isRtl = appLanguage.isRtl
     val bookmarkedBooks by viewModel.bookmarkedBooks.collectAsStateWithLifecycle()
     val pageBookmarks by viewModel.allBookmarks.collectAsStateWithLifecycle()
 
@@ -58,13 +61,18 @@ fun BookmarksScreen(
         ) {
             Column {
                 Text(
-                    text = if (isUrdu) "محفوظ کردہ بک مارکس اور نوٹس" else "Saved Bookmarks & Notes",
+                    text = lStr("bookmarks_and_notes"),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
+                val subtitle = when (langCode) {
+                    "ps" -> "نښه شوو پاڼو او زدوکړې یادښتونو ته چټک لاسرسی"
+                    "ur" -> "محفوظ شدہ صفحات اور تعلیمی نوٹس تک فوری رسائی"
+                    else -> "Quick access to your saved pages and study notes"
+                }
                 Text(
-                    text = if (isUrdu) "محفوظ شدہ صفحات اور تعلیمی نوٹس تک فوری رسائی" else "Quick access to your saved pages and study notes",
+                    text = subtitle,
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )
@@ -78,8 +86,13 @@ fun BookmarksScreen(
                     .padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
+                val emptyText = when (langCode) {
+                    "ps" -> "تر اوسه هیڅ بک مارک نه دی خوندي شوی. د کتاب لوستلو پر مهال د بک مارک په آئیکن کلیک وکړئ."
+                    "ur" -> "ابھی تک کوئی بک مارک محفوظ نہیں ہوا۔ کتاب پڑھتے وقت بک مارک آئیکن پر ٹیپ کریں"
+                    else -> "No bookmarks saved yet. Tap the bookmark icon while reading a book to save it here."
+                }
                 Text(
-                    text = if (isUrdu) "ابھی تک کوئی بک مارک محفوظ نہیں ہوا۔ کتاب پڑھتے وقت بک مارک آئیکن پر ٹیپ کریں" else "No bookmarks saved yet. Tap the bookmark icon while reading a book to save it here.",
+                    text = emptyText,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -91,8 +104,13 @@ fun BookmarksScreen(
             ) {
                 if (pageBookmarks.isNotEmpty()) {
                     item {
+                        val headerText = when (langCode) {
+                            "ps" -> "د پاڼې بک مارکونه او درسي یادښتونه"
+                            "ur" -> "صفحہ کے بک مارکس اور تعلیمی نوٹس"
+                            else -> "Page Bookmarks & Study Notes"
+                        }
                         Text(
-                            text = if (isUrdu) "صفحہ کے بک مارکس اور تعلیمی نوٹس" else "Page Bookmarks & Study Notes",
+                            text = headerText,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -115,7 +133,7 @@ fun BookmarksScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Bookmark,
-                                    contentDescription = if (isUrdu) "بک مارک" else "Bookmark",
+                                    contentDescription = lStr("bookmarks"),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -125,8 +143,13 @@ fun BookmarksScreen(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp
                                     )
+                                    val noteText = when (langCode) {
+                                        "ps" -> "پاڼه ${bm.pageNumber} • یادښت: ${bm.note}"
+                                        "ur" -> "صفحہ ${bm.pageNumber} • نوٹ: ${bm.note}"
+                                        else -> "Page ${bm.pageNumber} • Note: ${bm.note}"
+                                    }
                                     Text(
-                                        text = if (isUrdu) "صفحہ ${bm.pageNumber} • نوٹ: ${bm.note}" else "Page ${bm.pageNumber} • Note: ${bm.note}",
+                                        text = noteText,
                                         fontSize = 12.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

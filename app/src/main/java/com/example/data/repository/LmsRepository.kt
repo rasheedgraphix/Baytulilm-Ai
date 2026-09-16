@@ -47,7 +47,7 @@ class LmsRepository {
         )
     )
     val studentProgress: StateFlow<StudentProgress> = _studentProgress.asStateFlow()
-
+    
     private val _studentNotes = MutableStateFlow(
         listOf(
             StudentNoteDoc(

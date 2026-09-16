@@ -1,5 +1,6 @@
 package com.example.ui.screens.auth
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -106,7 +107,10 @@ fun LoginScreen(
                     "Google Sign-In failed: ${e.localizedMessage}"
                 }
                 authViewModel.setAuthError(msg)
-            } catch (e: Exception) {
+            } catch (e: SecurityException) {
+                android.util.Log.e("LoginScreen", "Google Play Services SecurityException: ${e.message}", e)
+                authViewModel.setAuthError("Google Play Services is not available or account is not signed in on this device/preview. Please use Email/Password sign in.")
+            } catch (e: Throwable) {
                 android.util.Log.e("LoginScreen", "Google Sign-In error: ${e.message}", e)
                 authViewModel.setAuthError(e.localizedMessage ?: "Google Sign-In failed.")
             }
@@ -123,21 +127,8 @@ fun LoginScreen(
     LaunchedEffect(authState) {
         android.util.Log.d("LoginScreen", "Current AuthState: $authState")
         if (authState is AuthResultState.Success) {
-            val currentUser = runCatching { FirebaseAuth.getInstance().currentUser }.getOrNull()
-            if (currentUser != null) {
-                currentUser.reload().addOnCompleteListener {
-                    val reloadedUser = FirebaseAuth.getInstance().currentUser
-                    if (reloadedUser != null && !reloadedUser.isEmailVerified) {
-                        showUnverifiedDialog = true
-                    } else {
-                        onLoginSuccess()
-                        authViewModel.resetState()
-                    }
-                }
-            } else {
-                onLoginSuccess()
-                authViewModel.resetState()
-            }
+            onLoginSuccess()
+            authViewModel.resetState()
         } else if (authState is AuthResultState.Error) {
             android.util.Log.d("LoginScreen", "Firebase failure: ${(authState as AuthResultState.Error).errorMessage}")
         }
@@ -323,12 +314,16 @@ fun LoginScreen(
                 // Email Input
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        if (authState is AuthResultState.Error) authViewModel.resetState()
+                    },
                     label = { Text(lStr("email_address")) },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
+                    enabled = authState !is AuthResultState.Loading,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
 
@@ -337,7 +332,10 @@ fun LoginScreen(
                 // Password Input
                 OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        if (authState is AuthResultState.Error) authViewModel.resetState()
+                    },
                     label = { Text(lStr("password")) },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") },
                     trailingIcon = {
@@ -352,6 +350,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
+                    enabled = authState !is AuthResultState.Loading,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                 )
 
@@ -365,11 +364,12 @@ fun LoginScreen(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { rememberMe = !rememberMe }
+                        modifier = Modifier.clickable(enabled = authState !is AuthResultState.Loading) { rememberMe = !rememberMe }
                     ) {
                         Checkbox(
                             checked = rememberMe,
-                            onCheckedChange = { rememberMe = it }
+                            onCheckedChange = { rememberMe = it },
+                            enabled = authState !is AuthResultState.Loading
                         )
                         Text(
                             text = lStr("remember_me"),
@@ -384,7 +384,7 @@ fun LoginScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .clickable { onNavigate(Screen.ForgotPassword.route) }
+                            .clickable(enabled = authState !is AuthResultState.Loading) { onNavigate(Screen.ForgotPassword.route) }
                             .padding(vertical = 8.dp)
                     )
                 }
@@ -394,41 +394,62 @@ fun LoginScreen(
                 // Status / Error Message
                 when (val state = authState) {
                     is AuthResultState.Error -> {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 12.dp)
                         ) {
-                            Text(
-                                text = state.errorMessage,
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = {
-                                    android.util.Log.d("LoginScreen", "User manually dismissed error")
-                                    authViewModel.resetState()
-                                },
-                                modifier = Modifier.size(24.dp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Dismiss error",
-                                    tint = MaterialTheme.colorScheme.error
+                                Text(
+                                    text = state.errorMessage,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.weight(1f)
                                 )
+                                IconButton(
+                                    onClick = {
+                                        android.util.Log.d("LoginScreen", "User manually dismissed error")
+                                        authViewModel.resetState()
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Dismiss error",
+                                        tint = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
                             }
                         }
                     }
                     is AuthResultState.Loading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(28.dp),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.5.dp
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Signing in...",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     else -> {}
                 }
@@ -436,9 +457,25 @@ fun LoginScreen(
                 // Email Login Button
                 Button(
                     onClick = {
-                        android.util.Log.d("LoginScreen", "Button clicked: Sign In with email=$email")
-                        authViewModel.loginWithEmail(email, password, rememberMe)
+                        if (authState is AuthResultState.Loading) return@Button
+                        val trimmedEmail = email.trim()
+                        val trimmedPass = password.trim()
+                        if (trimmedEmail.isBlank()) {
+                            authViewModel.setAuthError("Please enter your email address.")
+                            return@Button
+                        }
+                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+                            authViewModel.setAuthError("Please enter a valid email address.")
+                            return@Button
+                        }
+                        if (trimmedPass.isBlank()) {
+                            authViewModel.setAuthError("Please enter your password.")
+                            return@Button
+                        }
+                        android.util.Log.d("LoginScreen", "Button clicked: Sign In with email=$trimmedEmail")
+                        authViewModel.loginWithEmail(trimmedEmail, trimmedPass, rememberMe)
                     },
+                    enabled = authState !is AuthResultState.Loading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -489,18 +526,54 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Register Navigation Link
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
                         text = lStr("dont_have_account_q"),
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = lStr("sign_up"),
-                        fontSize = 13.sp,
+                        fontSize = 13.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable { onNavigate(Screen.Register.route) }
+                        modifier = Modifier
+                            .clickable { onNavigate(Screen.Register.route) }
+                            .padding(4.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Continue as Guest button
+                TextButton(
+                    onClick = {
+                        authViewModel.continueAsGuest()
+                        onLoginSuccess()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Visibility,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "مہمان کے طور پر جاری رکھیں / Explore as Guest",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.outline,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }

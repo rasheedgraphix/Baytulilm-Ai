@@ -43,13 +43,18 @@ import com.example.data.repository.AuthResultState
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.AuthViewModel
 
+import androidx.compose.material3.CircularProgressIndicator
+import com.example.util.lStr
+
 @Composable
 fun ForgotPasswordScreen(
     authViewModel: AuthViewModel,
     onNavigate: (String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf("") }
     val authState by authViewModel.authResult.collectAsStateWithLifecycle()
+    val invalidEmailMsg = lStr("error_invalid_email")
 
     Column(
         modifier = Modifier
@@ -74,14 +79,14 @@ fun ForgotPasswordScreen(
 
                 Column(modifier = Modifier.padding(start = 8.dp)) {
                     Text(
-                        text = "Reset Password",
+                        text = lStr("reset_password"),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
 
                     Text(
-                        text = "We will send instructions to your email",
+                        text = lStr("reset_password_desc"),
                         fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.85f)
                     )
@@ -104,7 +109,7 @@ fun ForgotPasswordScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Enter Account Email",
+                    text = lStr("enter_account_email"),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -114,8 +119,11 @@ fun ForgotPasswordScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Registered Email Address") },
+                    onValueChange = {
+                        email = it
+                        localError = ""
+                    },
+                    label = { Text(lStr("registered_email_address")) },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -125,47 +133,73 @@ fun ForgotPasswordScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                when (val state = authState) {
-                    is AuthResultState.Success -> {
-                        Text(
-                            text = state.message,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(bottom = 14.dp)
-                        )
+                if (localError.isNotEmpty()) {
+                    Text(
+                        text = localError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(bottom = 14.dp)
+                    )
+                } else {
+                    when (val state = authState) {
+                        is AuthResultState.Success -> {
+                            Text(
+                                text = state.message,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(bottom = 14.dp)
+                            )
+                        }
+                        is AuthResultState.Error -> {
+                            Text(
+                                text = state.errorMessage,
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(bottom = 14.dp)
+                            )
+                        }
+                        else -> {}
                     }
-                    is AuthResultState.Error -> {
-                        Text(
-                            text = state.errorMessage,
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 13.sp,
-                            modifier = Modifier.padding(bottom = 14.dp)
-                        )
-                    }
-                    else -> {}
                 }
 
                 Button(
-                    onClick = { authViewModel.sendPasswordReset(email) },
+                    onClick = {
+                        val trimmedEmail = email.trim()
+                        if (trimmedEmail.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+                            localError = invalidEmailMsg
+                        } else {
+                            localError = ""
+                            authViewModel.sendPasswordReset(trimmedEmail)
+                        }
+                    },
+                    enabled = authState !is AuthResultState.Loading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text(
-                        text = "Send Reset Link",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    if (authState is AuthResultState.Loading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.padding(4.dp)
+                        )
+                    } else {
+                        Text(
+                            text = lStr("send_reset_link"),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = "Back to Sign In",
+                    text = lStr("back_to_sign_in"),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,

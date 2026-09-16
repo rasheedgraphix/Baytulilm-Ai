@@ -1,5 +1,7 @@
 package com.example.data.repository
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import com.example.data.model.ComprehensiveQuizQuestion
 import com.example.data.model.CertificateInfo
@@ -17,6 +19,8 @@ import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.json.JSONArray
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -24,12 +28,16 @@ import java.util.UUID
 
 data class ChapterResultOutcome(
     val percentage: Float,
-    val isPassed: Boolean, // score >= 90%
+    val isPassed: Boolean, // score >= 80%
     val isNextChapterUnlocked: Boolean,
     val unlockedChapterNumber: Int?
 )
 
-class QuizRepository {
+class QuizRepository(private val context: Context? = null) {
+
+    private val prefs: SharedPreferences? by lazy {
+        context?.getSharedPreferences("baytulilm_quiz_progress_prefs", Context.MODE_PRIVATE)
+    }
 
     private val geminiRepository = GeminiRepository()
 
@@ -42,14 +50,14 @@ class QuizRepository {
     private val listeners = mutableListOf<ListenerRegistration>()
 
     private val _chapterProgressMap = MutableStateFlow<Map<String, List<ChapterProgress>>>(
-        initChapterProgressMap()
+        loadChapterProgressMap()
     )
     val chapterProgressMap: StateFlow<Map<String, List<ChapterProgress>>> = _chapterProgressMap.asStateFlow()
 
     private val _quizzesFlow = MutableStateFlow<List<QuizSet>>(initialQuizzes())
     val quizzesFlow: StateFlow<List<QuizSet>> = _quizzesFlow.asStateFlow()
 
-    private val _resultsFlow = MutableStateFlow<List<QuizResultRecord>>(initialResults())
+    private val _resultsFlow = MutableStateFlow<List<QuizResultRecord>>(loadSavedResults())
     val resultsFlow: StateFlow<List<QuizResultRecord>> = _resultsFlow.asStateFlow()
 
     private val _bookmarksFlow = MutableStateFlow<List<ComprehensiveQuizQuestion>>(emptyList())
@@ -88,7 +96,9 @@ class QuizRepository {
                         runCatching { doc.toObject(QuizResultRecord::class.java) }.getOrNull()
                     }
                     if (results.isNotEmpty()) {
-                        _resultsFlow.value = results
+                        val merged = (results + _resultsFlow.value).distinctBy { it.id }
+                        _resultsFlow.value = merged
+                        saveResultsToPrefs(merged)
                     }
                 }
             }
@@ -96,22 +106,39 @@ class QuizRepository {
         }
     }
 
-    private fun initChapterProgressMap(): Map<String, List<ChapterProgress>> {
+    private fun loadChapterProgressMap(): Map<String, List<ChapterProgress>> {
         val map = mutableMapOf<String, List<ChapterProgress>>()
+        val p = prefs
         listOf("beginner", "medium", "advanced", "expert").forEach { diff ->
-            val chapters = (1..50).map { ch ->
+            var previousPassed = false
+            val chapters = (1..10).map { ch ->
+                val isFirst = (ch == 1)
+                val savedUnlocked = p?.getBoolean("ch_unlocked_${diff}_$ch", isFirst) ?: isFirst
+                val savedCompleted = p?.getBoolean("ch_completed_${diff}_$ch", false) ?: false
+                val savedScore = p?.getInt("ch_score_${diff}_$ch", 0) ?: 0
+                val savedPct = p?.getFloat("ch_pct_${diff}_$ch", 0f) ?: 0f
+                val savedAttempts = p?.getInt("ch_attempts_${diff}_$ch", 0) ?: 0
+                val savedCorrect = p?.getInt("ch_correct_${diff}_$ch", 0) ?: 0
+                val savedAnswered = p?.getInt("ch_answered_${diff}_$ch", 0) ?: 0
+                val savedAccuracy = p?.getFloat("ch_accuracy_${diff}_$ch", 0f) ?: 0f
+                val savedTime = p?.getLong("ch_time_${diff}_$ch", 0L) ?: 0L
+
+                val isUnlocked = isFirst || savedUnlocked || previousPassed || (savedPct >= 80f)
+                val isCompleted = savedCompleted || (savedPct >= 80f)
+                previousPassed = isCompleted
+
                 ChapterProgress(
                     difficulty = diff,
                     chapterNumber = ch,
-                    isUnlocked = (ch == 1),
-                    isCompleted = false,
-                    highestScore = 0,
-                    highestPercentage = 0f,
-                    attempts = 0,
-                    totalCorrect = 0,
-                    totalQuestionsAnswered = 0,
-                    accuracyPercentage = 0f,
-                    timeTakenSeconds = 0
+                    isUnlocked = isUnlocked,
+                    isCompleted = isCompleted,
+                    highestScore = savedScore,
+                    highestPercentage = savedPct,
+                    attempts = savedAttempts,
+                    totalCorrect = savedCorrect,
+                    totalQuestionsAnswered = savedAnswered,
+                    accuracyPercentage = savedAccuracy,
+                    timeTakenSeconds = savedTime
                 )
             }
             map[diff] = chapters
@@ -119,20 +146,35 @@ class QuizRepository {
         return map
     }
 
+    private fun saveChapterProgress(diff: String, progress: ChapterProgress) {
+        prefs?.edit()?.apply {
+            putBoolean("ch_unlocked_${diff}_${progress.chapterNumber}", progress.isUnlocked)
+            putBoolean("ch_completed_${diff}_${progress.chapterNumber}", progress.isCompleted)
+            putInt("ch_score_${diff}_${progress.chapterNumber}", progress.highestScore)
+            putFloat("ch_pct_${diff}_${progress.chapterNumber}", progress.highestPercentage)
+            putInt("ch_attempts_${diff}_${progress.chapterNumber}", progress.attempts)
+            putInt("ch_correct_${diff}_${progress.chapterNumber}", progress.totalCorrect)
+            putInt("ch_answered_${diff}_${progress.chapterNumber}", progress.totalQuestionsAnswered)
+            putFloat("ch_accuracy_${diff}_${progress.chapterNumber}", progress.accuracyPercentage)
+            putLong("ch_time_${diff}_${progress.chapterNumber}", progress.timeTakenSeconds)
+            apply()
+        }
+    }
+
     fun getChapterProgressList(difficulty: String): List<ChapterProgress> {
         val key = difficulty.lowercase()
-        return _chapterProgressMap.value[key] ?: initChapterProgressMap()[key] ?: emptyList()
+        return _chapterProgressMap.value[key] ?: loadChapterProgressMap()[key] ?: emptyList()
     }
 
     fun getQuestionsForChapter(difficulty: String, chapterNumber: Int): List<ComprehensiveQuizQuestion> {
-        return DarsENizamiQuizGenerator.generate50Questions(difficulty, chapterNumber)
+        return DarsENizamiQuizGenerator.generateQuestionsForChapter(difficulty, chapterNumber)
     }
 
     fun recordChapterResult(
         difficulty: String,
         chapterNumber: Int,
         score: Int,
-        totalQuestions: Int = 50,
+        totalQuestions: Int = 10,
         timeTakenSecs: Long
     ): ChapterResultOutcome {
         val key = difficulty.lowercase()
@@ -140,7 +182,7 @@ class QuizRepository {
         val index = currentList.indexOfFirst { it.chapterNumber == chapterNumber }
 
         val percentage = if (totalQuestions > 0) (score.toFloat() / totalQuestions.toFloat()) * 100f else 0f
-        val isPassed = percentage >= 90f
+        val isPassed = percentage >= 80f // 80%+ passing criteria to unlock next chapter
         var isNextChapterUnlocked = false
         var unlockedChapterNumber: Int? = null
 
@@ -154,7 +196,7 @@ class QuizRepository {
             val newAccuracy = if (newTotalAns > 0) (newTotalCorrect.toFloat() / newTotalAns.toFloat()) * 100f else 0f
             val newBestTime = if (old.timeTakenSeconds == 0L) timeTakenSecs else minOf(old.timeTakenSeconds, timeTakenSecs)
 
-            currentList[index] = old.copy(
+            val updatedChapter = old.copy(
                 isCompleted = old.isCompleted || isPassed,
                 highestScore = newHighestScore,
                 highestPercentage = newHighestPct,
@@ -164,16 +206,18 @@ class QuizRepository {
                 accuracyPercentage = newAccuracy,
                 timeTakenSeconds = newBestTime
             )
+            currentList[index] = updatedChapter
+            saveChapterProgress(key, updatedChapter)
 
-            if (isPassed && chapterNumber < 50) {
+            if (isPassed && chapterNumber < 10) {
                 val nextChapterIndex = currentList.indexOfFirst { it.chapterNumber == chapterNumber + 1 }
                 if (nextChapterIndex != -1) {
                     val nextChapter = currentList[nextChapterIndex]
-                    if (!nextChapter.isUnlocked) {
-                        currentList[nextChapterIndex] = nextChapter.copy(isUnlocked = true)
-                        isNextChapterUnlocked = true
-                        unlockedChapterNumber = chapterNumber + 1
-                    }
+                    val unlockedNext = nextChapter.copy(isUnlocked = true)
+                    currentList[nextChapterIndex] = unlockedNext
+                    saveChapterProgress(key, unlockedNext)
+                    isNextChapterUnlocked = true
+                    unlockedChapterNumber = chapterNumber + 1
                 }
             }
         }
@@ -181,6 +225,24 @@ class QuizRepository {
         val updatedMap = _chapterProgressMap.value.toMutableMap()
         updatedMap[key] = currentList
         _chapterProgressMap.value = updatedMap
+
+        // Also save detailed result record into local history
+        val record = QuizResultRecord(
+            id = UUID.randomUUID().toString(),
+            quizTitle = "${key.replaceFirstChar { it.uppercase() }} - Chapter $chapterNumber",
+            darja = "Dars-e-Nizami",
+            subject = "Islamic Sciences",
+            score = score,
+            totalQuestions = totalQuestions,
+            totalMarks = totalQuestions * 5,
+            percentage = percentage,
+            correctAnswers = score,
+            wrongAnswers = totalQuestions - score,
+            skippedQuestions = 0,
+            timeTakenSeconds = timeTakenSecs,
+            rank = if (percentage >= 90f) "ممتاز (Excellent)" else if (percentage >= 80f) "جيد جداً (Very Good)" else "مقبول (Passed)"
+        )
+        saveResult(record)
 
         // Sync to Firestore
         val uid = auth?.currentUser?.uid ?: "user_101"
@@ -192,8 +254,20 @@ class QuizRepository {
                 "score" to score,
                 "percentage" to percentage,
                 "isPassed" to isPassed,
+                "isUnlocked" to true,
                 "timestamp" to System.currentTimeMillis()
             ), SetOptions.merge())
+
+        if (unlockedChapterNumber != null) {
+            db?.collection("users")?.document(uid)
+                ?.collection("chapter_progress")?.document("${key}_ch_$unlockedChapterNumber")
+                ?.set(mapOf(
+                    "difficulty" to key,
+                    "chapterNumber" to unlockedChapterNumber,
+                    "isUnlocked" to true,
+                    "timestamp" to System.currentTimeMillis()
+                ), SetOptions.merge())
+        }
 
         return ChapterResultOutcome(
             percentage = percentage,
@@ -219,8 +293,75 @@ class QuizRepository {
         return _quizzesFlow.value.find { it.id == id } ?: _quizzesFlow.value.firstOrNull()
     }
 
+    private fun loadSavedResults(): List<QuizResultRecord> {
+        val jsonStr = prefs?.getString("quiz_results_history_json", null)
+        if (!jsonStr.isNullOrBlank()) {
+            val list = mutableListOf<QuizResultRecord>()
+            try {
+                val array = JSONArray(jsonStr)
+                for (i in 0 until array.length()) {
+                    val obj = array.getJSONObject(i)
+                    list.add(
+                        QuizResultRecord(
+                            id = obj.optString("id", UUID.randomUUID().toString()),
+                            quizTitle = obj.optString("quizTitle", "Islamic Quiz"),
+                            darja = obj.optString("darja", "Dars-e-Nizami"),
+                            subject = obj.optString("subject", "Islamic Sciences"),
+                            score = obj.optInt("score", 0),
+                            totalQuestions = obj.optInt("totalQuestions", 10),
+                            totalMarks = obj.optInt("totalMarks", 50),
+                            percentage = obj.optDouble("percentage", 0.0).toFloat(),
+                            correctAnswers = obj.optInt("correctAnswers", 0),
+                            wrongAnswers = obj.optInt("wrongAnswers", 0),
+                            skippedQuestions = obj.optInt("skippedQuestions", 0),
+                            timeTakenSeconds = obj.optLong("timeTakenSeconds", 0L),
+                            timestamp = obj.optLong("timestamp", System.currentTimeMillis()),
+                            mode = obj.optString("mode", "Exam"),
+                            rank = obj.optString("rank", "Passed")
+                        )
+                    )
+                }
+                if (list.isNotEmpty()) return list
+            } catch (e: Exception) {
+                Log.e("QuizRepository", "Error parsing saved quiz results", e)
+            }
+        }
+        return initialResults()
+    }
+
+    private fun saveResultsToPrefs(results: List<QuizResultRecord>) {
+        try {
+            val array = JSONArray()
+            results.take(100).forEach { r ->
+                val obj = JSONObject().apply {
+                    put("id", r.id)
+                    put("quizTitle", r.quizTitle)
+                    put("darja", r.darja)
+                    put("subject", r.subject)
+                    put("score", r.score)
+                    put("totalQuestions", r.totalQuestions)
+                    put("totalMarks", r.totalMarks)
+                    put("percentage", r.percentage.toDouble())
+                    put("correctAnswers", r.correctAnswers)
+                    put("wrongAnswers", r.wrongAnswers)
+                    put("skippedQuestions", r.skippedQuestions)
+                    put("timeTakenSeconds", r.timeTakenSeconds)
+                    put("timestamp", r.timestamp)
+                    put("mode", r.mode)
+                    put("rank", r.rank)
+                }
+                array.put(obj)
+            }
+            prefs?.edit()?.putString("quiz_results_history_json", array.toString())?.apply()
+        } catch (e: Exception) {
+            Log.e("QuizRepository", "Error saving quiz results to prefs", e)
+        }
+    }
+
     fun saveResult(record: QuizResultRecord) {
-        _resultsFlow.value = listOf(record) + _resultsFlow.value
+        val updated = (listOf(record) + _resultsFlow.value).distinctBy { it.id }
+        _resultsFlow.value = updated
+        saveResultsToPrefs(updated)
         db?.collection("quiz_results")?.document(record.id)?.set(record)
 
         val uid = auth?.currentUser?.uid ?: "user_101"

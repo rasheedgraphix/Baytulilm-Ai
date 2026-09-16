@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Minute Hand pointing to 12 o'clock, pivot at (100, 100) -->
+    <!-- Tail behind pivot -->
+    <path
+        android:pathData="M 98.5,100 L 98.5,120 A 1.5,1.5 0 0,0 101.5,120 L 101.5,100 Z"
+        android:fillColor="#34D399" />
+
+    <!-- Sleek Lance Minute Hand -->
+    <path
+        android:pathData="M 98,100 L 98,35 L 100,24 L 102,35 L 102,100 Z"
+        android:fillColor="#34D399"
+        android:strokeWidth="1.5"
+        android:strokeColor="#FFFFFF" />
+
+    <!-- Center Pivot Pin Dot -->
+    <path
+        android:pathData="M 100,100 m -3, 0 a 3,3 0 1,0 6,0 a 3,3 0 1,0 -6,0"
+        android:fillColor="#FFFFFF" />
+</vector>

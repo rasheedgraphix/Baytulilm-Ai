@@ -18,12 +18,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Grade
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,11 +39,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ui.components.DarjaClassIconBadge
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
+import com.example.util.DarsNizamiMatcher
 import com.example.util.LocalAppLanguage
 import com.example.util.lStr
 
@@ -44,13 +54,35 @@ data class DarjaItemInfo(
     val id: String,
     val name: String,
     val nameUrdu: String,
+    val arabicName: String = "",
     val yearName: String,
     val yearNameUrdu: String,
+    val yearNamePashto: String = "",
     val keySubjects: String,
     val keySubjectsUrdu: String,
+    val keySubjectsPashto: String = "",
     val description: String,
-    val descriptionUrdu: String
-)
+    val descriptionUrdu: String,
+    val descriptionPashto: String = "",
+    val progress: Float = 0.25f
+) {
+    fun getDisplayName(langCode: String): String = if (langCode == "ur" || langCode == "ps") nameUrdu else name
+    fun getYearName(langCode: String): String = when (langCode) {
+        "ps" -> yearNamePashto
+        "ur" -> yearNameUrdu
+        else -> yearName
+    }
+    fun getKeySubjects(langCode: String): String = when (langCode) {
+        "ps" -> keySubjectsPashto
+        "ur" -> keySubjectsUrdu
+        else -> keySubjects
+    }
+    fun getDescription(langCode: String): String = when (langCode) {
+        "ps" -> descriptionPashto
+        "ur" -> descriptionUrdu
+        else -> description
+    }
+}
 
 @Composable
 fun DarjatScreen(
@@ -59,17 +91,17 @@ fun DarjatScreen(
 ) {
     val allBooks by viewModel.allBooks.collectAsStateWithLifecycle()
     val lang = LocalAppLanguage.current
-    val isUrdu = lang.code == "ur" || lang.isRtl
+    val langCode = lang.code
 
     val darjaList = listOf(
-        DarjaItemInfo("darja_ula", "Darja-e-Ula", "درجہ اولیٰ", "First Year", "پہلا سال", "Nahw, Sarf, Fiqh, Literature", "نحو، صرف، فقہ، ادب", "Foundation level covering basic Arabic syntax, morphology, and Mukhtasar al-Quduri.", "بنیادی درجہ جس میں عربی نحو، صرف اور مختصر القدوری کا احاطہ کیا جاتا ہے۔"),
-        DarjaItemInfo("darja_sania", "Darja-e-Sania", "درجہ ثانیہ", "Second Year", "دوسرا سال", "Nahw, Insha, Fiqh, Tajweed", "نحو، انشاء، فقہ، تجوید", "Intermediate syntax (Hidayat un Nahw) and expanded Hanafi Fiqh.", "درمیانی نحو (ہدایۃ النحو) اور تفصیلی حنفی فقہ۔"),
-        DarjaItemInfo("darja_salisa", "Darja-e-Salisa", "درجہ ثالثہ", "Third Year", "تیسرا سال", "Kafiyah, Usul Fiqh, Adab", "کافیہ، اصول فقہ، ادب", "Classical grammar theory, Usul al-Shashi, and classical Arabic eloquence.", "کلاسیکی قواعد، اصول الشاشی اور فصاحت و بلاغت۔"),
-        DarjaItemInfo("darja_rabia", "Darja-e-Rabia", "درجہ رابعہ", "Fourth Year", "چوتھا سال", "Sharh Jami, Mantiq, Fiqh", "شرح جامی، منطق، فقہ", "Advanced commentary on grammar, formal logic (Mirqat), and legal procedures.", "قواعد کی تفصیلی شرح، منطق (مرقات) اور فقہی مباحث۔"),
-        DarjaItemInfo("darja_khamisa", "Darja-e-Khamisa", "درجہ خامسہ", "Fifth Year", "پانچواں سال", "Balagha, Sharh Wiqayah, Aqeedah", "بلاغت، شرح وقایہ، عقائد", "Rhetoric (Mukhtasar al-Ma'ani), Aqeedah Tahawiyyah, and Wiqayah.", "بلاغت (مختصر المعانی)، شرح العقیدہ الطحاویہ اور وقایہ۔"),
-        DarjaItemInfo("darja_sadisa", "Class 6th", "درجہ سادسہ", "Sixth Year", "چھٹا سال", "Al-Hidayah, Usul Tafseer, Aqa'id, Siraji", "الہدایہ، اصول تفسیر، عقائد، سراجی", "Sixth Year Dars-e-Nizami (Class 6th / Darja Sadisa) curriculum.", "چھٹا سال درسِ نظامی نصاب (الہدایہ، تفسیر جلالین اور فرائض)۔"),
-        DarjaItemInfo("darja_sabia", "Darja-e-Sabi'a", "درجہ سابعہ", "Seventh Year", "ساتواں سال", "Al-Hidayah Vol 2, Mishkat, Nukhbah", "الہدایہ، مشکوۃ، نخبۃ الفکر", "Advanced comparative law, Hadith canons (Mishkat), and Hadith methodology.", "تقابلی فقہ، مشکوۃ المصابیح اور اصولِ حدیث۔"),
-        DarjaItemInfo("dora_hadith", "Dora Hadith", "دورۂ حدیث شریف", "Final Master Year", "تکمیلی سال", "Sihah Sittah (Bukhari, Muslim, Tirmidhi)", "صحاح ستہ (بخاری، مسلم، ترمذی)", "The culmination of Dars-e-Nizami with exhaustive study of the 6 major Hadith compilations.", "درسِ نظامی کا آخری سال، صحاح ستہ اور شروحات کا گہرا مطالعہ۔")
+        DarjaItemInfo("darja_ula", "Darja-e-Ula", "درجہ اولیٰ", "الصف الأول", "پہلا سال", "پہلا سال", "لومړی کال", "نحو، صرف، فقہ، ادب", "نحو، صرف، فقہ، ادب", "نحو، صرف، فقه، ادب", "Foundation level covering basic Arabic syntax, morphology, and Mukhtasar al-Quduri.", "بنیادی درجہ جس میں عربی نحو، صرف اور مختصر القدوری کا احاطہ کیا جاتا ہے۔", "بنیادي درجه چې د عربي نحو، صرف او مختصر القدوري پوښښ کوي.", 0.65f),
+        DarjaItemInfo("darja_sania", "Darja-e-Sania", "درجہ ثانیہ", "الصف الثاني", "دوسرا سال", "دوسرا سال", "دویم کال", "نحو، انشاء، فقہ، تجوید", "نحو، انشاء، فقہ، تجوید", "نحو، انشاء، فقه، تجوید", "Intermediate syntax (Hidayat un Nahw) and expanded Hanafi Fiqh.", "درمیانی نحو (ہدایۃ النحو) اور تفصیلی حنفی فقہ۔", "منځنۍ نحو (ہدایۃ النحو) او تفصیلي حنفي فقه.", 0.45f),
+        DarjaItemInfo("darja_salisa", "Darja-e-Salisa", "درجہ ثالثہ", "الصف الثالث", "تیسرا سال", "تیسرا سال", "درېیم کال", "کافیہ، اصول فقہ، ادب", "کافیہ، اصول فقہ، ادب", "کافیه، اصول فقه، ادب", "Classical grammar theory, Usul al-Shashi, and classical Arabic eloquence.", "کلاسیکی قواعد، اصول الشاشی اور فصاحت و بلاغت۔", "کلاسیکي قواعد، اصول الشاشي او فصاحت و بلاغت.", 0.30f),
+        DarjaItemInfo("darja_rabia", "Darja-e-Rabia", "درجہ رابعہ", "الصف الرابع", "چوتھا سال", "چوتھا سال", "څلورم کال", "شرح جامی، منطق، فقہ", "شرح جامی، منطق، فقہ", "شرح جامی، منطق، فقه", "Advanced commentary on grammar, formal logic (Mirqat), and legal procedures.", "قواعد کی تفصیلی شرح، منطق (مرقات) اور فقہی مباحث۔", "د ګرامر تفصیلي شرح، منطق (مرقات) او فقهي مباحث.", 0.20f),
+        DarjaItemInfo("darja_khamisa", "Darja-e-Khamisa", "درجہ خامسہ", "الصف الخامس", "پانچواں سال", "پانچواں سال", "پنځم کال", "بلاغت، شرح وقایہ، عقائد", "بلاغت، شرح وقایہ، عقائد", "بلاغت، شرح وقایه، عقائد", "Rhetoric (Mukhtasar al-Ma'ani), Aqeedah Tahawiyyah, and Wiqayah.", "بلاغت (مختصر المعانی)، شرح العقیدہ الطحاویہ اور وقایہ۔", "بلاغت (مختصر المعاني)، شرح العقیده الطحاویه او وقایه.", 0.15f),
+        DarjaItemInfo("darja_sadisa", "Class 6th", "درجہ سادسہ", "الصف السادس", "چھٹا سال", "چھٹا سال", "شپږم کال", "الہدایہ، اصول تفسیر، عقائد، سراجی", "الہدایہ، اصول تفسیر، عقائد، سراجی", "الهدایه، اصول تفسیر، عقائد، سراجي", "Sixth Year Dars-e-Nizami (Class 6th / Darja Sadisa) curriculum.", "چھٹا سال درسِ نظامی نصاب (الہدایہ، تفسیر جلالین اور فرائض)۔", "شپږم کال درس نظامي نصاب (الهدایه، تفسیر جلالین او فرائض).", 0.10f),
+        DarjaItemInfo("darja_sabia", "Darja-e-Sabi'a", "درجہ سابعہ", "الصف السابع", "ساتواں سال", "ساتواں سال", "اووم کال", "الہدایہ، مشکوۃ، نخبۃ الفکر", "الہدایہ، مشکوۃ، نخبۃ الفکر", "الهدایه، مشکوۃ، نخبۃ الفکر", "Advanced comparative law, Hadith canons (Mishkat), and Hadith methodology.", "تقابلی فقہ، مشکوۃ المصابیح اور اصولِ حدیث۔", "تقابلي فقه، مشکوۃ المصابیح او د حدیث اصول.", 0.05f),
+        DarjaItemInfo("dora_hadith", "Dora Hadith", "دورۂ حدیث شریف", "الصف الثامن", "تکمیلی سال", "تکمیلی سال", "وروستی/تکمیلي کال", "صحاح ستہ (بخاری، مسلم، ترمذی)", "صحاح ستہ (بخاری، مسلم، ترمذی)", "صحاح ستة (بخاري، مسلم، ترمذي)", "The culmination of Dars-e-Nizami with exhaustive study of the 6 major Hadith compilations.", "درسِ نظامی کا آخری سال، صحاح ستہ اور شروحات کا گہرا مطالعہ۔", "د درس نظامي وروستی کال، د صحاح ستة عمیقه مطالعه.", 0.80f)
     )
 
     Column(
@@ -77,42 +109,70 @@ fun DarjatScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top Header
+        // Top Header Banner with Modern Vibrant Gradient
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
+                .background(
+                    androidx.compose.ui.graphics.Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF064E3B), // Deep Emerald
+                            Color(0xFF0F766E), // Ocean Teal
+                            Color(0xFF1E3A8A)  // Deep Royal Blue
+                        )
+                    )
+                )
                 .padding(16.dp)
         ) {
             Column {
-                Text(
-                    text = lStr("classes_curriculum_header"),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = lStr("explore_library_desc"),
-                    fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.85f)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = lStr("classes_curriculum_header"),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = lStr("explore_library_desc"),
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.85f)
+                        )
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color.White.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            text = "${darjaList.size} ${lStr("classes_curriculum_header")}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             }
         }
 
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             items(darjaList) { darja ->
-                val booksCount = allBooks.count { 
-                    it.darja.equals(darja.name, ignoreCase = true) ||
-                    (darja.name.contains("6th", ignoreCase = true) && (it.darja.contains("6", ignoreCase = true) || it.darja.contains("Sadisa", ignoreCase = true)))
-                }
+                val matchedBooks = DarsNizamiMatcher.getBooksForClass(allBooks, darja.id)
+                val distinctSubjects = DarsNizamiMatcher.getDistinctSubjectsForClass(allBooks, darja.id)
+                val booksCount = if (matchedBooks.isNotEmpty()) matchedBooks.size else 0
+                val subjectsCount = if (distinctSubjects.isNotEmpty()) distinctSubjects.size else 0
 
-                val displayName = if (isUrdu) darja.nameUrdu else darja.name
-                val displayYear = if (isUrdu) darja.yearNameUrdu else darja.yearName
-                val displaySubjects = if (isUrdu) darja.keySubjectsUrdu else darja.keySubjects
-                val displayDesc = if (isUrdu) darja.descriptionUrdu else darja.description
+                val displayName = darja.getDisplayName(langCode)
+                val displayYear = darja.getYearName(langCode)
+                val displaySubjects = darja.getKeySubjects(langCode)
+                val displayDesc = darja.getDescription(langCode)
 
                 Card(
                     modifier = Modifier
@@ -122,80 +182,186 @@ fun DarjatScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Grade,
-                                contentDescription = displayName,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(26.dp)
+                            // Arabic Class Icon Badge (e.g. الصف الأول)
+                            DarjaClassIconBadge(
+                                classId = darja.id,
+                                className = darja.name,
+                                size = 64.dp
                             )
-                        }
 
-                        Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = displayName,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    // Level Badge
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.tertiaryContainer
+                                    ) {
+                                        Text(
+                                            text = displayYear,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+
+                                val subtitleText = if (langCode == "ur" || langCode == "ps") darja.arabicName else darja.name
+                                if (subtitleText.isNotBlank()) {
+                                    Text(
+                                        text = subtitleText,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(top = 1.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(2.dp))
+
                                 Text(
-                                    text = displayName,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "($displayYear)",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                    fontWeight = FontWeight.SemiBold
+                                    text = displayDesc,
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    lineHeight = 15.sp
                                 )
                             }
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            Text(
-                                text = "${lStr("subjects")}: $displaySubjects",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                text = displayDesc,
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 2.dp)
-                            )
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Text(
-                                text = "$booksCount ${lStr("books")}",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
                         }
 
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = lStr("open_class"),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Key Subjects Pill
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoStories,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(13.dp),
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "${lStr("subjects")}: $displaySubjects",
+                                    fontSize = 10.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Action Row & Progress
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Book,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(13.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "$booksCount ${lStr("books")}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.AutoStories,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(13.dp),
+                                            tint = MaterialTheme.colorScheme.secondary
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "$subjectsCount ${lStr("subjects")}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                    }
+                                }
+                            }
+
+                            Button(
+                                onClick = { onNavigate(Screen.DarjaDetail.createRoute(darja.id)) },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                modifier = Modifier.height(34.dp)
+                            ) {
+                                Text(
+                                    text = lStr("open_class"),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = lStr("open_class"),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
+

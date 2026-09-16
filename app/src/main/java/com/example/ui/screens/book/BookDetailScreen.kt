@@ -2,6 +2,7 @@ package com.example.ui.screens.book
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,11 +21,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.DownloadForOffline
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -35,18 +38,21 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,8 +66,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.model.BookEntity
+import com.example.data.repository.InitialDataSeed
+import com.example.ui.components.BookCoverThumbnailView
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
+import com.example.util.LocalAppLanguage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,17 +81,36 @@ fun BookDetailScreen(
     onBack: () -> Unit
 ) {
     var book by remember { mutableStateOf<BookEntity?>(null) }
+    var thumbnail by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var showCoverPreviewDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(bookId) {
-        book = viewModel.repository.getBookById(bookId)
+    val downloadedList by viewModel.downloadedBooks.collectAsStateWithLifecycle()
+    val activeDownloads by viewModel.activeDownloads.collectAsStateWithLifecycle()
+    val coverTrigger by viewModel.coverUpdateTrigger.collectAsStateWithLifecycle()
+
+    val currentBook = book ?: viewModel.allBooks.value.find { it.id == bookId } ?: InitialDataSeed.sampleBooks.find { it.id == bookId }
+    val isDownloaded = currentBook?.isDownloaded == true || downloadedList.any { it.id == bookId }
+    val downloadState = activeDownloads[bookId]
+    val isDownloading = downloadState?.isDownloading == true
+
+    LaunchedEffect(bookId, isDownloaded, isDownloading, coverTrigger) {
+        val loadedBook = viewModel.repository.getBookById(bookId)
+            ?: viewModel.allBooks.value.find { it.id == bookId }
+            ?: InitialDataSeed.sampleBooks.find { it.id == bookId }
+        book = loadedBook
+        if (loadedBook != null) {
+            thumbnail = viewModel.getThumbnail(loadedBook)
+        }
     }
 
-    val currentBook = book ?: return
+    if (currentBook == null) return
 
     Scaffold(
         topBar = {
+            val lang = LocalAppLanguage.current
+            val screenTitle = if (lang.code == "en") "Book Details" else "تفصیلاتِ کتاب"
             TopAppBar(
-                title = { Text(text = "Book Details", fontWeight = FontWeight.Bold) },
+                title = { Text(text = screenTitle, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -133,23 +161,50 @@ fun BookDetailScreen(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Book Cover before download with click to preview
                     Box(
                         modifier = Modifier
-                            .width(130.dp)
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { showCoverPreviewDialog = true },
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.img_hero_banner_1784865374201),
-                            contentDescription = currentBook.title,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                        BookCoverThumbnailView(
+                            book = currentBook,
+                            thumbnail = thumbnail,
+                            width = 150.dp,
+                            height = 210.dp
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // "سرورق دیکھیں / View Full Cover" button chip
+                    val lang = LocalAppLanguage.current
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f))
+                            .clickable { showCoverPreviewDialog = true }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ZoomIn,
+                            contentDescription = "سرورق بڑا کریں",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (lang.code == "en") "Preview Book Cover" else "سرورق دیکھیں (پہلا صفحہ)",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Text(
                         text = currentBook.title,
@@ -158,8 +213,9 @@ fun BookDetailScreen(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
+                    val authorLabel = if (lang.code == "en") "Author: " else "مصنف: "
                     Text(
-                        text = "Author: ${currentBook.author}",
+                        text = "$authorLabel${currentBook.author}",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -192,41 +248,146 @@ fun BookDetailScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Button(
-                    onClick = { onNavigate(Screen.BookViewer.createRoute(currentBook.id)) },
+            if (isDownloading) {
+                Card(
                     modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .testTag("read_online_button"),
+                        .fillMaxWidth()
+                        .testTag("download_progress_card"),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                    )
                 ) {
-                    Icon(imageVector = Icons.Default.MenuBook, contentDescription = "Read")
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Read Online", fontSize = 14.sp)
-                }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp)
+                    ) {
+                        val progress = downloadState?.progress ?: 0f
+                        val pct = (progress * 100).toInt().coerceIn(0, 100)
+                        val totalMb = (downloadState?.totalBytes ?: 0L) / (1024f * 1024f)
+                        val readMb = (downloadState?.bytesRead ?: 0L) / (1024f * 1024f)
 
-                OutlinedButton(
-                    onClick = { viewModel.downloadBook(currentBook) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .testTag("download_book_button"),
-                    shape = RoundedCornerShape(12.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (pct > 0) "Downloading... $pct%" else "Downloading...",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            if (totalMb > 0.1f) {
+                                Text(
+                                    text = "${String.format(java.util.Locale.US, "%.1f", readMb)} / ${String.format(java.util.Locale.US, "%.1f", totalMb)} MB",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { onNavigate(Screen.BookViewer.createRoute(currentBook.id)) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
+                                    .testTag("read_while_downloading_button"),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Icon(imageVector = Icons.Default.MenuBook, contentDescription = "Read", modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Read Online", fontSize = 12.sp)
+                            }
+
+                            OutlinedButton(
+                                onClick = { viewModel.cancelDownload(currentBook.id) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
+                                    .testTag("cancel_download_button"),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Cancel Download",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Cancel Download", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(
-                        imageVector = if (currentBook.isDownloaded) Icons.Filled.Download else Icons.Outlined.DownloadForOffline,
-                        contentDescription = "Download"
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (currentBook.isDownloaded) "Downloaded" else "Download PDF",
-                        fontSize = 13.sp
-                    )
+                    Button(
+                        onClick = { onNavigate(Screen.BookViewer.createRoute(currentBook.id)) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .testTag("read_online_button"),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(imageVector = Icons.Default.MenuBook, contentDescription = "Read")
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isDownloaded) "Read Offline" else "Read Online",
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            if (!isDownloaded) {
+                                viewModel.downloadBook(currentBook)
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .testTag("download_book_button"),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isDownloaded) Icons.Filled.CheckCircle else Icons.Outlined.DownloadForOffline,
+                            contentDescription = "Download",
+                            tint = if (isDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isDownloaded) "Downloaded 100%" else "Download PDF",
+                            fontSize = 13.sp,
+                            color = if (isDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
 
@@ -257,7 +418,7 @@ fun BookDetailScreen(
 
             // Description Section
             Text(
-                text = "Book Description",
+                text = if (LocalAppLanguage.current.code == "en") "Book Description" else "کتاب کا تعارف و تفصیل",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -277,6 +438,83 @@ fun BookDetailScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp)
                 )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            com.example.ui.components.CopyrightDisclaimerComponent(
+                onContactClick = { onNavigate(com.example.ui.navigation.Screen.About.route) }
+            )
+        }
+    }
+
+    if (showCoverPreviewDialog) {
+        Dialog(onDismissRequest = { showCoverPreviewDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val lang = LocalAppLanguage.current
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (lang.code == "en") "Book First Page / Cover" else "سرورقِ کتاب (پہلا صفحہ)",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        IconButton(onClick = { showCoverPreviewDialog = false }, modifier = Modifier.size(32.dp)) {
+                            Icon(imageVector = Icons.Default.Close, contentDescription = "بند کریں")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Large Authentic High-Res Cover View
+                    BookCoverThumbnailView(
+                        book = currentBook,
+                        thumbnail = thumbnail,
+                        width = 230.dp,
+                        height = 325.dp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = currentBook.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Text(
+                        text = "مصنف: ${currentBook.author}",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { showCoverPreviewDialog = false },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(text = if (lang.code == "en") "Close" else "بند کریں")
+                    }
+                }
             }
         }
     }

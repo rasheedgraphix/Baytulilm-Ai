@@ -1,20 +1,45 @@
 package com.example.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Context
+import android.graphics.Bitmap
+import android.util.Base64
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.model.BookEntity
 import com.example.data.repository.GeminiRepository
 import com.example.data.repository.RAGResponse
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 enum class AiMode {
     CHAT, ASK_BOOK, GLOBAL_SEARCH, SUMMARIZER, TRANSLATE, GRAMMAR, QUIZ, FLASHCARDS, NOTES
+}
+
+fun Bitmap.toBase64String(maxDimension: Int = 1024): String {
+    val width = this.width
+    val height = this.height
+    val bitmapToUse = if (width > maxDimension || height > maxDimension) {
+        val ratio = width.toFloat() / height.toFloat()
+        val targetWidth = if (ratio > 1) maxDimension else (maxDimension * ratio).toInt()
+        val targetHeight = if (ratio > 1) (maxDimension / ratio).toInt() else maxDimension
+        Bitmap.createScaledBitmap(this, targetWidth, targetHeight, true)
+    } else {
+        this
+    }
+    val outputStream = ByteArrayOutputStream()
+    bitmapToUse.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
+    return Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
 }
 
 data class SavedAiNote(
@@ -37,6 +62,7 @@ data class ChatMessage(
     val id: String = java.util.UUID.randomUUID().toString(),
     val sender: MessageSender = MessageSender.AI,
     val text: String = "",
+    val imageBitmap: Bitmap? = null,
     val citation: RAGResponse? = null,
     val timestamp: Long = System.currentTimeMillis()
 )
@@ -45,9 +71,47 @@ enum class MessageSender {
     USER, AI
 }
 
-class AiViewModel : ViewModel() {
+class AiViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val geminiRepository = GeminiRepository()
+    private val geminiRepository = GeminiRepository(application.applicationContext)
+
+    fun getCustomApiKey(): String? {
+        return GeminiRepository.getCustomApiKey(getApplication<Application>().applicationContext)
+    }
+
+    fun saveCustomApiKey(key: String?) {
+        GeminiRepository.saveCustomApiKey(getApplication<Application>().applicationContext, key)
+    }
+
+    fun getGroqApiKey(): String? =
+        GeminiRepository.getGroqApiKey(getApplication<Application>().applicationContext)
+
+    fun saveGroqApiKey(key: String?) =
+        GeminiRepository.saveGroqApiKey(getApplication<Application>().applicationContext, key)
+
+    fun getMistralApiKey(): String? =
+        GeminiRepository.getMistralApiKey(getApplication<Application>().applicationContext)
+
+    fun saveMistralApiKey(key: String?) =
+        GeminiRepository.saveMistralApiKey(getApplication<Application>().applicationContext, key)
+
+    fun getCloudflareAiKey(): String? =
+        GeminiRepository.getCloudflareAiKey(getApplication<Application>().applicationContext)
+
+    fun saveCloudflareAiKey(key: String?) =
+        GeminiRepository.saveCloudflareAiKey(getApplication<Application>().applicationContext, key)
+
+    fun getOpenRouterApiKey(): String? =
+        GeminiRepository.getOpenRouterApiKey(getApplication<Application>().applicationContext)
+
+    fun saveOpenRouterApiKey(key: String?) =
+        GeminiRepository.saveOpenRouterApiKey(getApplication<Application>().applicationContext, key)
+
+    fun getActiveKeysCount(): Int =
+        GeminiRepository.getActiveKeysCount(getApplication<Application>().applicationContext)
+
+    fun hasAnyCustomKey(): Boolean =
+        GeminiRepository.hasAnyCustomKey(getApplication<Application>().applicationContext)
 
     private val db: FirebaseFirestore?
         get() = runCatching { FirebaseFirestore.getInstance() }.getOrNull()
@@ -96,15 +160,130 @@ class AiViewModel : ViewModel() {
     )
     val savedFlashcards: StateFlow<List<SavedFlashcard>> = _savedFlashcards.asStateFlow()
 
+    // Daily AI Question Quota (10 questions per user per day)
+    companion object {
+        const val MAX_DAILY_AI_QUESTIONS = 10
+        const val DAILY_LIMIT_EXCEEDED_MESSAGE = "آپ آج کے 10 AI سوالات مکمل کر چکے ہیں۔ کل دوبارہ کوشش کریں۔"
+        private const val PREFS_NAME = "baytulilm_ai_usage_prefs"
+        private const val KEY_USAGE_DATE = "key_ai_usage_date"
+        private const val KEY_USAGE_COUNT = "key_ai_usage_count"
+    }
+
+    private val _dailyAiUsage = MutableStateFlow(0)
+    val dailyAiUsage: StateFlow<Int> = _dailyAiUsage.asStateFlow()
+
+    private val _remainingAiQuestions = MutableStateFlow(MAX_DAILY_AI_QUESTIONS)
+    val remainingAiQuestions: StateFlow<Int> = _remainingAiQuestions.asStateFlow()
+
+    private val _isLimitExceeded = MutableStateFlow(false)
+    val isLimitExceeded: StateFlow<Boolean> = _isLimitExceeded.asStateFlow()
+
     init {
+        refreshDailyUsageQuota()
         loadFirestoreChatAndNotes()
+    }
+
+    private fun getTodayDateString(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
+    fun isDailyLimitReached(): Boolean {
+        refreshDailyUsageQuota()
+        return _dailyAiUsage.value >= MAX_DAILY_AI_QUESTIONS
+    }
+
+    /**
+     * Checks local SharedPreferences and resets count to 0 if a new calendar day has started.
+     */
+    fun refreshDailyUsageQuota() {
+        val prefs = getApplication<Application>().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val todayStr = getTodayDateString()
+        val storedDate = prefs.getString(KEY_USAGE_DATE, "") ?: ""
+        val storedCount = prefs.getInt(KEY_USAGE_COUNT, 0)
+
+        if (storedDate != todayStr) {
+            // New day: Reset usage to 0
+            prefs.edit()
+                .putString(KEY_USAGE_DATE, todayStr)
+                .putInt(KEY_USAGE_COUNT, 0)
+                .apply()
+            _dailyAiUsage.value = 0
+            _remainingAiQuestions.value = MAX_DAILY_AI_QUESTIONS
+            _isLimitExceeded.value = false
+        } else {
+            // Same day: load local count
+            val count = storedCount.coerceAtLeast(0)
+            _dailyAiUsage.value = count
+            val remaining = (MAX_DAILY_AI_QUESTIONS - count).coerceAtLeast(0)
+            _remainingAiQuestions.value = remaining
+            _isLimitExceeded.value = count >= MAX_DAILY_AI_QUESTIONS
+        }
+    }
+
+    private fun recordSuccessfulAiRequest() {
+        val prefs = getApplication<Application>().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val todayStr = getTodayDateString()
+        val storedDate = prefs.getString(KEY_USAGE_DATE, "") ?: ""
+        val storedCount = prefs.getInt(KEY_USAGE_COUNT, 0)
+
+        val currentCount = if (storedDate == todayStr) storedCount else 0
+        val nextCount = (currentCount + 1).coerceAtMost(MAX_DAILY_AI_QUESTIONS)
+
+        prefs.edit()
+            .putString(KEY_USAGE_DATE, todayStr)
+            .putInt(KEY_USAGE_COUNT, nextCount)
+            .apply()
+
+        _dailyAiUsage.value = nextCount
+        _remainingAiQuestions.value = (MAX_DAILY_AI_QUESTIONS - nextCount).coerceAtLeast(0)
+        _isLimitExceeded.value = nextCount >= MAX_DAILY_AI_QUESTIONS
+
+        val firestore = db
+        val uid = auth?.currentUser?.uid ?: "user_101"
+        if (firestore != null) {
+            val docRef = firestore.collection("users").document(uid).collection("ai_usage").document("daily")
+            docRef.set(
+                mapOf(
+                    "date" to todayStr,
+                    "count" to nextCount,
+                    "lastUpdated" to System.currentTimeMillis()
+                ),
+                SetOptions.merge()
+            )
+        }
     }
 
     private fun loadFirestoreChatAndNotes() {
         val firestore = db ?: return
         val uid = auth?.currentUser?.uid ?: "user_101"
 
-        // Load chat history
+        // Load daily AI usage from Firestore
+        runCatching {
+            val todayStr = getTodayDateString()
+            firestore.collection("users").document(uid).collection("ai_usage").document("daily")
+                .addSnapshotListener { snapshot, _ ->
+                    if (snapshot != null && snapshot.exists()) {
+                        val recordedDate = snapshot.getString("date") ?: ""
+                        if (recordedDate == todayStr) {
+                            val count = (snapshot.getLong("count") ?: 0L).toInt()
+                            // Only update if count is valid for today
+                            if (count >= 0) {
+                                _dailyAiUsage.value = count
+                                _remainingAiQuestions.value = (MAX_DAILY_AI_QUESTIONS - count).coerceAtLeast(0)
+                                _isLimitExceeded.value = count >= MAX_DAILY_AI_QUESTIONS
+                            }
+                        } else {
+                            // New day recorded in Firestore: reset
+                            _dailyAiUsage.value = 0
+                            _remainingAiQuestions.value = MAX_DAILY_AI_QUESTIONS
+                            _isLimitExceeded.value = false
+                        }
+                    }
+                }
+        }
+
+        // Load chat history, filtering out any old malformed raw JSON error messages
         runCatching {
             firestore.collection("users").document(uid).collection("chat_history")
                 .orderBy("timestamp")
@@ -114,11 +293,17 @@ class AiViewModel : ViewModel() {
                         val history = snapshot.documents.mapNotNull { doc ->
                             runCatching {
                                 val text = doc.getString("text") ?: ""
-                                val senderStr = doc.getString("sender") ?: "AI"
-                                val sender = if (senderStr == "USER") MessageSender.USER else MessageSender.AI
-                                val id = doc.id
-                                val ts = doc.getLong("timestamp") ?: System.currentTimeMillis()
-                                ChatMessage(id = id, sender = sender, text = text, timestamp = ts)
+                                // Clean up any old corrupt JSON error payloads from earlier builds
+                                if (text.startsWith("{\"error\"") || text.contains("\"NOT_FOUND\"") || text.contains("models/gemini-2.5-flash")) {
+                                    doc.reference.delete()
+                                    null
+                                } else {
+                                    val senderStr = doc.getString("sender") ?: "AI"
+                                    val sender = if (senderStr == "USER") MessageSender.USER else MessageSender.AI
+                                    val id = doc.id
+                                    val ts = doc.getLong("timestamp") ?: System.currentTimeMillis()
+                                    ChatMessage(id = id, sender = sender, text = text, timestamp = ts)
+                                }
                             }.getOrNull()
                         }
                         if (history.isNotEmpty()) {
@@ -172,10 +357,26 @@ class AiViewModel : ViewModel() {
         sendRAGMessage(lastUserMessage.text, libraryBooks)
     }
 
-    fun sendRAGMessage(prompt: String, libraryBooks: List<BookEntity>) {
-        if (prompt.isBlank()) return
+    fun sendRAGMessage(
+        prompt: String,
+        libraryBooks: List<BookEntity>,
+        imageBitmap: Bitmap? = null
+    ) {
+        if (prompt.isBlank() && imageBitmap == null) return
 
-        val userMsg = ChatMessage(sender = MessageSender.USER, text = prompt)
+        // 1. Check daily limit before sending request or calling Gemini
+        if (isDailyLimitReached()) {
+            val userMsg = ChatMessage(sender = MessageSender.USER, text = prompt, imageBitmap = imageBitmap)
+            val limitMsg = ChatMessage(
+                sender = MessageSender.AI,
+                text = DAILY_LIMIT_EXCEEDED_MESSAGE
+            )
+            _messages.value = _messages.value + userMsg + limitMsg
+            _errorMessage.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            return
+        }
+
+        val userMsg = ChatMessage(sender = MessageSender.USER, text = prompt, imageBitmap = imageBitmap)
         _messages.value = _messages.value + userMsg
         _isLoading.value = true
         _errorMessage.value = null
@@ -196,15 +397,21 @@ class AiViewModel : ViewModel() {
                 } else null
             }
 
+            val imageBase64 = imageBitmap?.toBase64String()
+
             val result = geminiRepository.askScholarWithRAG(
                 userPrompt = prompt,
                 selectedBook = _selectedBook.value,
                 libraryBooks = libraryBooks,
-                history = history
+                history = history,
+                imageBase64 = imageBase64
             )
             _isLoading.value = false
 
             result.onSuccess { ragResp ->
+                // Record & increment counter ONLY on successful Gemini response
+                recordSuccessfulAiRequest()
+
                 val aiMsg = ChatMessage(
                     sender = MessageSender.AI,
                     text = ragResp.answer,
@@ -221,10 +428,15 @@ class AiViewModel : ViewModel() {
                     ))
 
             }.onFailure { err ->
-                _errorMessage.value = err.localizedMessage ?: "Failed to get AI response."
+                val errorText = if (err.message == DAILY_LIMIT_EXCEEDED_MESSAGE || isDailyLimitReached()) {
+                    DAILY_LIMIT_EXCEEDED_MESSAGE
+                } else {
+                    err.localizedMessage ?: "AI سروس سے رابطہ نہیں ہو سکا۔"
+                }
+                _errorMessage.value = errorText
                 val errorMsg = ChatMessage(
                     sender = MessageSender.AI,
-                    text = "Error: ${err.localizedMessage}. Please verify Gemini API key in AI Studio Secrets."
+                    text = errorText
                 )
                 _messages.value = _messages.value + errorMsg
             }
@@ -233,58 +445,93 @@ class AiViewModel : ViewModel() {
 
     fun analyzeGrammar(sentence: String) {
         if (sentence.isBlank()) return
+        if (isDailyLimitReached()) {
+            _errorMessage.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            _generatedResult.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            return
+        }
         _isLoading.value = true
         _generatedResult.value = null
         viewModelScope.launch {
             val result = geminiRepository.analyzeGrammar(sentence)
             _isLoading.value = false
-            result.onSuccess { _generatedResult.value = it }
-                .onFailure { _errorMessage.value = it.localizedMessage }
+            result.onSuccess {
+                recordSuccessfulAiRequest()
+                _generatedResult.value = it
+            }.onFailure { _errorMessage.value = it.localizedMessage }
         }
     }
 
     fun generateSummary(bookTitle: String, type: String) {
+        if (isDailyLimitReached()) {
+            _errorMessage.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            _generatedResult.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            return
+        }
         _isLoading.value = true
         _generatedResult.value = null
         viewModelScope.launch {
             val result = geminiRepository.generateSummary(bookTitle, type)
             _isLoading.value = false
-            result.onSuccess { _generatedResult.value = it }
-                .onFailure { _errorMessage.value = it.localizedMessage }
+            result.onSuccess {
+                recordSuccessfulAiRequest()
+                _generatedResult.value = it
+            }.onFailure { _errorMessage.value = it.localizedMessage }
         }
     }
 
     fun translateText(text: String, src: String, target: String) {
         if (text.isBlank()) return
+        if (isDailyLimitReached()) {
+            _errorMessage.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            _generatedResult.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            return
+        }
         _isLoading.value = true
         _generatedResult.value = null
         viewModelScope.launch {
             val result = geminiRepository.translateText(text, src, target)
             _isLoading.value = false
-            result.onSuccess { _generatedResult.value = it }
-                .onFailure { _errorMessage.value = it.localizedMessage }
+            result.onSuccess {
+                recordSuccessfulAiRequest()
+                _generatedResult.value = it
+            }.onFailure { _errorMessage.value = it.localizedMessage }
         }
     }
 
     fun generateQuiz(bookTitle: String, difficulty: String, type: String) {
+        if (isDailyLimitReached()) {
+            _errorMessage.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            _generatedResult.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            return
+        }
         _isLoading.value = true
         _generatedResult.value = null
         viewModelScope.launch {
             val result = geminiRepository.generateQuiz(bookTitle, difficulty, type)
             _isLoading.value = false
-            result.onSuccess { _generatedResult.value = it }
-                .onFailure { _errorMessage.value = it.localizedMessage }
+            result.onSuccess {
+                recordSuccessfulAiRequest()
+                _generatedResult.value = it
+            }.onFailure { _errorMessage.value = it.localizedMessage }
         }
     }
 
     fun generateFlashcards(bookTitle: String) {
+        if (isDailyLimitReached()) {
+            _errorMessage.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            _generatedResult.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            return
+        }
         _isLoading.value = true
         _generatedResult.value = null
         viewModelScope.launch {
             val result = geminiRepository.generateFlashcards(bookTitle)
             _isLoading.value = false
-            result.onSuccess { _generatedResult.value = it }
-                .onFailure { _errorMessage.value = it.localizedMessage }
+            result.onSuccess {
+                recordSuccessfulAiRequest()
+                _generatedResult.value = it
+            }.onFailure { _errorMessage.value = it.localizedMessage }
         }
     }
 
@@ -327,13 +574,20 @@ class AiViewModel : ViewModel() {
 
     fun generateNotes(topic: String) {
         if (topic.isBlank()) return
+        if (isDailyLimitReached()) {
+            _errorMessage.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            _generatedResult.value = DAILY_LIMIT_EXCEEDED_MESSAGE
+            return
+        }
         _isLoading.value = true
         _generatedResult.value = null
         viewModelScope.launch {
             val result = geminiRepository.generateStudyNotes(topic)
             _isLoading.value = false
-            result.onSuccess { _generatedResult.value = it }
-                .onFailure { _errorMessage.value = it.localizedMessage }
+            result.onSuccess {
+                recordSuccessfulAiRequest()
+                _generatedResult.value = it
+            }.onFailure { _errorMessage.value = it.localizedMessage }
         }
     }
 

@@ -45,7 +45,9 @@ fun RecentScreen(
     viewModel: MainViewModel,
     onNavigate: (String) -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val appLanguage = LocalAppLanguage.current
+    val langCode = appLanguage.code
+    val isRtl = appLanguage.isRtl
     val recentReadings by viewModel.recentReadings.collectAsStateWithLifecycle()
 
     Column(
@@ -61,13 +63,18 @@ fun RecentScreen(
         ) {
             Column {
                 Text(
-                    text = if (isUrdu) "مطالعے کی تاریخ" else "Reading History",
+                    text = lStr("recent_history"),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
+                val subtitle = when (langCode) {
+                    "ps" -> "خودکار ریکارډ شوي وروستي لوستل شوي سیشنونه"
+                    "ur" -> "خودکار ریکارڈ شدہ حلیم مطالعے کے سیشن"
+                    else -> "Automatically tracked recent reading sessions"
+                }
                 Text(
-                    text = if (isUrdu) "خودکار ریکارڈ شدہ حلیم مطالعے کے سیشن" else "Automatically tracked recent reading sessions",
+                    text = subtitle,
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )
@@ -81,8 +88,13 @@ fun RecentScreen(
                     .padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
+                val emptyText = when (langCode) {
+                    "ps" -> "تر اوسه د مطالعې هیڅ تاریخچه نشته. د لوستلو لپاره کوم کتاب خلاص کړئ!"
+                    "ur" -> "ابھی تک مطالعے کی کوئی تاریخ موجود نہیں۔ مطالعہ شروع کرنے کے لیے کوئی بھی کتاب کھولیں!"
+                    else -> "No recent reading history yet. Open any book to start reading!"
+                }
                 Text(
-                    text = if (isUrdu) "ابھی تک مطالعے کی کوئی تاریخ موجود نہیں۔ مطالعہ شروع کرنے کے لیے کوئی بھی کتاب کھولیں!" else "No recent reading history yet. Open any book to start reading!",
+                    text = emptyText,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -107,7 +119,7 @@ fun RecentScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.History,
-                                    contentDescription = if (isUrdu) "تاریخ" else "History",
+                                    contentDescription = lStr("recent_history"),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
@@ -117,8 +129,13 @@ fun RecentScreen(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp
                                     )
+                                    val authorText = when (langCode) {
+                                        "ps" -> "لیکوال: ${item.author}"
+                                        "ur" -> "مصنف: ${item.author}"
+                                        else -> "By ${item.author}"
+                                    }
                                     Text(
-                                        text = if (isUrdu) "مصنف: ${item.author}" else "By ${item.author}",
+                                        text = authorText,
                                         fontSize = 12.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -138,13 +155,23 @@ fun RecentScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                val progressText = when (langCode) {
+                                    "ps" -> "پرمختګ: ${item.pageNumber} / ${item.totalPages}"
+                                    "ur" -> "پیش رفت: ${item.pageNumber} / ${item.totalPages}"
+                                    else -> "Progress: ${item.pageNumber} / ${item.totalPages}"
+                                }
                                 Text(
-                                    text = if (isUrdu) "پیش رفت: ${item.pageNumber} / ${item.totalPages}" else "${lStr("question_progress")} ${item.pageNumber} / ${item.totalPages}",
+                                    text = progressText,
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                val percentText = when (langCode) {
+                                    "ps" -> "${(progress * 100).toInt()}% بشپړ شو"
+                                    "ur" -> "${(progress * 100).toInt()}% مکمل"
+                                    else -> "${(progress * 100).toInt()}% completed"
+                                }
                                 Text(
-                                    text = if (isUrdu) "${(progress * 100).toInt()}% مکمل" else "${(progress * 100).toInt()}% completed",
+                                    text = percentText,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary

@@ -67,4 +67,12 @@
     <string name="view_details">View Details</string>
     <string name="read_book">Read Book</string>
     <string name="curriculum">Dars-e-Nizami Curriculum</string>
+    <string name="copyright_disclaimer_text">Copyright &amp; Content Notice: This content/link is provided for educational and informational purposes. We respect the intellectual property and copyright rights of authors, publishers, and copyright holders. If you are the copyright owner or have any objection to the inclusion or linking of this content, please contact us through the contact information provided in the app. We are willing to discuss and review any copyright concern. If a valid copyright concern is confirmed and the matter cannot be resolved through discussion or authorization, we will promptly remove or disable access to the relevant book, link, or content from the app.</string>
+    <string name="contact_us_copyright">Contact Us / Copyright Concern</string>
+    <string name="widget_desc_circle_clock1">Al-Fatiha Kaaba Wall Clock (LCD Azan Clock)</string>
+    <string name="widget_desc_circle_clock2">Neon Cyan AMOLED Clock (Digital &amp; Date Box)</string>
+    <string name="widget_desc_simple_clock">Islamic Simple Clock &amp; Hijri Date</string>
+    <string name="widget_desc_minimal_clock">Islamic Minimal Clock (سادہ گھڑی و ہجری تاریخ)</string>
+    <string name="widget_desc_prayer_times">Islamic Mosque Wall Clock (Al-Harameen Azan Clock)</string>
+    <string name="widget_desc_simple_prayer_times">Islamic Simple Prayer Times (سادہ اوقاتِ نماز و گھڑی)</string>
 </resources>

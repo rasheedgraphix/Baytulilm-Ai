@@ -126,7 +126,7 @@ fun LanguageSelectionScreen(
                                 color = Color.White
                             )
                             Text(
-                                text = "🇵🇰 اردو • 🇺🇸 English • 🇸🇦 العربية • 🇹🇷 Türkçe",
+                                text = "🇵🇰 اردو • 🇺🇸 English • 🇦🇫 پښتو",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.85f)
                             )

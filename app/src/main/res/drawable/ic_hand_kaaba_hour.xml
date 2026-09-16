@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Hour Hand pointing straight up at 12 o'clock, pivot at (100, 100) -->
+    <!-- Tail behind center pivot -->
+    <path
+        android:pathData="M 97,100 L 97,114 A 3,3 0 0,0 103,114 L 103,100 Z"
+        android:fillColor="#94A3B8" />
+
+    <!-- Silver Baton Outer Frame -->
+    <path
+        android:pathData="M 96.5,100 L 96.5,50 L 103.5,50 L 103.5,100 Z"
+        android:fillColor="#E2E8F0"
+        android:strokeWidth="1"
+        android:strokeColor="#64748B" />
+
+    <!-- White Luminous Center Inset Strip -->
+    <path
+        android:pathData="M 98,96 L 98,53 L 102,53 L 102,96 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Center Pivot Golden Cap -->
+    <path
+        android:pathData="M 100,100 m -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0"
+        android:fillColor="#FBBF24"
+        android:strokeWidth="1"
+        android:strokeColor="#D97706" />
+</vector>

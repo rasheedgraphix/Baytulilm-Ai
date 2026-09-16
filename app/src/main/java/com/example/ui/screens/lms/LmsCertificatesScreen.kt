@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Button
@@ -73,7 +72,7 @@ fun LmsCertificatesScreen(
                     color = Color.White
                 )
                 Text(
-                    text = "Download, share & verify official graduation certificates",
+                    text = "Download & verify official graduation certificates",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )
@@ -174,20 +173,6 @@ fun LmsCertificatesScreen(
                                 Icon(Icons.Default.Download, contentDescription = "Download")
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("PDF", fontSize = 12.sp)
-                            }
-
-                            OutlinedButton(
-                                onClick = {
-                                    Toast.makeText(context, "Sharing Certificate Link: ${cert.qrVerificationUrl}", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .testTag("share_cert_btn_${cert.id}"),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Icon(Icons.Default.Share, contentDescription = "Share")
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Share", fontSize = 12.sp)
                             }
 
                             OutlinedButton(

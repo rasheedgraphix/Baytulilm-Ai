@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
+import com.example.util.DarsNizamiMatcher
 import com.example.util.LocalAppLanguage
 import com.example.util.lStr
 
@@ -44,7 +45,8 @@ data class SubjectItem(
     val name: String,
     val nameUrdu: String,
     val description: String,
-    val descriptionUrdu: String
+    val descriptionUrdu: String,
+    val descriptionPashto: String = ""
 )
 
 @Composable
@@ -54,23 +56,23 @@ fun SubjectsScreen(
 ) {
     val allBooks by viewModel.allBooks.collectAsStateWithLifecycle()
     val lang = LocalAppLanguage.current
-    val isUrdu = lang.code == "ur" || lang.isRtl
+    val langCode = lang.code
 
     val subjectsList = listOf(
-        SubjectItem("Nahw", "علم النحو", "Arabic Syntax & Sentence Grammar", "عربی گرامر اور جملوں کی ساخت"),
-        SubjectItem("Sarf", "علم الصرف", "Morphology & Word Derivation", "الفاظ کی گردان اور ابواب کی ساخت"),
-        SubjectItem("Fiqh", "علم الفقہ", "Islamic Jurisprudence & Rulings", "اسلامی قوانین اور شرعی مسائل"),
-        SubjectItem("Usul Fiqh", "اصولِ فقہ", "Principles & Legal Methodology", "شرعی ادلہ اور اصولِ استنباط"),
-        SubjectItem("Hadith", "علم الحدیث", "Prophetic Traditions & Narrations", "احادیثِ مبارکہ اور اصولِ حدیث"),
-        SubjectItem("Tafseer", "علم التفسیر", "Quranic Exegesis & Interpretation", "قرآن کریم کی معتبر تفاسیر"),
-        SubjectItem("Balagha", "علم البلاغت", "Arabic Rhetoric & Literary Arts", "معانی، بیان اور فصاحت و بلاغت"),
-        SubjectItem("Mantiq", "علم المنطق", "Formal Logic & Reasoning", "قواعدِ استدلال اور صوری منطق"),
-        SubjectItem("Falsafa", "الفلسفۃ", "Islamic Philosophy & Rationality", "اسلامی فلسفہ و معقولات"),
-        SubjectItem("Aqeedah", "علم العقائد", "Theology & Islamic Beliefs", "اہلِ سنت والجماعت کے عقائد"),
-        SubjectItem("Arabic Literature", "الأدب العربي", "Classic Prose & Poetry", "عربی نثر، نظم اور شروحات"),
-        SubjectItem("Insha", "انشاء و تحریر", "Arabic Essay & Composition", "عربی تحریر اور انشاء پردازی"),
-        SubjectItem("Tajweed", "تجوید القرآن", "Quranic Recitation Rules", "تلاوتِ قرآن کے صوتی قواعد"),
-        SubjectItem("History", "تاریخِ اسلام", "Islamic History & Civilizations", "اسلامی تاریخ اور سیرتِ طیبہ")
+        SubjectItem("Nahw", "علم النحو", "Arabic Syntax & Sentence Grammar", "عربی گرامر اور جملوں کی ساخت", "د عربي ګرامر او جملو جوړښت"),
+        SubjectItem("Sarf", "علم الصرف", "Morphology & Word Derivation", "الفاظ کی گردان اور ابواب کی ساخت", "د کلمو تصریف او د ابوابو جوړښت"),
+        SubjectItem("Fiqh", "علم الفقہ", "Islamic Jurisprudence & Rulings", "اسلامی قوانین اور شرعی مسائل", "اسلامي احکام او شرعي مسائل"),
+        SubjectItem("Usul Fiqh", "اصولِ فقہ", "Principles & Legal Methodology", "شرعی ادلہ اور اصولِ استنباط", "شرعي دلایل او د استنباط اصول"),
+        SubjectItem("Hadith", "علم الحدیث", "Prophetic Traditions & Narrations", "احادیثِ مبارکہ اور اصولِ حدیث", "مبارک احادیث او د حدیث اصول"),
+        SubjectItem("Tafseer", "علم التفسیر", "Quranic Exegesis & Interpretation", "قرآن کریم کی معتبر تفاسیر", "د قرآن کریم معتبر تفاسیر"),
+        SubjectItem("Balagha", "علم البلاغت", "Arabic Rhetoric & Literary Arts", "معانی، بیان اور فصاحت و بلاغت", "معاني، بیان او فصاحت و بلاغت"),
+        SubjectItem("Mantiq", "علم المنطق", "Formal Logic & Reasoning", "قواعدِ استدلال اور صوری منطق", "د استدلال قواعد او صوري منطق"),
+        SubjectItem("Falsafa", "الفلسفۃ", "Islamic Philosophy & Rationality", "اسلامی فلسفہ و معقولات", "اسلامي فلسفه او معقولات"),
+        SubjectItem("Aqeedah", "علم العقائد", "Theology & Islamic Beliefs", "اہلِ سنت والجماعت کے عقائد", "د اهل سنت والجماعت عقائد"),
+        SubjectItem("Arabic Literature", "الأدب العربي", "Classic Prose & Poetry", "عربی نثر، نظم اور شروحات", "عربي نثر، نظم او شروحات"),
+        SubjectItem("Insha", "انشاء و تحریر", "Arabic Essay & Composition", "عربی تحریر اور انشاء پردازی", "عربي لیکنه او انشاء پردازي"),
+        SubjectItem("Tajweed", "تجوید القرآن", "Quranic Recitation Rules", "تلاوتِ قرآن کے صوتی قواعد", "د قرآن کریم د تلاوت غږیز قواعد"),
+        SubjectItem("History", "تاریخِ اسلام", "Islamic History & Civilizations", "اسلامی تاریخ اور سیرتِ طیبہ", "اسلامي تاریخ او مبارکه سیرت")
     )
 
     Column(
@@ -107,9 +109,13 @@ fun SubjectsScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             items(subjectsList) { subject ->
-                val booksCount = allBooks.count { it.subject.equals(subject.name, ignoreCase = true) }
-                val displayName = if (isUrdu) subject.nameUrdu else subject.name
-                val displayDesc = if (isUrdu) subject.descriptionUrdu else subject.description
+                val booksCount = allBooks.count { DarsNizamiMatcher.matchesSubject(it.subject, subject.name) }
+                val displayName = if (langCode == "ur" || langCode == "ps") subject.nameUrdu else subject.name
+                val displayDesc = when (langCode) {
+                    "ps" -> subject.descriptionPashto
+                    "ur" -> subject.descriptionUrdu
+                    else -> subject.description
+                }
 
                 Card(
                     modifier = Modifier

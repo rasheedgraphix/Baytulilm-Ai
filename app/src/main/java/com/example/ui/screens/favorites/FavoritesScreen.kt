@@ -25,13 +25,16 @@ import com.example.ui.components.BookCard
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
 import com.example.util.LocalAppLanguage
+import com.example.util.lStr
 
 @Composable
 fun FavoritesScreen(
     viewModel: MainViewModel,
     onNavigate: (String) -> Unit
 ) {
-    val isUrdu = LocalAppLanguage.current.code == "ur"
+    val appLanguage = LocalAppLanguage.current
+    val langCode = appLanguage.code
+    val isRtl = appLanguage.isRtl
     val favoriteBooks by viewModel.favoriteBooks.collectAsStateWithLifecycle()
 
     Column(
@@ -47,13 +50,18 @@ fun FavoritesScreen(
         ) {
             Column {
                 Text(
-                    text = if (isUrdu) "پسندیدہ کتب و درجات" else "Favorite Books & Kutub",
+                    text = lStr("my_favorites"),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
+                val subtitle = when (langCode) {
+                    "ps" -> "د ټولو درجاتو ستاسو خوښ شوي کتابونه"
+                    "ur" -> "تمام درجات کی پسندیدہ کتب"
+                    else -> "Your starred books across all Darjat"
+                }
                 Text(
-                    text = if (isUrdu) "تمام درجات کی پسندیدہ کتب" else "Your starred books across all Darjat",
+                    text = subtitle,
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )
@@ -67,8 +75,13 @@ fun FavoritesScreen(
                     .padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
+                val emptyText = when (langCode) {
+                    "ps" -> "تر اوسه هیڅ خوښ شوی کتاب نه دی اضافه شوی. د کتاب اضافه کولو لپاره د زړه ایښودل شوي آئیکن باندې کلیک وکړئ."
+                    "ur" -> "ابھی تک کوئی پسندیدہ کتاب شامل نہیں کی گئی۔ کسی بھی کتاب پر دل کے آئیکن پر ٹیپ کریں"
+                    else -> "No favorite books added yet. Tap the heart icon on any book to add it to your favorites."
+                }
                 Text(
-                    text = if (isUrdu) "ابھی تک کوئی پسندیدہ کتاب شامل نہیں کی گئی۔ کسی بھی کتاب پر دل کے آئیکن پر ٹیپ کریں" else "No favorite books added yet. Tap the heart icon on any book to add it to your favorites.",
+                    text = emptyText,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -81,12 +94,13 @@ fun FavoritesScreen(
                 items(favoriteBooks, key = { it.id }) { book ->
                     BookCard(
                         book = book,
+                        onLoadThumbnail = { viewModel.getThumbnail(it) },
                         onReadClick = { onNavigate(Screen.BookViewer.createRoute(book.id)) },
                         onDetailClick = { onNavigate(Screen.BookDetail.createRoute(book.id)) },
                         onFavoriteToggle = { viewModel.toggleFavorite(book) },
                         onBookmarkToggle = { viewModel.toggleBookmark(book) },
                         onDownloadClick = { viewModel.downloadBook(book) },
-                        onShareClick = { /* Share */ }
+                        onNavigate = onNavigate
                     )
                 }
             }

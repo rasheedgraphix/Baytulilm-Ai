@@ -16,14 +16,21 @@ data class BookEntity(
     val isDownloaded: Boolean = false,
     val downloadProgress: Float = 0f,
     val language: String = "",
+    val titleUrdu: String = "",
+    val authorUrdu: String = "",
     val type: String = "",
     val description: String = "",
+    val descriptionUrdu: String = "",
     val pdfUrl: String = "",
     val pageCount: Int = 0,
     val rating: Float = 0f,
     val coverResName: String = "",
     val coverUrl: String = ""
-)
+) {
+    fun getDisplayName(langCode: String): String {
+        return if ((langCode == "ps" || langCode == "ur") && titleUrdu.isNotBlank()) titleUrdu else title
+    }
+}
 
 @Entity(tableName = "bookmarks")
 data class BookmarkEntity(
@@ -52,4 +59,11 @@ data class TasbeehRecordEntity(
     val count: Int,
     val target: Int,
     val timestamp: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "islamic_favorites")
+data class IslamicFavoriteEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val featureType: String,
+    val itemId: Int
 )

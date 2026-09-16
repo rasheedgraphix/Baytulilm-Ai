@@ -106,8 +106,15 @@ fun AboutContactScreen() {
                     color = Color.White
                 )
 
+                val appVerName = remember {
+                    try {
+                        context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.3.8"
+                    } catch (e: Exception) {
+                        "1.3.8"
+                    }
+                }
                 Text(
-                    text = "Version 1.0.0 • AI-Powered Islamic Library & Learning Platform",
+                    text = "Version $appVerName • AI-Powered Islamic Library & Learning Platform",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )

@@ -1,0 +1,826 @@
+package com.example.data.repository
+
+import com.example.data.model.Fatawa
+import com.example.data.model.FatawaVolume
+import com.example.data.model.RightsStatus
+
+object FatawaRepository {
+    fun getFatawaList(): List<Fatawa> = listOf(
+        Fatawa(
+            id = "fatawa_1",
+            title = "Fiqhi Tahqiqat",
+            titleUrdu = "فقہی تحقیقات",
+            author = "Maulana Khalid Saifullah Rahmani",
+            authorUrdu = "مولانا خالد سیف اللہ رحمانی",
+            institution = "Islamic Fiqh Academy",
+            institutionUrdu = "مجمع الفقہ الاسلامی / دارالعلوم وقف",
+            language = "Urdu",
+            description = "جدید اور معاصر فقہی مسائل پر علمی و تحقیقی مقالات اور شرعی احکام",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv1_1", "fatawa_1", 1, "Volume 1", "جلد 1", "https://archive.org/download/bdec25/FIQHI_TAHQIQAT.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_2",
+            title = "Isqat-e-Haml Ke Shari Ahkam",
+            titleUrdu = "اسقاطِ حمل کے شرعی احکام",
+            author = "Islamic Fiqh Academy",
+            authorUrdu = "مجمع الفقہ الاسلامی ہند",
+            institution = "Islamic Fiqh Academy India",
+            institutionUrdu = "اسلامک فقہ اکیڈمی انڈیا",
+            language = "Urdu",
+            description = "جدید طبی و شرعی تناظر میں اسقاطِ حمل سے متعلق فقہی و فتوائی تحقیقات",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv2_1", "fatawa_2", 1, "Volume 1", "جلد 1", "https://archive.org/download/bsep25/ISQAT_E_HAML.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_3",
+            title = "Fatawa Namoos-e-Anbiya (A.S)",
+            titleUrdu = "فتاویٰ ناموسِ انبیاء علیہم السلام",
+            author = "Maulana Muhammad Khalid Hanafi",
+            authorUrdu = "مولانا محمد خالد حنفی",
+            institution = "Dar-ul-Ifta wal Irshad",
+            institutionUrdu = "دار الافتاء والارشاد",
+            language = "Urdu",
+            description = "عظمت و عصمتِ انبیاء علیہم السلام اور ناموسِ رسالت کے شرعی احکام و فتاویٰ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv3_1", "fatawa_3", 1, "Volume 1", "جلد 1", "https://archive.org/download/maulana-muhammad-khalid-hanafi/FATAWA_NAMOOS_E_ANBIYA_AS_VOL_01.pdf"),
+                FatawaVolume("fv3_2", "fatawa_3", 2, "Volume 2", "جلد 2", "https://archive.org/download/maulana-muhammad-khalid-hanafi/FATAWA_NAMOOS_E_ANBIYA_AS_VOL_02.pdf"),
+                FatawaVolume("fv3_3", "fatawa_3", 3, "Volume 3", "جلد 3", "https://archive.org/download/maulana-muhammad-khalid-hanafi/FATAWA_NAMOOS_E_ANBIYA_AS_VOL_03.pdf"),
+                FatawaVolume("fv3_4", "fatawa_3", 4, "Volume 4", "جلد 4", "https://archive.org/download/maulana-muhammad-khalid-hanafi/FATAWA_NAMOOS_E_ANBIYA_AS_VOL_04.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_rasheedia",
+            title = "Fatawa Rasheedia Jadeed",
+            titleUrdu = "فتاویٰ رشیدیہ جدید",
+            author = "Qutb-ul-Irshad Maulana Rasheed Ahmad Gangohi",
+            authorUrdu = "قطب الارشاد حضرت مولانا رشید احمد گنگوہی رحمہ اللہ",
+            institution = "Darul Uloom Deoband / Mazahir Uloom",
+            institutionUrdu = "دارالعلوم دیوبند / خانقاہ رشیدیہ گنگوہ",
+            language = "Urdu",
+            description = "امام ربانی قطب الارشاد حضرت مولانا رشید احمد گنگوہی رحمہ اللہ کا معتمد و مشہور فتاویٰ (طبع جدید)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_rash_1", "fatawa_rasheedia", 1, "Volume 1", "جلد 1", "https://archive.org/download/maulana-muhammad-khalid-hanafi/FATAWA_RASHEEDIA_JADID_01.pdf"),
+                FatawaVolume("fv_rash_2", "fatawa_rasheedia", 2, "Volume 2", "جلد 2", "https://archive.org/download/maulana-muhammad-khalid-hanafi/FATAWA_RASHEEDIA_JADID_02.pdf"),
+                FatawaVolume("fv_rash_3", "fatawa_rasheedia", 3, "Volume 3", "جلد 3", "https://archive.org/download/maulana-muhammad-khalid-hanafi/FATAWA_RASHEEDIA_JADID_03.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_4",
+            title = "Nukhbat-ul-Masail",
+            titleUrdu = "نخبۃ المسائل",
+            author = "Mufti Shoaibullah Khan Miftahi",
+            authorUrdu = "مفتی محمد شعیب اللہ خان مفتاحی",
+            institution = "Jamia Islamia Maseeh-ul-Uloom",
+            institutionUrdu = "جامعہ اسلامیہ مسیح العلوم بنگلور",
+            language = "Urdu",
+            description = "جدید و نوازل کے منتخب فقہی مسائل و مدلل فتاویٰ کا شاندار مجموعہ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv4_1", "fatawa_4", 1, "Volume 1", "جلد 1", "https://archive.org/download/knawazil/NUKHBA_TUL_MASAIL_01.pdf"),
+                FatawaVolume("fv4_2", "fatawa_4", 2, "Volume 2", "جلد 2", "https://archive.org/download/knawazil/NUKHBA_TUL_MASAIL_02.pdf"),
+                FatawaVolume("fv4_3", "fatawa_4", 3, "Volume 3", "جلد 3", "https://archive.org/download/knawazil/NUKHBA_TUL_MASAIL_03.pdf"),
+                FatawaVolume("fv4_4", "fatawa_4", 4, "Volume 4", "جلد 4", "https://archive.org/download/knawazil/NUKHBA_TUL_MASAIL_04.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_5",
+            title = "Muntakhab Fatawa Darul Uloom Deoband (1438H)",
+            titleUrdu = "منتخب فتاویٰ دارالعلوم دیوبند (1438ھ)",
+            author = "Muftis of Darul Uloom Deoband",
+            authorUrdu = "مفتیانِ کرام دارالعلوم دیوبند",
+            institution = "Dar-ul-Ifta Darul Uloom Deoband",
+            institutionUrdu = "دار الافتاء دارالعلوم دیوبند",
+            language = "Urdu",
+            description = "دارالعلوم دیوبند کے دارالافتاء سے جاری شدہ منتخب و اہم ترین معاصر فتاویٰ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv5_1", "fatawa_5", 1, "Volume 1", "جلد 1", "https://archive.org/download/jan_25/MUNTAKHAB_FATAWA_DARULULOOM_DEOBAND_1438.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_6",
+            title = "Fatawa Ulama-e-Hind",
+            titleUrdu = "فتاویٰ علمائے ہند",
+            author = "Ulama-e-Hind",
+            authorUrdu = "علماء و مفتیانِ ہند",
+            institution = "Dar-ul-Ifta",
+            institutionUrdu = "دارالافتاء برصغیر ہند",
+            language = "Urdu",
+            description = "علمائے ہند کے تاریخی و فکری فتاویٰ اور اہم فقہی فیصلے (مکمل 32 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv6_1", "fatawa_6", 1, "Volume 1", "جلد 1", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_01.pdf"),
+                FatawaVolume("fv6_2", "fatawa_6", 2, "Volume 2", "جلد 2", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_02.pdf"),
+                FatawaVolume("fv6_3", "fatawa_6", 3, "Volume 3", "جلد 3", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_03.pdf"),
+                FatawaVolume("fv6_4", "fatawa_6", 4, "Volume 4", "جلد 4", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_04.pdf"),
+                FatawaVolume("fv6_5", "fatawa_6", 5, "Volume 5", "جلد 5", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_05.pdf"),
+                FatawaVolume("fv6_6", "fatawa_6", 6, "Volume 6", "جلد 6", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_06.pdf"),
+                FatawaVolume("fv6_7", "fatawa_6", 7, "Volume 7", "جلد 7", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_07.pdf"),
+                FatawaVolume("fv6_8", "fatawa_6", 8, "Volume 8", "جلد 8", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_08.pdf"),
+                FatawaVolume("fv6_9", "fatawa_6", 9, "Volume 9", "جلد 9", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_09.pdf"),
+                FatawaVolume("fv6_10", "fatawa_6", 10, "Volume 10", "جلد 10", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_10.pdf"),
+                FatawaVolume("fv6_11", "fatawa_6", 11, "Volume 11", "جلد 11", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_11.pdf"),
+                FatawaVolume("fv6_12", "fatawa_6", 12, "Volume 12", "جلد 12", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_12.pdf"),
+                FatawaVolume("fv6_13", "fatawa_6", 13, "Volume 13", "جلد 13", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_13.pdf"),
+                FatawaVolume("fv6_14", "fatawa_6", 14, "Volume 14", "جلد 14", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_14.pdf"),
+                FatawaVolume("fv6_15", "fatawa_6", 15, "Volume 15", "جلد 15", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_15.pdf"),
+                FatawaVolume("fv6_16", "fatawa_6", 16, "Volume 16", "جلد 16", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_16.pdf"),
+                FatawaVolume("fv6_17", "fatawa_6", 17, "Volume 17", "جلد 17", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_17.pdf"),
+                FatawaVolume("fv6_18", "fatawa_6", 18, "Volume 18", "جلد 18", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_18.pdf"),
+                FatawaVolume("fv6_19", "fatawa_6", 19, "Volume 19", "جلد 19", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_19.pdf"),
+                FatawaVolume("fv6_20", "fatawa_6", 20, "Volume 20", "جلد 20", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_20.pdf"),
+                FatawaVolume("fv6_21", "fatawa_6", 21, "Volume 21", "جلد 21", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_21.pdf"),
+                FatawaVolume("fv6_22", "fatawa_6", 22, "Volume 22", "جلد 22", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_22.pdf"),
+                FatawaVolume("fv6_23", "fatawa_6", 23, "Volume 23", "جلد 23", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_23.pdf"),
+                FatawaVolume("fv6_24", "fatawa_6", 24, "Volume 24", "جلد 24", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_24.pdf"),
+                FatawaVolume("fv6_25", "fatawa_6", 25, "Volume 25", "جلد 25", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_25.pdf"),
+                FatawaVolume("fv6_26", "fatawa_6", 26, "Volume 26", "جلد 26", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_26.pdf"),
+                FatawaVolume("fv6_27", "fatawa_6", 27, "Volume 27", "جلد 27", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_27.pdf"),
+                FatawaVolume("fv6_28", "fatawa_6", 28, "Volume 28", "جلد 28", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_28.pdf"),
+                FatawaVolume("fv6_29", "fatawa_6", 29, "Volume 29", "جلد 29", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_29.pdf"),
+                FatawaVolume("fv6_30", "fatawa_6", 30, "Volume 30", "جلد 30", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_30.pdf"),
+                FatawaVolume("fv6_31", "fatawa_6", 31, "Volume 31", "جلد 31", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_31.pdf"),
+                FatawaVolume("fv6_32", "fatawa_6", 32, "Volume 32", "جلد 32", "https://archive.org/download/fuhind/FATAWA_ULAMA_E_HIND_VOL_32.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_7",
+            title = "Khair-ul-Fatawa",
+            titleUrdu = "خیر الفتاویٰ",
+            author = "Mufti Khair Muhammad Jalandhari",
+            authorUrdu = "حضرت مولانا مفتی خیر محمد جالندھری رحمہ اللہ",
+            institution = "Jamia Khair-ul-Madaris Multan",
+            institutionUrdu = "جامعہ خیر المدارس ملتان",
+            language = "Urdu",
+            description = "بانیِ جامعہ خیر المدارس ملتان کے فقہی و شرعی فتاویٰ کا مستند و معتبر مجموعہ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv7_1", "fatawa_7", 1, "Volume 1", "جلد 1", "https://archive.org/download/kfatawa/KHAIR_UL_FATAWA_VOL_01.pdf"),
+                FatawaVolume("fv7_2", "fatawa_7", 2, "Volume 2", "جلد 2", "https://archive.org/download/kfatawa/KHAIR_UL_FATAWA_VOL_02.pdf"),
+                FatawaVolume("fv7_3", "fatawa_7", 3, "Volume 3", "جلد 3", "https://archive.org/download/kfatawa/KHAIR_UL_FATAWA_VOL_03.pdf"),
+                FatawaVolume("fv7_4", "fatawa_7", 4, "Volume 4", "جلد 4", "https://archive.org/download/kfatawa/KHAIR_UL_FATAWA_VOL_04.pdf"),
+                FatawaVolume("fv7_5", "fatawa_7", 5, "Volume 5", "جلد 5", "https://archive.org/download/kfatawa/KHAIR_UL_FATAWA_VOL_05.pdf"),
+                FatawaVolume("fv7_6", "fatawa_7", 6, "Volume 6", "جلد 6", "https://archive.org/download/kfatawa/KHAIR_UL_FATAWA_VOL_06.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_8",
+            title = "Fatawa Shaikh-ul-Islam",
+            titleUrdu = "فتاویٰ شیخ الاسلام",
+            author = "Shaikh-ul-Islam Maulana Hussain Ahmad Madani",
+            authorUrdu = "شیخ الاسلام مولانا سید حسین احمد مدنی رحمہ اللہ",
+            institution = "Darul Uloom Deoband",
+            institutionUrdu = "دارالعلوم دیوبند",
+            language = "Urdu",
+            description = "شیخ العرب والعجم حضرت مولانا سید حسین احمد مدنی رحمہ اللہ کے فقہی و شرعی فتاویٰ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv8_1", "fatawa_8", 1, "Volume 1", "جلد 1", "https://archive.org/download/jul_24/FATAWA_SHYKH_UL_ISLAM.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_9",
+            title = "Tahqiqat-e-Fiqhiyah",
+            titleUrdu = "تحقیقاتِ فقہیہ",
+            author = "Mufti Abdur Rauf Sukkharvi",
+            authorUrdu = "مفتی عبد الرؤف سکھروی مدظلہ",
+            institution = "Darul Uloom Karachi",
+            institutionUrdu = "دارالعلوم کراچی",
+            language = "Urdu",
+            description = "مفتی دارالعلوم کراچی کی اہم فقہی تحقیقات اور عصری نوازل کا مدلل جائزہ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv9_1", "fatawa_9", 1, "Volume 1", "جلد 1", "https://archive.org/download/may_24/TAHQIQAT_E_FIQHIYAH_VOL_01.pdf"),
+                FatawaVolume("fv9_2", "fatawa_9", 2, "Volume 2", "جلد 2", "https://archive.org/download/may_24/TAHQIQAT_E_FIQHIYAH_VOL_02.pdf"),
+                FatawaVolume("fv9_3", "fatawa_9", 3, "Volume 3", "جلد 3", "https://archive.org/download/may_24/TAHQIQAT_E_FIQHIYAH_VOL_03.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_10",
+            title = "Muntakhab Fatawa",
+            titleUrdu = "منتخب فتاویٰ",
+            author = "Maulana Muhammad Nisar",
+            authorUrdu = "مولانا محمد نثار",
+            institution = "Dar-ul-Ifta wal Irshad",
+            institutionUrdu = "دار الافتاء والارشاد",
+            language = "Urdu",
+            description = "روزمرہ کے معمولات، عبادات اور معاملات سے متعلق منتخب فتاویٰ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv10_1", "fatawa_10", 1, "Volume 1", "جلد 1", "https://archive.org/download/maulana-m-nisar/MUTAKHAB_FATAWA.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_11",
+            title = "Baseerat Afroz Fatawa",
+            titleUrdu = "بصیرت افروز فتاویٰ",
+            author = "Mufti Salman Mansoorpuri",
+            authorUrdu = "مولانا مفتی محمد سلمان منصورپوری",
+            institution = "Madrasa Shahi Moradabad",
+            institutionUrdu = "جامعہ قاسمیہ مدرسہ شاہی مراد آباد",
+            language = "Urdu",
+            description = "بصیرت افروز، فکری و فقہی استفسارات اور ان کے محققانہ جوابات",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv11_1", "fatawa_11", 1, "Volume 1", "جلد 1", "https://archive.org/download/nov-23/BASIRAT_AFROZ_FATAWA.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_12",
+            title = "Fatawa Mahmoodiya",
+            titleUrdu = "فتاویٰ محمودیہ",
+            author = "Faqih-ul-Ummah Mufti Mahmood Hasan Gangohi",
+            authorUrdu = "فقیہ الامت حضرت مفتی محمود حسن گنگوہی رحمہ اللہ",
+            institution = "Darul Uloom Deoband / Mazahir Uloom",
+            institutionUrdu = "دارالعلوم دیوبند / مظاہر علوم سہارنپور",
+            language = "Urdu",
+            description = "برصغیر کے عظیم ترین فتوائی انسائیکلوپیڈیاز میں سے ایک، فقیہ الامت کے مستند فتاویٰ (مکمل 31 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv12_1", "fatawa_12", 1, "Volume 1", "جلد 1", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_01.pdf"),
+                FatawaVolume("fv12_2", "fatawa_12", 2, "Volume 2", "جلد 2", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_02.pdf"),
+                FatawaVolume("fv12_3", "fatawa_12", 3, "Volume 3", "جلد 3", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_03.pdf"),
+                FatawaVolume("fv12_4", "fatawa_12", 4, "Volume 4", "جلد 4", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_04.pdf"),
+                FatawaVolume("fv12_5", "fatawa_12", 5, "Volume 5", "جلد 5", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_05.pdf"),
+                FatawaVolume("fv12_6", "fatawa_12", 6, "Volume 6", "جلد 6", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_06.pdf"),
+                FatawaVolume("fv12_7", "fatawa_12", 7, "Volume 7", "جلد 7", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_07.pdf"),
+                FatawaVolume("fv12_8", "fatawa_12", 8, "Volume 8", "جلد 8", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_08.pdf"),
+                FatawaVolume("fv12_9", "fatawa_12", 9, "Volume 9", "جلد 9", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_09.pdf"),
+                FatawaVolume("fv12_10", "fatawa_12", 10, "Volume 10", "جلد 10", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_10.pdf"),
+                FatawaVolume("fv12_11", "fatawa_12", 11, "Volume 11", "جلد 11", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_11.pdf"),
+                FatawaVolume("fv12_12", "fatawa_12", 12, "Volume 12", "جلد 12", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_12.pdf"),
+                FatawaVolume("fv12_13", "fatawa_12", 13, "Volume 13", "جلد 13", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_13.pdf"),
+                FatawaVolume("fv12_14", "fatawa_12", 14, "Volume 14", "جلد 14", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_14.pdf"),
+                FatawaVolume("fv12_15", "fatawa_12", 15, "Volume 15", "جلد 15", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_15.pdf"),
+                FatawaVolume("fv12_16", "fatawa_12", 16, "Volume 16", "جلد 16", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_16.pdf"),
+                FatawaVolume("fv12_17", "fatawa_12", 17, "Volume 17", "جلد 17", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_17.pdf"),
+                FatawaVolume("fv12_18", "fatawa_12", 18, "Volume 18", "جلد 18", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_18.pdf"),
+                FatawaVolume("fv12_19", "fatawa_12", 19, "Volume 19", "جلد 19", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_19.pdf"),
+                FatawaVolume("fv12_20", "fatawa_12", 20, "Volume 20", "جلد 20", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_20.pdf"),
+                FatawaVolume("fv12_21", "fatawa_12", 21, "Volume 21", "جلد 21", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_21.pdf"),
+                FatawaVolume("fv12_22", "fatawa_12", 22, "Volume 22", "جلد 22", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_22.pdf"),
+                FatawaVolume("fv12_23", "fatawa_12", 23, "Volume 23", "جلد 23", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_23.pdf"),
+                FatawaVolume("fv12_24", "fatawa_12", 24, "Volume 24", "جلد 24", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_24.pdf"),
+                FatawaVolume("fv12_25", "fatawa_12", 25, "Volume 25", "جلد 25", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_25.pdf"),
+                FatawaVolume("fv12_26", "fatawa_12", 26, "Volume 26", "جلد 26", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_26.pdf"),
+                FatawaVolume("fv12_27", "fatawa_12", 27, "Volume 27", "جلد 27", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_27.pdf"),
+                FatawaVolume("fv12_28", "fatawa_12", 28, "Volume 28", "جلد 28", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_28.pdf"),
+                FatawaVolume("fv12_29", "fatawa_12", 29, "Volume 29", "جلد 29", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_29.pdf"),
+                FatawaVolume("fv12_30", "fatawa_12", 30, "Volume 30", "جلد 30", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_30.pdf"),
+                FatawaVolume("fv12_31", "fatawa_12", 31, "Volume 31", "جلد 31", "https://archive.org/download/BESTUBOOKSFM/FATAWA_MAHMOODIYA_VOL_31.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_13",
+            title = "Fatawa Anwar-ul-Uloom",
+            titleUrdu = "فتاویٰ انوار العلوم",
+            author = "Muftis of Jamia Anwar-ul-Uloom",
+            authorUrdu = "مفتیانِ جامعہ انوار العلوم",
+            institution = "Jamia Anwar-ul-Uloom",
+            institutionUrdu = "جامعہ انوار العلوم",
+            language = "Urdu",
+            description = "جامعہ انوار العلوم کے شعبہ افتاء کے جاری کردہ شرعی فتاویٰ کا گراں قدر ذخیرہ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv13_1", "fatawa_13", 1, "Volume 1", "جلد 1", "https://archive.org/download/sep_23/FATAWA_ANWAR_UL_ULOOM_VOL_01.pdf"),
+                FatawaVolume("fv13_2", "fatawa_13", 2, "Volume 2", "جلد 2", "https://archive.org/download/sep_23/FATAWA_ANWAR_UL_ULOOM_VOL_02.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_14",
+            title = "Al-Fatawa al-Hindiyyah (Fatawa Alamgiri)",
+            titleUrdu = "الفتاویٰ الہندیہ (فتاویٰ عالمگیری - عربی)",
+            author = "Shaikh Nizamuddin Balkhi and scholars of India",
+            authorUrdu = "الشیخ نظام الدین بلخی وجماعۃ من علماء الہند",
+            institution = "Fatawa Alamgiri Board",
+            institutionUrdu = "فتاویٰ عالمگیری",
+            language = "Arabic",
+            description = "فقہ حنفی کا سب سے عظیم اور معتمد علیہ فقہی انسائیکلوپیڈیا (اصل عربی متن مکمل 6 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv14_1", "fatawa_14", 1, "Volume 1", "جلد 1", "https://archive.org/download/BestUrduBooks117/AL_FATAWA_AL_HINDIYAH_AR_VOL_01.pdf"),
+                FatawaVolume("fv14_2", "fatawa_14", 2, "Volume 2", "جلد 2", "https://archive.org/download/BestUrduBooks117/AL_FATAWA_AL_HINDIYAH_AR_VOL_02.pdf"),
+                FatawaVolume("fv14_3", "fatawa_14", 3, "Volume 3", "جلد 3", "https://archive.org/download/BestUrduBooks117/AL_FATAWA_AL_HINDIYAH_AR_VOL_03.pdf"),
+                FatawaVolume("fv14_4", "fatawa_14", 4, "Volume 4", "جلد 4", "https://archive.org/download/BestUrduBooks117/AL_FATAWA_AL_HINDIYAH_AR_VOL_04.pdf"),
+                FatawaVolume("fv14_5", "fatawa_14", 5, "Volume 5", "جلد 5", "https://archive.org/download/BestUrduBooks117/AL_FATAWA_AL_HINDIYAH_AR_VOL_05.pdf"),
+                FatawaVolume("fv14_6", "fatawa_14", 6, "Volume 6", "جلد 6", "https://archive.org/download/BestUrduBooks117/AL_FATAWA_AL_HINDIYAH_AR_VOL_06.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_15",
+            title = "Hawadith-ul-Fatawa",
+            titleUrdu = "حوادث الفتاویٰ",
+            author = "Maulana Ashraf Ali Thanvi",
+            authorUrdu = "حکیم الامت حضرت مولانا اشرف علی تھانوی رحمہ اللہ",
+            institution = "Khanqah Imdadiya Thana Bhawan",
+            institutionUrdu = "خانقاہ امدادیہ تھانہ بھون",
+            language = "Urdu",
+            description = "نو پیش آمدہ حوادث و وقائع کے شرعی و فقہی احکام پر مشتمل نادر فتاویٰ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv15_1", "fatawa_15", 1, "Volume 1", "جلد 1", "https://archive.org/download/h-fatawa/HAWADITH_UL_FATAWA_01.pdf"),
+                FatawaVolume("fv15_2", "fatawa_15", 2, "Volume 2", "جلد 2", "https://archive.org/download/h-fatawa/HAWADITH_UL_FATAWA_02.pdf"),
+                FatawaVolume("fv15_3", "fatawa_15", 3, "Volume 3", "جلد 3", "https://archive.org/download/h-fatawa/HAWADITH_UL_FATAWA_03.pdf"),
+                FatawaVolume("fv15_4", "fatawa_15", 4, "Volume 4", "جلد 4", "https://archive.org/download/h-fatawa/HAWADITH_UL_FATAWA_04.pdf"),
+                FatawaVolume("fv15_5", "fatawa_15", 5, "Volume 5", "جلد 5", "https://archive.org/download/h-fatawa/HAWADITH_UL_FATAWA_05.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_16",
+            title = "Fatawa Qazi Khan (Al-Khaniyyah)",
+            titleUrdu = "فتاویٰ قاضی خان (الخانیہ - عربی)",
+            author = "Imam Fakhruddin Qazi Khan Uzjandi",
+            authorUrdu = "امام فخر الدین حسن بن منصور قاضی خان اوزجندی",
+            institution = "Hanafi Classical Fiqh",
+            institutionUrdu = "فقہ حنفی کی متون و شروح",
+            language = "Arabic",
+            description = "فقہ حنفی میں مفتی بہ اقوال و مسائل کا بنیادی و معتبر ترین مصدر (مکمل 3 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv16_1", "fatawa_16", 1, "Volume 1", "جلد 1", "https://archive.org/download/FATAWAQAZIKHAN/FATAWA-QAZI-KHAN-01.pdf"),
+                FatawaVolume("fv16_2", "fatawa_16", 2, "Volume 2", "جلد 2", "https://archive.org/download/FATAWAQAZIKHAN/FATAWA-QAZI-KHAN-02.pdf"),
+                FatawaVolume("fv16_3", "fatawa_16", 3, "Volume 3", "جلد 3", "https://archive.org/download/FATAWAQAZIKHAN/FATAWA-QAZI-KHAN-03.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_17",
+            title = "Habib-ul-Fatawa",
+            titleUrdu = "حبیب الفتاویٰ",
+            author = "Mufti Habib-ur-Rahman Khairabadi",
+            authorUrdu = "مفتی حبیب الرحمن خیر آبادی مدظلہ",
+            institution = "Darul Uloom Deoband",
+            institutionUrdu = "دار الافتاء دارالعلوم دیوبند",
+            language = "Urdu",
+            description = "صدر مفتی دارالعلوم دیوبند کے علمی، تحقیقی اور فقہی فتاویٰ کا وقیع مجموعہ (مکمل 13 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv17_1", "fatawa_17", 1, "Volume 1", "جلد 1", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_01.pdf"),
+                FatawaVolume("fv17_2", "fatawa_17", 2, "Volume 2", "جلد 2", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_02.pdf"),
+                FatawaVolume("fv17_3", "fatawa_17", 3, "Volume 3", "جلد 3", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_03.pdf"),
+                FatawaVolume("fv17_4", "fatawa_17", 4, "Volume 4", "جلد 4", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_04.pdf"),
+                FatawaVolume("fv17_5", "fatawa_17", 5, "Volume 5", "جلد 5", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_05.pdf"),
+                FatawaVolume("fv17_6", "fatawa_17", 6, "Volume 6", "جلد 6", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_06.pdf"),
+                FatawaVolume("fv17_7", "fatawa_17", 7, "Volume 7", "جلد 7", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_07.pdf"),
+                FatawaVolume("fv17_8", "fatawa_17", 8, "Volume 8", "جلد 8", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_08.pdf"),
+                FatawaVolume("fv17_9", "fatawa_17", 9, "Volume 9", "جلد 9", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_09.pdf"),
+                FatawaVolume("fv17_10", "fatawa_17", 10, "Volume 10", "جلد 10", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_10.pdf"),
+                FatawaVolume("fv17_11", "fatawa_17", 11, "Volume 11", "جلد 11", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_11.pdf"),
+                FatawaVolume("fv17_12", "fatawa_17", 12, "Volume 12", "جلد 12", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_12.pdf"),
+                FatawaVolume("fv17_13", "fatawa_17", 13, "Volume 13", "جلد 13", "https://archive.org/download/h-fatawa/HABIB_UL_FATAWA_VOL_13.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_18",
+            title = "Fatawa Darul Uloom Waqf Deoband",
+            titleUrdu = "فتاویٰ دارالعلوم وقف دیوبند",
+            author = "Muftis of Darul Uloom Waqf Deoband",
+            authorUrdu = "مفتیانِ کرام دارالعلوم وقف دیوبند",
+            institution = "Darul Uloom Waqf Deoband",
+            institutionUrdu = "دارالعلوم وقف دیوبند",
+            language = "Urdu",
+            description = "دارالعلوم وقف دیوبند کے دارالافتاء کے مدلل، فقہی و سماجی فتاویٰ (مکمل 8 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv18_1", "fatawa_18", 1, "Volume 1", "جلد 1", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_01.pdf"),
+                FatawaVolume("fv18_2", "fatawa_18", 2, "Volume 2", "جلد 2", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_02.pdf"),
+                FatawaVolume("fv18_3", "fatawa_18", 3, "Volume 3", "جلد 3", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_03.pdf"),
+                FatawaVolume("fv18_4", "fatawa_18", 4, "Volume 4", "جلد 4", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_04.pdf"),
+                FatawaVolume("fv18_5", "fatawa_18", 5, "Volume 5", "جلد 5", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_05.pdf"),
+                FatawaVolume("fv18_6", "fatawa_18", 6, "Volume 6", "جلد 6", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_06.pdf"),
+                FatawaVolume("fv18_7", "fatawa_18", 7, "Volume 7", "جلد 7", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_07.pdf"),
+                FatawaVolume("fv18_8", "fatawa_18", 8, "Volume 8", "جلد 8", "https://archive.org/download/fatawa-dwd/FATAWA_DARUL_ULOOM_WAQF_DEOBAND_08.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_19",
+            title = "Najm-ul-Fatawa",
+            titleUrdu = "نجم الفتاویٰ",
+            author = "Mufti Muhammad Najmuddin",
+            authorUrdu = "مفتی محمد نجم الدین",
+            institution = "Jamia Farooqia Karachi",
+            institutionUrdu = "دارالافتاء جامعہ فاروقیہ",
+            language = "Urdu",
+            description = "عقائد، عبادات، معاملات اور اخلاقیات سے متعلق جامع فقہی فتاویٰ",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv19_1", "fatawa_19", 1, "Volume 1", "جلد 1", "https://archive.org/download/NajmUlFatawa/NAJMUL_FATAWA_VOL_01.pdf"),
+                FatawaVolume("fv19_2", "fatawa_19", 2, "Volume 2", "جلد 2", "https://archive.org/download/NajmUlFatawa/NAJMUL_FATAWA_VOL_02.pdf"),
+                FatawaVolume("fv19_4", "fatawa_19", 4, "Volume 4", "جلد 4", "https://archive.org/download/NajmUlFatawa/NAJMUL_FATAWA_VOL_04.pdf"),
+                FatawaVolume("fv19_5", "fatawa_19", 5, "Volume 5", "جلد 5", "https://archive.org/download/NajmUlFatawa/NAJMUL_FATAWA_VOL_05.pdf"),
+                FatawaVolume("fv19_6", "fatawa_19", 6, "Volume 6", "جلد 6", "https://archive.org/download/NajmUlFatawa/NAJMUL_FATAWA_VOL_06.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_20",
+            title = "Imdad-ul-Fatawa Jadeed",
+            titleUrdu = "امداد الفتاویٰ جدید",
+            author = "Hakim-ul-Ummat Maulana Ashraf Ali Thanvi",
+            authorUrdu = "حکیم الامت حضرت مولانا اشرف علی تھانوی رحمہ اللہ",
+            institution = "Annotations: Mufti Muhammad Shafi & Mufti Taqi Usmani",
+            institutionUrdu = "حاشیہ و ترتیب: مفتی محمد شفیع / مفتی تقی عثمانی",
+            language = "Urdu",
+            description = "حکیم الامت تھانوی کا شاہکار فتاویٰ مجموعہ مع جدید تعلیقات و حواشی (مکمل 12 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv20_1", "fatawa_20", 1, "Volume 1", "جلد 1", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-01.pdf"),
+                FatawaVolume("fv20_2", "fatawa_20", 2, "Volume 2", "جلد 2", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-02.pdf"),
+                FatawaVolume("fv20_3", "fatawa_20", 3, "Volume 3", "جلد 3", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-03.pdf"),
+                FatawaVolume("fv20_4", "fatawa_20", 4, "Volume 4", "جلد 4", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-04.pdf"),
+                FatawaVolume("fv20_5", "fatawa_20", 5, "Volume 5", "جلد 5", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-05.pdf"),
+                FatawaVolume("fv20_6", "fatawa_20", 6, "Volume 6", "جلد 6", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-06.pdf"),
+                FatawaVolume("fv20_7", "fatawa_20", 7, "Volume 7", "جلد 7", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-07.pdf"),
+                FatawaVolume("fv20_8", "fatawa_20", 8, "Volume 8", "جلد 8", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-08.pdf"),
+                FatawaVolume("fv20_9", "fatawa_20", 9, "Volume 9", "جلد 9", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-09.pdf"),
+                FatawaVolume("fv20_10", "fatawa_20", 10, "Volume 10", "جلد 10", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-10.pdf"),
+                FatawaVolume("fv20_11", "fatawa_20", 11, "Volume 11", "جلد 11", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-11.pdf"),
+                FatawaVolume("fv20_12", "fatawa_20", 12, "Volume 12", "جلد 12", "https://archive.org/download/Imdad-Ul-Fatawa/IMDAD-UL-FATAWA-JADEED-VOL-12.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_21",
+            title = "Fatawa Darul Uloom Deoband (Mukammal o Mudallal)",
+            titleUrdu = "فتاویٰ دارالعلوم دیوبند (مکمل و مدلل)",
+            author = "Mufti Aziz-ur-Rahman Usmani",
+            authorUrdu = "حضرت مفتی عزیز الرحمن عثمانی رحمہ اللہ",
+            institution = "Dar-ul-Ifta Darul Uloom Deoband",
+            institutionUrdu = "دارالافتاء دارالعلوم دیوبند",
+            language = "Urdu",
+            description = "پہلے مفتی اعظم دارالعلوم دیوبند کے تاریخی، بے نظیر اور مدلل فقہی فتاویٰ (مکمل 18 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv21_1", "fatawa_21", 1, "Volume 1", "جلد 1", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_01.pdf"),
+                FatawaVolume("fv21_2", "fatawa_21", 2, "Volume 2", "جلد 2", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_02.pdf"),
+                FatawaVolume("fv21_3", "fatawa_21", 3, "Volume 3", "جلد 3", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_03.pdf"),
+                FatawaVolume("fv21_4", "fatawa_21", 4, "Volume 4", "جلد 4", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_04.pdf"),
+                FatawaVolume("fv21_5", "fatawa_21", 5, "Volume 5", "جلد 5", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_05.pdf"),
+                FatawaVolume("fv21_6", "fatawa_21", 6, "Volume 6", "جلد 6", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_06.pdf"),
+                FatawaVolume("fv21_7", "fatawa_21", 7, "Volume 7", "جلد 7", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_07.pdf"),
+                FatawaVolume("fv21_8", "fatawa_21", 8, "Volume 8", "جلد 8", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_08.pdf"),
+                FatawaVolume("fv21_9", "fatawa_21", 9, "Volume 9", "جلد 9", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_09.pdf"),
+                FatawaVolume("fv21_10", "fatawa_21", 10, "Volume 10", "جلد 10", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_10.pdf"),
+                FatawaVolume("fv21_11", "fatawa_21", 11, "Volume 11", "جلد 11", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_11.pdf"),
+                FatawaVolume("fv21_12", "fatawa_21", 12, "Volume 12", "جلد 12", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_12.pdf"),
+                FatawaVolume("fv21_13", "fatawa_21", 13, "Volume 13", "جلد 13", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_13.pdf"),
+                FatawaVolume("fv21_14", "fatawa_21", 14, "Volume 14", "جلد 14", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_14.pdf"),
+                FatawaVolume("fv21_15", "fatawa_21", 15, "Volume 15", "جلد 15", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_15.pdf"),
+                FatawaVolume("fv21_16", "fatawa_21", 16, "Volume 16", "جلد 16", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_16.pdf"),
+                FatawaVolume("fv21_17", "fatawa_21", 17, "Volume 17", "جلد 17", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_17.pdf"),
+                FatawaVolume("fv21_18", "fatawa_21", 18, "Volume 18", "جلد 18", "https://archive.org/download/jan2021/FATAWA_DARUL_ULOOM_DEOBAND_18.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_22",
+            title = "Fatawa Deeniya",
+            titleUrdu = "فتاویٰ دینیہ",
+            author = "Mufti Muhammad Qasim Qasmi",
+            authorUrdu = "مفتی محمد قاسم قاسمی",
+            institution = "Dar-ul-Ifta Deeniya",
+            institutionUrdu = "دارالافتاء دینیہ",
+            language = "Urdu",
+            description = "دینی و شرعی زندگی کی رہنمائی اور جدید فقہی مسائل کے سلجھے ہوئے جوابات (مکمل 5 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv22_1", "fatawa_22", 1, "Volume 1", "جلد 1", "https://archive.org/download/14220/FATAWA_DEENIYA_VOL_01.pdf"),
+                FatawaVolume("fv22_2", "fatawa_22", 2, "Volume 2", "جلد 2", "https://archive.org/download/14220/FATAWA_DEENIYA_VOL_02.pdf"),
+                FatawaVolume("fv22_3", "fatawa_22", 3, "Volume 3", "جلد 3", "https://archive.org/download/14220/FATAWA_DEENIYA_VOL_03.pdf"),
+                FatawaVolume("fv22_4", "fatawa_22", 4, "Volume 4", "جلد 4", "https://archive.org/download/14220/FATAWA_DEENIYA_VOL_04.pdf"),
+                FatawaVolume("fv22_5", "fatawa_22", 5, "Volume 5", "جلد 5", "https://archive.org/download/14220/FATAWA_DEENIYA_VOL_05.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_23",
+            title = "Mahmood-ul-Fatawa",
+            titleUrdu = "محمود الفتاویٰ (فتاویٰ جامعہ فاروقیہ)",
+            author = "Mufti Nizamuddin Shamzai & Farooqia Muftis",
+            authorUrdu = "مفتی نظام الدین شامزئی و مفتیانِ فاروقیہ",
+            institution = "Jamia Farooqia Karachi",
+            institutionUrdu = "جامعہ فاروقیہ کراچی",
+            language = "Urdu",
+            description = "جامعہ فاروقیہ کراچی کے فتاویٰ کا جامع و دستاویزی مجموعہ (مکمل 8 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv23_1", "fatawa_23", 1, "Volume 1", "جلد 1", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_01.pdf"),
+                FatawaVolume("fv23_2", "fatawa_23", 2, "Volume 2", "جلد 2", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_02.pdf"),
+                FatawaVolume("fv23_3", "fatawa_23", 3, "Volume 3", "جلد 3", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_03.pdf"),
+                FatawaVolume("fv23_4", "fatawa_23", 4, "Volume 4", "جلد 4", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_04.pdf"),
+                FatawaVolume("fv23_5", "fatawa_23", 5, "Volume 5", "جلد 5", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_05.pdf"),
+                FatawaVolume("fv23_6", "fatawa_23", 6, "Volume 6", "جلد 6", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_06.pdf"),
+                FatawaVolume("fv23_7", "fatawa_23", 7, "Volume 7", "جلد 7", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_07.pdf"),
+                FatawaVolume("fv23_8", "fatawa_23", 8, "Volume 8", "جلد 8", "https://archive.org/download/mahmoodulfatawa/MAHMOOD_UL_FATAWA_VOL_08.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_24",
+            title = "Fatawa Darul Uloom Zakariyya",
+            titleUrdu = "فتاویٰ دارالعلوم زکریا",
+            author = "Mufti Radhaul Haq",
+            authorUrdu = "حضرت مفتی رضاء الحق مدظلہ",
+            institution = "Darul Uloom Zakariyya South Africa",
+            institutionUrdu = "دارالعلوم زکریا جنوبی افریقہ",
+            language = "Urdu",
+            description = "جنوبی افریقہ اور عالمی معاصر دنیا کے پیچیدہ فقہی و عصری مسائل کے تفصیلی فتاویٰ (مکمل 9 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv24_1", "fatawa_24", 1, "Volume 1", "جلد 1", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_01.pdf"),
+                FatawaVolume("fv24_2", "fatawa_24", 2, "Volume 2", "جلد 2", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_02.pdf"),
+                FatawaVolume("fv24_3", "fatawa_24", 3, "Volume 3", "جلد 3", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_03.pdf"),
+                FatawaVolume("fv24_4", "fatawa_24", 4, "Volume 4", "جلد 4", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_04.pdf"),
+                FatawaVolume("fv24_5", "fatawa_24", 5, "Volume 5", "جلد 5", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_05.pdf"),
+                FatawaVolume("fv24_6", "fatawa_24", 6, "Volume 6", "جلد 6", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_06.pdf"),
+                FatawaVolume("fv24_7", "fatawa_24", 7, "Volume 7", "جلد 7", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_07.pdf"),
+                FatawaVolume("fv24_8", "fatawa_24", 8, "Volume 8", "جلد 8", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_08.pdf"),
+                FatawaVolume("fv24_9", "fatawa_24", 9, "Volume 9", "جلد 9", "https://archive.org/download/darul-uloom-zakariyya/FATAWA_DARUL_ULOOM_ZAKARIYYA_VOL_09.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_25",
+            title = "Kifayat-ul-Mufti",
+            titleUrdu = "کفایت المفتی",
+            author = "Mufti-e-Azam Hind Mufti Kifayatullah Dehlavi",
+            authorUrdu = "مفتی اعظم ہند حضرت مفتی کفایت اللہ دہلوی رحمہ اللہ",
+            institution = "Dar-ul-Ifta Aminiyyah Delhi",
+            institutionUrdu = "دار الافتاء امینیہ دہلی",
+            language = "Urdu",
+            description = "برصغیر کا شاہکار فتاویٰ، فتاویٰ نگاری کا بے مثال نمونہ اور جامع فقہی ذخیرہ (مکمل 9 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv25_1", "fatawa_25", 1, "Volume 1", "جلد 1", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_01.pdf"),
+                FatawaVolume("fv25_2", "fatawa_25", 2, "Volume 2", "جلد 2", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_02.pdf"),
+                FatawaVolume("fv25_3", "fatawa_25", 3, "Volume 3", "جلد 3", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_03.pdf"),
+                FatawaVolume("fv25_4", "fatawa_25", 4, "Volume 4", "جلد 4", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_04.pdf"),
+                FatawaVolume("fv25_5", "fatawa_25", 5, "Volume 5", "جلد 5", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_05.pdf"),
+                FatawaVolume("fv25_6", "fatawa_25", 6, "Volume 6", "جلد 6", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_06.pdf"),
+                FatawaVolume("fv25_7", "fatawa_25", 7, "Volume 7", "جلد 7", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_07.pdf"),
+                FatawaVolume("fv25_8", "fatawa_25", 8, "Volume 8", "جلد 8", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_08.pdf"),
+                FatawaVolume("fv25_9", "fatawa_25", 9, "Volume 9", "جلد 9", "https://archive.org/download/0509019/KIFAYATUL_MUFTI_VOL_09.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_26",
+            title = "Fatawa Baiyinaat",
+            titleUrdu = "فتاویٰ بینات",
+            author = "Muftis of Jamia Uloom-e-Islamia Banuri Town",
+            authorUrdu = "مفتیانِ جامعہ علوم اسلامیہ علامہ بنوری ٹاؤن",
+            institution = "Jamia Uloom-e-Islamia Allama Banuri Town",
+            institutionUrdu = "جامعہ علوم اسلامیہ علامہ بنوری ٹاؤن کراچی",
+            language = "Urdu",
+            description = "ماہنامہ بینات میں شائع شدہ فقہی مضامین، اہم استفسارات اور تحقیقی فتاویٰ (مکمل 4 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv26_1", "fatawa_26", 1, "Volume 1", "جلد 1", "https://archive.org/download/0609019/FATAWA_BAIYINAAT_VOL_01.pdf"),
+                FatawaVolume("fv26_2", "fatawa_26", 2, "Volume 2", "جلد 2", "https://archive.org/download/0609019/FATAWA_BAIYINAAT_VOL_02.pdf"),
+                FatawaVolume("fv26_3", "fatawa_26", 3, "Volume 3", "جلد 3", "https://archive.org/download/0609019/FATAWA_BAIYINAAT_VOL_03.pdf"),
+                FatawaVolume("fv26_4", "fatawa_26", 4, "Volume 4", "جلد 4", "https://archive.org/download/0609019/FATAWA_BAIYINAAT_VOL_04.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_faridia",
+            title = "Fatawa Faridia",
+            titleUrdu = "فتاویٰ فریدیہ",
+            author = "Hazrat Maulana Mufti Farid",
+            authorUrdu = "حضرت مولانا مفتی فرید رحمہ اللہ",
+            institution = "Darul Uloom Haqqania Akora Khattak",
+            institutionUrdu = "دارالعلوم حقانیہ اکوڑہ خٹک",
+            language = "Urdu",
+            description = "دارالعلوم حقانیہ کے شیخ الحدیث و صدر مفتی کے تحقیقی و فقہی فتاویٰ کا مستند مجموعہ (مکمل 5 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_faridia_1", "fatawa_faridia", 1, "Volume 1", "جلد 1", "https://archive.org/download/2009019/FATAWA_FARIDIA_VOL_01.pdf"),
+                FatawaVolume("fv_faridia_2", "fatawa_faridia", 2, "Volume 2", "جلد 2", "https://archive.org/download/2009019/FATAWA_FARIDIA_VOL_02.pdf"),
+                FatawaVolume("fv_faridia_3", "fatawa_faridia", 3, "Volume 3", "جلد 3", "https://archive.org/download/2009019/FATAWA_FARIDIA_VOL_03.pdf"),
+                FatawaVolume("fv_faridia_4", "fatawa_faridia", 4, "Volume 4", "جلد 4", "https://archive.org/download/2009019/FATAWA_FARIDIA_VOL_04.pdf"),
+                FatawaVolume("fv_faridia_5", "fatawa_faridia", 5, "Volume 5", "جلد 5", "https://archive.org/download/2009019/FATAWA_FARIDIA_VOL_05.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_aap_ke_masail",
+            title = "Aap Ke Masail Aur Un Ka Hal",
+            titleUrdu = "آپ کے مسائل اور ان کا حل",
+            author = "Shaheed Maulana Muhammad Yousuf Ludhianvi",
+            authorUrdu = "شہیدِ اسلام حضرت مولانا محمد یوسف لدھیانوی رحمہ اللہ",
+            institution = "Maktaba Ludhianvi / Jamia Banuri Town",
+            institutionUrdu = "مکتبہ لدھیانوی / جامعہ بنوری ٹاؤن",
+            language = "Urdu",
+            description = "روزمرہ کے دینی و فقہی مسائل کا آسان اور عام فہم انداز میں مستند ترین حل (مکمل 10 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_akm_1", "fatawa_aap_ke_masail", 1, "Volume 1", "جلد 1", "https://archive.org/download/BestAKMAUH/AP%20KAY%20MASAIL%20OR%20UN%20KA%20HALL%20VOL%2001.pdf"),
+                FatawaVolume("fv_akm_2", "fatawa_aap_ke_masail", 2, "Volume 2", "جلد 2", "https://archive.org/download/BestAKMAUH/AP%20KAY%20MASAIL%20OR%20UN%20KA%20HALL%20VOL%2002.pdf"),
+                FatawaVolume("fv_akm_3", "fatawa_aap_ke_masail", 3, "Volume 3", "جلد 3", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol03.pdf"),
+                FatawaVolume("fv_akm_4", "fatawa_aap_ke_masail", 4, "Volume 4", "جلد 4", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol04.pdf"),
+                FatawaVolume("fv_akm_5", "fatawa_aap_ke_masail", 5, "Volume 5", "جلد 5", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol05.pdf"),
+                FatawaVolume("fv_akm_6", "fatawa_aap_ke_masail", 6, "Volume 6", "جلد 6", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol06.pdf"),
+                FatawaVolume("fv_akm_7", "fatawa_aap_ke_masail", 7, "Volume 7", "جلد 7", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol07.pdf"),
+                FatawaVolume("fv_akm_8", "fatawa_aap_ke_masail", 8, "Volume 8", "جلد 8", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol08.pdf"),
+                FatawaVolume("fv_akm_9", "fatawa_aap_ke_masail", 9, "Volume 9", "جلد 9", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol09.pdf"),
+                FatawaVolume("fv_akm_10", "fatawa_aap_ke_masail", 10, "Volume 10", "جلد 10", "https://archive.org/download/BestAKMAUH/ApKayMasailOrUnKaHallVol10.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_alamgiri_urdu",
+            title = "Fatawa Alamgiri (Urdu Translation)",
+            titleUrdu = "فتاویٰ عالمگیری (اردو ترجمہ)",
+            author = "Allama Kafil-ur-Rahman Nishat Usmani",
+            authorUrdu = "مترجم: مولانا سید کفیل الرحمن نشاط عثمانی",
+            institution = "Fatawa Alamgiri Board",
+            institutionUrdu = "فتاویٰ عالمگیری بورڈ",
+            language = "Urdu",
+            description = "فقہ حنفی کے سب سے عظیم اور جامع انسائیکلوپیڈیا کا سلیس اور مستند اردو ترجمہ (مکمل 10 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_agu_1", "fatawa_alamgiri_urdu", 1, "Volume 1", "جلد 1", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_01.pdf"),
+                FatawaVolume("fv_agu_2", "fatawa_alamgiri_urdu", 2, "Volume 2", "جلد 2", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_02.pdf"),
+                FatawaVolume("fv_agu_3", "fatawa_alamgiri_urdu", 3, "Volume 3", "جلد 3", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_03.pdf"),
+                FatawaVolume("fv_agu_4", "fatawa_alamgiri_urdu", 4, "Volume 4", "جلد 4", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_04.pdf"),
+                FatawaVolume("fv_agu_5", "fatawa_alamgiri_urdu", 5, "Volume 5", "جلد 5", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_05.pdf"),
+                FatawaVolume("fv_agu_6", "fatawa_alamgiri_urdu", 6, "Volume 6", "جلد 6", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_06.pdf"),
+                FatawaVolume("fv_agu_7", "fatawa_alamgiri_urdu", 7, "Volume 7", "جلد 7", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_07.pdf"),
+                FatawaVolume("fv_agu_8", "fatawa_alamgiri_urdu", 8, "Volume 8", "جلد 8", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_08.pdf"),
+                FatawaVolume("fv_agu_9", "fatawa_alamgiri_urdu", 9, "Volume 9", "جلد 9", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_09.pdf"),
+                FatawaVolume("fv_agu_10", "fatawa_alamgiri_urdu", 10, "Volume 10", "جلد 10", "https://archive.org/download/BestUrduBooks117/FATAWA_ALAMGIRI_URDU_VOL_10.pdf")
+            )
+        ),
+        Fatawa(
+            id = "kitab_un_nawazil",
+            title = "Kitab-un-Nawazil",
+            titleUrdu = "کتاب النوازل",
+            author = "Mufti Muhammad Salman Mansoorpuri",
+            authorUrdu = "حضرت مفتی محمد سلمان منصورپوری مدظلہ",
+            institution = "Jamia Qasmia Madrasa Shahi Moradabad",
+            institutionUrdu = "جامعہ قاسمیہ مدرسہ شاہی مرادآباد",
+            language = "Urdu",
+            description = "جدید و معاصر مسائل، نوازل اور فقہی تحقیقات کا عظیم ترین اور مفصل ترین انسائیکلوپیڈیا (مکمل 19 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_kn_1", "kitab_un_nawazil", 1, "Volume 1", "جلد 1", "https://archive.org/download/knawazil/Kitab-un-Nawazil-01.pdf"),
+                FatawaVolume("fv_kn_2", "kitab_un_nawazil", 2, "Volume 2", "جلد 2", "https://archive.org/download/knawazil/Kitab-un-Nawazil-02.pdf"),
+                FatawaVolume("fv_kn_3", "kitab_un_nawazil", 3, "Volume 3", "جلد 3", "https://archive.org/download/knawazil/Kitab-un-Nawazil-03.pdf"),
+                FatawaVolume("fv_kn_4", "kitab_un_nawazil", 4, "Volume 4", "جلد 4", "https://archive.org/download/knawazil/Kitab-un-Nawazil-04.pdf"),
+                FatawaVolume("fv_kn_5", "kitab_un_nawazil", 5, "Volume 5", "جلد 5", "https://archive.org/download/knawazil/Kitab-un-Nawazil-05.pdf"),
+                FatawaVolume("fv_kn_6", "kitab_un_nawazil", 6, "Volume 6", "جلد 6", "https://archive.org/download/knawazil/Kitab-un-Nawazil-06.pdf"),
+                FatawaVolume("fv_kn_7", "kitab_un_nawazil", 7, "Volume 7", "جلد 7", "https://archive.org/download/knawazil/Kitab-un-Nawazil-07.pdf"),
+                FatawaVolume("fv_kn_8", "kitab_un_nawazil", 8, "Volume 8", "جلد 8", "https://archive.org/download/knawazil/Kitab-un-Nawazil-08.pdf"),
+                FatawaVolume("fv_kn_9", "kitab_un_nawazil", 9, "Volume 9", "جلد 9", "https://archive.org/download/knawazil/Kitab-un-Nawazil-09.pdf"),
+                FatawaVolume("fv_kn_10", "kitab_un_nawazil", 10, "Volume 10", "جلد 10", "https://archive.org/download/knawazil/Kitab-un-Nawazil-10.pdf"),
+                FatawaVolume("fv_kn_11", "kitab_un_nawazil", 11, "Volume 11", "جلد 11", "https://archive.org/download/knawazil/Kitab-un-Nawazil-11.pdf"),
+                FatawaVolume("fv_kn_12", "kitab_un_nawazil", 12, "Volume 12", "جلد 12", "https://archive.org/download/knawazil/Kitab-un-Nawazil-12.pdf"),
+                FatawaVolume("fv_kn_13", "kitab_un_nawazil", 13, "Volume 13", "جلد 13", "https://archive.org/download/knawazil/Kitab-un-Nawazil-13.pdf"),
+                FatawaVolume("fv_kn_14", "kitab_un_nawazil", 14, "Volume 14", "جلد 14", "https://archive.org/download/knawazil/Kitab-un-Nawazil-14.pdf"),
+                FatawaVolume("fv_kn_15", "kitab_un_nawazil", 15, "Volume 15", "جلد 15", "https://archive.org/download/knawazil/Kitab-un-Nawazil-15.pdf"),
+                FatawaVolume("fv_kn_16", "kitab_un_nawazil", 16, "Volume 16", "جلد 16", "https://archive.org/download/knawazil/Kitab-un-Nawazil-16.pdf"),
+                FatawaVolume("fv_kn_17", "kitab_un_nawazil", 17, "Volume 17", "جلد 17", "https://archive.org/download/knawazil/Kitab-un-Nawazil-17.pdf"),
+                FatawaVolume("fv_kn_18", "kitab_un_nawazil", 18, "Volume 18", "جلد 18", "https://archive.org/download/knawazil/Kitab-un-Nawazil-18.pdf"),
+                FatawaVolume("fv_kn_19", "kitab_un_nawazil", 19, "Volume 19", "جلد 19", "https://archive.org/download/knawazil/Kitab-un-Nawazil-19.pdf")
+            )
+        ),
+        Fatawa(
+            id = "imdad_ul_ahkam",
+            title = "Imdad-ul-Ahkam",
+            titleUrdu = "امداد الاحکام",
+            author = "Maulana Zafar Ahmad Usmani",
+            authorUrdu = "علامہ ظفر احمد عثمانی رحمہ اللہ",
+            institution = "Under guidance of Hakim-ul-Ummat Thanvi",
+            institutionUrdu = "بزیرِ سرپرستی حکیم الامت مولانا اشرف علی تھانوی رحمہ اللہ",
+            language = "Urdu",
+            description = "صاحبِ اعلاء السنن کے تحقیقی، مدلل اور معتمد علیہ فتاویٰ کا مجموعہ (مکمل 4 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_iah_1", "imdad_ul_ahkam", 1, "Volume 1", "جلد 1", "https://archive.org/download/ImdadUlAhkam/Imdad-ul-Ahkam-Vol-1.pdf"),
+                FatawaVolume("fv_iah_2", "imdad_ul_ahkam", 2, "Volume 2", "جلد 2", "https://archive.org/download/ImdadUlAhkam/Imdad-ul-Ahkam-Vol-2.pdf"),
+                FatawaVolume("fv_iah_3", "imdad_ul_ahkam", 3, "Volume 3", "جلد 3", "https://archive.org/download/ImdadUlAhkam/Imdad-ul-Ahkam-Vol-3.pdf"),
+                FatawaVolume("fv_iah_4", "imdad_ul_ahkam", 4, "Volume 4", "جلد 4", "https://archive.org/download/ImdadUlAhkam/Imdad-ul-Ahkam-Vol-4.pdf")
+            )
+        ),
+        Fatawa(
+            id = "chand_ahm_asri_masael",
+            title = "Chand Ahm Asri Masael",
+            titleUrdu = "چند اہم عصری مسائل",
+            author = "Mufti Muhammad Shafi Usmani / Mufti Taqi Usmani",
+            authorUrdu = "مفتی محمد تقی عثمانی مدظلہ / مفتیانِ کرام",
+            institution = "Darul Uloom Karachi",
+            institutionUrdu = "دارالعلوم کراچی",
+            language = "Urdu",
+            description = "دورِ جدید کے سلگتے ہوئے فقہی اور معاشی مسائل کے تفصیلی شرعی احکام و تحقیقات",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_caam_1", "chand_ahm_asri_masael", 1, "Volume 1", "جلد 1", "https://archive.org/download/AhsanulQira/Chand_Ahm_Asri_Masael.pdf"),
+                FatawaVolume("fv_caam_2", "chand_ahm_asri_masael", 2, "Volume 2", "جلد 2", "https://archive.org/download/AhsanulQira/Chand_Ahm_Asri_Masael_2.pdf")
+            )
+        ),
+        Fatawa(
+            id = "ahsan_ul_fatawa",
+            title = "Ahsan-ul-Fatawa",
+            titleUrdu = "احسن الفتاویٰ",
+            author = "Mufti Rasheed Ahmad Ludhianvi",
+            authorUrdu = "مفتی اعظم حضرت مفتی رشید احمد لدھیانوی رحمہ اللہ",
+            institution = "Darul Ifta wal Irshad Karachi",
+            institutionUrdu = "دار الافتاء والارشاد کراچی",
+            language = "Urdu",
+            description = "فقہ حنفی کے سب سے معتمد اور گہرے تحقیقی فتاویٰ کا شاہکار انسائیکلوپیڈیا (مکمل 10 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_auf_1", "ahsan_ul_fatawa", 1, "Volume 1", "جلد 1", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_01---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_2", "ahsan_ul_fatawa", 2, "Volume 2", "جلد 2", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_02---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_3", "ahsan_ul_fatawa", 3, "Volume 3", "جلد 3", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_03---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_4", "ahsan_ul_fatawa", 4, "Volume 4", "جلد 4", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_04---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_5", "ahsan_ul_fatawa", 5, "Volume 5", "جلد 5", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_05---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_6", "ahsan_ul_fatawa", 6, "Volume 6", "جلد 6", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_06---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_7", "ahsan_ul_fatawa", 7, "Volume 7", "جلد 7", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_07---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_8", "ahsan_ul_fatawa", 8, "Volume 8", "جلد 8", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_08---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_9", "ahsan_ul_fatawa", 9, "Volume 9", "جلد 9", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_09---www.besturdubooks.wordpress.com.pdf"),
+                FatawaVolume("fv_auf_10", "ahsan_ul_fatawa", 10, "Volume 10", "جلد 10", "https://archive.org/download/AhsanUlFatawa./Ahsan_ul_Fatawa_Vol_10---www.besturdubooks.wordpress.com.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_haqqania",
+            title = "Fatawa Haqqania",
+            titleUrdu = "فتاویٰ حقانیہ",
+            author = "Mufti Mukhtarullah Haqqani and Muftis",
+            authorUrdu = "حضرت مولانا مفتی مختار اللہ حقانی و مفتیانِ حقانیہ",
+            institution = "Darul Uloom Haqqania Akora Khattak",
+            institutionUrdu = "دارالافتاء دارالعلوم حقانیہ اکوڑہ خٹک",
+            language = "Urdu",
+            description = "دارالعلوم حقانیہ اکوڑہ خٹک کے دارالافتاء کے مدلل، تحقیقی اور جامع فتاویٰ (مکمل 6 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_fh_1", "fatawa_haqqania", 1, "Volume 1", "جلد 1", "https://archive.org/download/FatawaHaqqania/Fatawa-Haqqania-Vol-1.pdf"),
+                FatawaVolume("fv_fh_2", "fatawa_haqqania", 2, "Volume 2", "جلد 2", "https://archive.org/download/FatawaHaqqania/Fatawa-Haqqania-Vol-2.pdf"),
+                FatawaVolume("fv_fh_3", "fatawa_haqqania", 3, "Volume 3", "جلد 3", "https://archive.org/download/FatawaHaqqania/Fatawa-Haqqania-Vol-3.pdf"),
+                FatawaVolume("fv_fh_4", "fatawa_haqqania", 4, "Volume 4", "جلد 4", "https://archive.org/download/FatawaHaqqania/Fatawa-Haqqania-Vol-4.pdf"),
+                FatawaVolume("fv_fh_5", "fatawa_haqqania", 5, "Volume 5", "جلد 5", "https://archive.org/download/FatawaHaqqania/Fatawa-Haqqania-Vol-5.pdf"),
+                FatawaVolume("fv_fh_6", "fatawa_haqqania", 6, "Volume 6", "جلد 6", "https://archive.org/download/FatawaHaqqania/Fatawa-Haqqania-Vol-6.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_usmani",
+            title = "Fatawa Usmani",
+            titleUrdu = "فتاویٰ عثمانی",
+            author = "Justice Mufti Muhammad Taqi Usmani",
+            authorUrdu = "شیخ الاسلام جسٹس مفتی محمد تقی عثمانی مدظلہ",
+            institution = "Darul Uloom Karachi",
+            institutionUrdu = "دارالافتاء دارالعلوم کراچی",
+            language = "Urdu",
+            description = "عالم اسلام کی مایہ ناز علمی و فقہی شخصیت کے عصری، تجارتی، بینکاری اور فقہی فتاویٰ (مکمل 4 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_usmani_1", "fatawa_usmani", 1, "Volume 1", "جلد 1", "https://archive.org/download/FatawaUsmani0/FATAWA_USMANI_VOL_01.pdf"),
+                FatawaVolume("fv_usmani_2", "fatawa_usmani", 2, "Volume 2", "جلد 2", "https://archive.org/download/FatawaUsmani0/FATAWA_USMANI_VOL_02.pdf"),
+                FatawaVolume("fv_usmani_3", "fatawa_usmani", 3, "Volume 3", "جلد 3", "https://archive.org/download/FatawaUsmani0/FATAWA_USMANI_VOL_03.pdf"),
+                FatawaVolume("fv_usmani_4", "fatawa_usmani", 4, "Volume 4", "جلد 4", "https://archive.org/download/FatawaUsmani0/FATAWA_USMANI_VOL_04.pdf")
+            )
+        ),
+        Fatawa(
+            id = "masail_e_rifat_qasmi",
+            title = "Masail-e-Rifat Qasmi",
+            titleUrdu = "مسائلِ رفعت قاسمی",
+            author = "Maulana Rifat Qasmi",
+            authorUrdu = "مولانا رفعت قاسمی مدظلہ",
+            institution = "Darul Uloom Deoband / Idara Al-Qasim",
+            institutionUrdu = "ادارہ القاسم / فضلاء دارالعلوم دیوبند",
+            language = "Urdu",
+            description = "روزمرہ فقہی و شرعی مسائل، عبادات و معاملات کے آسان اور مستند احکام (مکمل 7 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_mrq_1", "masail_e_rifat_qasmi", 1, "Volume 1", "جلد 1", "https://archive.org/download/BestUrduBooks517/MASAIL-E-RIFAT-QASMI-VOL-01.pdf"),
+                FatawaVolume("fv_mrq_2", "masail_e_rifat_qasmi", 2, "Volume 2", "جلد 2", "https://archive.org/download/BestUrduBooks517/MASAIL-E-RIFAT-QASMI-VOL-02.pdf"),
+                FatawaVolume("fv_mrq_3", "masail_e_rifat_qasmi", 3, "Volume 3", "جلد 3", "https://archive.org/download/BestUrduBooks517/MASAIL-E-RIFAT-QASMI-VOL-03.pdf"),
+                FatawaVolume("fv_mrq_4", "masail_e_rifat_qasmi", 4, "Volume 4", "جلد 4", "https://archive.org/download/BestUrduBooks517/MASAIL-E-RIFAT-QASMI-VOL-04.pdf"),
+                FatawaVolume("fv_mrq_5", "masail_e_rifat_qasmi", 5, "Volume 5", "جلد 5", "https://archive.org/download/BestUrduBooks517/MASAIL-E-RIFAT-QASMI-VOL-05.pdf"),
+                FatawaVolume("fv_mrq_6", "masail_e_rifat_qasmi", 6, "Volume 6", "جلد 6", "https://archive.org/download/BestUrduBooks517/MASAIL-E-RIFAT-QASMI-VOL-06.pdf"),
+                FatawaVolume("fv_mrq_7", "masail_e_rifat_qasmi", 7, "Volume 7", "جلد 7", "https://archive.org/download/BestUrduBooks517/MASAIL-E-RIFAT-QASMI-VOL-07.pdf")
+            )
+        ),
+        Fatawa(
+            id = "fatawa_rahimia",
+            title = "Fatawa Rahimia",
+            titleUrdu = "فتاویٰ رحیمیہ",
+            author = "Mufti Sayyid Abdur Rahim Lajpuri",
+            authorUrdu = "حضرت مفتی سید عبد الرحیم لاجپوری رحمہ اللہ",
+            institution = "Rander, Gujarat, India",
+            institutionUrdu = "راندر گجرات، ہند",
+            language = "Urdu",
+            description = "برصغیر پاک و ہند کے مشہور ترین اور معتمد فتاویٰ میں سے ایک عظیم فقہی ذخیرہ (مکمل 10 جلدیں)",
+            rightsStatus = RightsStatus.RIGHTS_UNVERIFIED,
+            volumes = listOf(
+                FatawaVolume("fv_rahimia_1", "fatawa_rahimia", 1, "Volume 1", "جلد 1", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_01.pdf"),
+                FatawaVolume("fv_rahimia_2", "fatawa_rahimia", 2, "Volume 2", "جلد 2", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_02.pdf"),
+                FatawaVolume("fv_rahimia_3", "fatawa_rahimia", 3, "Volume 3", "جلد 3", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_03.pdf"),
+                FatawaVolume("fv_rahimia_4", "fatawa_rahimia", 4, "Volume 4", "جلد 4", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_04.pdf"),
+                FatawaVolume("fv_rahimia_5", "fatawa_rahimia", 5, "Volume 5", "جلد 5", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_05.pdf"),
+                FatawaVolume("fv_rahimia_6", "fatawa_rahimia", 6, "Volume 6", "جلد 6", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_06.pdf"),
+                FatawaVolume("fv_rahimia_7", "fatawa_rahimia", 7, "Volume 7", "جلد 7", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_07.pdf"),
+                FatawaVolume("fv_rahimia_8", "fatawa_rahimia", 8, "Volume 8", "جلد 8", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_08.pdf"),
+                FatawaVolume("fv_rahimia_9", "fatawa_rahimia", 9, "Volume 9", "جلد 9", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_09.pdf"),
+                FatawaVolume("fv_rahimia_10", "fatawa_rahimia", 10, "Volume 10", "جلد 10", "https://archive.org/download/BESTUBOOKSFR/FATAWA_RAHIMIA_VOL_10.pdf")
+            )
+        )
+    )
+}
+

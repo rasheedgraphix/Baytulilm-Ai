@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Glowing Cyan Sword Minute Hand pointing straight up at 12 o'clock, pivot at (100, 100) -->
+    <!-- Tail behind pivot -->
+    <path
+        android:pathData="M 97.5,100 L 97.5,116 L 102.5,116 L 102.5,100 Z"
+        android:fillColor="#091E1C"
+        android:strokeWidth="1"
+        android:strokeColor="#14B8A6" />
+
+    <!-- Longer Tapered Sword Body -->
+    <path
+        android:pathData="M 96,100 L 97.2,36 L 100,28 L 102.8,36 L 104,100 Z"
+        android:fillColor="#14B8A6"
+        android:strokeWidth="1"
+        android:strokeColor="#2DD4BF" />
+
+    <!-- Center Bright Luminous Strip -->
+    <path
+        android:pathData="M 98.2,96 L 98.8,38 L 100,31 L 101.2,38 L 101.8,96 Z"
+        android:fillColor="#99F6E4" />
+
+    <!-- Red Second Hand / Red Pivot Dot (exactly as in the image) -->
+    <path
+        android:pathData="M 100,100 L 100,24"
+        android:strokeWidth="1.4"
+        android:strokeColor="#EF4444"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M 100,100 L 100,122"
+        android:strokeWidth="1.6"
+        android:strokeColor="#EF4444"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M 100,100 m -3.5, 0 a 3.5,3.5 0 1,0 7,0 a 3.5,3.5 0 1,0 -7,0"
+        android:fillColor="#EF4444" />
+</vector>

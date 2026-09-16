@@ -17,10 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.data.model.UserRole
 import com.example.data.repository.AuthResultState
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.AuthViewModel
@@ -38,10 +38,11 @@ fun RegisterScreen(
     var phone by remember { mutableStateOf("") }
     var country by remember { mutableStateOf("Pakistan") }
     var province by remember { mutableStateOf("Punjab") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
     var city by remember { mutableStateOf("Lahore") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var selectedRole by remember { mutableStateOf(UserRole.STUDENT) }
     var acceptedTerms by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf("") }
 
@@ -62,18 +63,14 @@ fun RegisterScreen(
     val passwordStrength = remember(password) {
         when {
             password.isEmpty() -> ""
-            password.length < 6 -> "Weak (min 6 characters)"
-            password.length in 6..8 -> "Fair"
-            password.any { it.isDigit() } && password.any { !it.isLetterOrDigit() } -> "Strong"
-            else -> "Good"
+            com.example.util.PasswordValidator.validatePassword(password) != null -> "Weak"
+            else -> "Strong"
         }
     }
 
     val strengthColor = remember(passwordStrength) {
         when {
-            passwordStrength.startsWith("Weak") -> Color.Red
-            passwordStrength == "Fair" -> Color(0xFFFF9800)
-            passwordStrength == "Good" -> Color(0xFF2196F3)
+            passwordStrength == "Weak" -> Color.Red
             passwordStrength == "Strong" -> Color(0xFF4CAF50)
             else -> Color.Gray
         }
@@ -131,12 +128,12 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Full Name
+                // Username
                 OutlinedTextField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    label = { Text("${lStr("full_name")} *") },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Name") },
+                    label = { Text("Username *") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Username") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true
@@ -158,12 +155,13 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Mobile Number (Optional)
+                // Contact Number
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = { Text("Mobile Number (Optional)") },
-                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Phone") },
+                    label = { Text("Contact Number *") },
+                    placeholder = { Text("e.g. +923001234567") },
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Contact Number") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
@@ -216,7 +214,15 @@ fun RegisterScreen(
                     onValueChange = { password = it },
                     label = { Text("Password *") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                            Icon(
+                                imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (isPasswordVisible) "Hide password" else "Show password"
+                            )
+                        }
+                    },
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
@@ -242,7 +248,15 @@ fun RegisterScreen(
                     onValueChange = { confirmPassword = it },
                     label = { Text("Confirm Password *") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Confirm Password") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible }) {
+                            Icon(
+                                imageVector = if (isConfirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (isConfirmPasswordVisible) "Hide password" else "Show password"
+                            )
+                        }
+                    },
+                    visualTransformation = if (isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
@@ -250,43 +264,7 @@ fun RegisterScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Role Selector
-                Text(
-                    text = "Select Account Role",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    FilterChip(
-                        selected = selectedRole == UserRole.STUDENT,
-                        onClick = { selectedRole = UserRole.STUDENT },
-                        label = { Text("Student", fontSize = 12.sp) }
-                    )
-
-                    FilterChip(
-                        selected = selectedRole == UserRole.TEACHER,
-                        onClick = { selectedRole = UserRole.TEACHER },
-                        label = { Text("Teacher", fontSize = 12.sp) }
-                    )
-
-                    FilterChip(
-                        selected = selectedRole == UserRole.ADMIN,
-                        onClick = { selectedRole = UserRole.ADMIN },
-                        label = { Text("Admin", fontSize = 12.sp) }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
+                
                 // Privacy Policy & Terms Checkbox
                 Row(
                     modifier = Modifier
@@ -309,87 +287,165 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (validationError.isNotEmpty()) {
-                    Text(
-                        text = validationError,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-
-                when (val state = authState) {
-                    is AuthResultState.Error -> {
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                    ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp)
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = state.errorMessage,
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp,
+                                text = validationError,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
                                 modifier = Modifier.weight(1f)
                             )
                             IconButton(
-                                onClick = {
-                                    android.util.Log.d("RegisterScreen", "User manually dismissed error")
-                                    authViewModel.resetState()
-                                },
+                                onClick = { validationError = "" },
                                 modifier = Modifier.size(24.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Dismiss error",
-                                    tint = MaterialTheme.colorScheme.error
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
                         }
                     }
+                }
+
+                when (val state = authState) {
+                    is AuthResultState.Error -> {
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = state.errorMessage,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(
+                                    onClick = {
+                                        android.util.Log.d("RegisterScreen", "User manually dismissed error")
+                                        authViewModel.resetState()
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Dismiss error",
+                                        tint = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
                     is AuthResultState.Loading -> {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.5.dp
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Creating account...",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     else -> {}
                 }
 
                 Button(
                     onClick = {
-                        android.util.Log.d("RegisterScreen", "Button clicked: Create Account with email=$email")
-                        if (fullName.isBlank() || email.isBlank() || password.isBlank()) {
-                            validationError = "Please fill in all required fields marked with *."
-                            android.util.Log.d("RegisterScreen", "Validation error: $validationError")
+                        if (authState is AuthResultState.Loading) return@Button
+                        val trimmedUsername = fullName.trim()
+                        val trimmedEmail = email.trim()
+                        val trimmedPhone = phone.trim()
+                        val phoneRegex = Regex("^[+]?[0-9\\s\\-()]{7,18}$")
+
+                        if (trimmedUsername.isBlank()) {
+                            validationError = "Username is required."
+                            return@Button
+                        }
+                        if (trimmedEmail.isBlank()) {
+                            validationError = "Email address is required."
+                            return@Button
+                        }
+                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+                            validationError = "Please enter a valid email address."
+                            return@Button
+                        }
+                        if (trimmedPhone.isBlank()) {
+                            validationError = "Contact number is required."
+                            return@Button
+                        }
+                        if (!phoneRegex.matches(trimmedPhone) || trimmedPhone.filter { it.isDigit() }.length < 7) {
+                            validationError = "Please enter a valid contact number (e.g. +923001234567)."
+                            return@Button
+                        }
+                        if (password.isEmpty()) {
+                            validationError = "Password is required."
+                            return@Button
+                        }
+                        if (confirmPassword.isEmpty()) {
+                            validationError = "Please confirm your password."
                             return@Button
                         }
                         if (password != confirmPassword) {
                             validationError = "Passwords do not match."
-                            android.util.Log.d("RegisterScreen", "Validation error: $validationError")
                             return@Button
                         }
-                        if (password.length < 6) {
-                            validationError = "Password must be at least 6 characters long."
-                            android.util.Log.d("RegisterScreen", "Validation error: $validationError")
+
+                        val passwordValidationError = com.example.util.PasswordValidator.validatePassword(password)
+                        if (passwordValidationError != null) {
+                            validationError = passwordValidationError
                             return@Button
                         }
+
                         if (!acceptedTerms) {
                             validationError = "You must accept the Privacy Policy & Terms."
-                            android.util.Log.d("RegisterScreen", "Validation error: $validationError")
                             return@Button
                         }
+
                         validationError = ""
-                        android.util.Log.d("RegisterScreen", "Firebase request started for email=$email")
                         authViewModel.registerWithEmail(
-                            fullName = fullName,
-                            email = email,
-                            phone = phone,
+                            fullName = trimmedUsername,
+                            email = trimmedEmail,
+                            phone = trimmedPhone,
                             country = country,
                             province = province,
                             city = city,
-                            pass = password,
-                            role = selectedRole
+                            pass = password
                         )
                     },
+                    enabled = authState !is AuthResultState.Loading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

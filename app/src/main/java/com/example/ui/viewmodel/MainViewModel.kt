@@ -2,6 +2,7 @@ package com.example.ui.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
@@ -15,8 +16,11 @@ import com.example.data.model.TasbeehRecordEntity
 import com.example.data.repository.BookRepository
 import com.example.data.repository.VerifiedIslamicContentRepository
 import com.example.util.CityLocation
+import com.example.util.PdfManager
 import com.example.util.PrayerTimeCalculator
 import com.example.util.PrayerTimeData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +28,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
+
+data class BookDownloadProgress(
+    val bookId: String,
+    val isDownloading: Boolean = false,
+    val progress: Float = 0f, // 0.0f to 1.0f
+    val bytesRead: Long = 0L,
+    val totalBytes: Long = 0L,
+    val isCancelled: Boolean = false,
+    val isCompleted: Boolean = false,
+    val errorMessage: String? = null
+)
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -38,6 +55,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val firebaseRepository = com.example.data.repository.FirebaseRepository()
     val adminRepository = com.example.data.repository.AdminRepository()
     val lmsRepository = com.example.data.repository.LmsRepository()
+    private val pdfManager = PdfManager(application)
 
     val allBooks: StateFlow<List<BookEntity>> = repository.allBooks.stateIn(
         scope = viewModelScope,
@@ -80,6 +98,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+
+    private val _activeDownloads = MutableStateFlow<Map<String, BookDownloadProgress>>(emptyMap())
+    val activeDownloads: StateFlow<Map<String, BookDownloadProgress>> = _activeDownloads.asStateFlow()
+
+    private val _coverUpdateTrigger = MutableStateFlow(0L)
+    val coverUpdateTrigger: StateFlow<Long> = _coverUpdateTrigger.asStateFlow()
+
+    private val downloadJobs = ConcurrentHashMap<String, Job>()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -156,34 +182,50 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val dailyAyah = VerifiedIslamicContentRepository.getDailyAyah()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.seedInitialDataIfEmpty()
         }
 
         recalculatePrayerTimes()
 
+        // Periodic check for prayer time entry when app is running
+        viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                if (_prayerTimes.value.isNotEmpty()) {
+                    com.example.util.PrayerAudioNotifier.checkAndTriggerPrayerTime(
+                        getApplication(),
+                        _prayerTimes.value
+                    )
+                }
+                kotlinx.coroutines.delay(20_000L)
+            }
+        }
+
         // Sync Firestore real-time books with local Room DB
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             firebaseRepository.booksDatabase.collectLatest { firestoreBooks ->
                 if (firestoreBooks.isNotEmpty()) {
-                    val entities = firestoreBooks.map { doc ->
-                        BookEntity(
-                            id = doc.id,
-                            title = doc.title,
-                            author = doc.author,
-                            subject = doc.subject,
-                            darja = doc.darja,
-                            language = doc.language,
-                            type = if (doc.isSharh) "Shurooh" else if (doc.isTranslation) "Translation" else "Main Book",
-                            description = doc.description,
-                            coverResName = "img_hero_banner",
-                            pdfUrl = doc.pdfUrl,
-                            coverUrl = doc.coverImage,
-                            pageCount = doc.pages,
-                            rating = doc.rating
-                        )
+                    val currentCount = repository.getBooksCount()
+                    if (currentCount == 0 || firestoreBooks.size > currentCount) {
+                        val entities = firestoreBooks.map { doc ->
+                            BookEntity(
+                                id = doc.id,
+                                title = doc.title,
+                                author = doc.author,
+                                subject = doc.subject,
+                                darja = doc.darja,
+                                language = doc.language,
+                                type = if (doc.isSharh) "Shurooh" else if (doc.isTranslation) "Translation" else "Main Book",
+                                description = doc.description,
+                                coverResName = "img_hero_banner",
+                                pdfUrl = doc.pdfUrl,
+                                coverUrl = doc.coverImage,
+                                pageCount = doc.pages,
+                                rating = doc.rating
+                            )
+                        }
+                        repository.insertBooks(entities)
                     }
-                    repository.insertBooks(entities)
                 }
             }
         }
@@ -196,6 +238,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         recalculatePrayerTimes()
     }
 
+    fun detectAndSetCurrentLocation(context: Context, onComplete: (Boolean, String) -> Unit = { _, _ -> }) {
+        viewModelScope.launch {
+            val detected = com.example.util.LocationHelper.getCurrentLocation(context)
+            if (detected != null) {
+                selectCity(detected)
+                onComplete(true, "${detected.nameUrdu} (${detected.nameEnglish})")
+            } else {
+                onComplete(false, "مقام کا تعین نہ ہو سکا")
+            }
+        }
+    }
+
     fun recalculatePrayerTimes() {
         val city = _selectedCity.value
         val timeZone = java.util.TimeZone.getTimeZone(city.timeZoneId)
@@ -206,6 +260,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             overrideTimeZone = timeZone
         )
         _prayerTimes.value = calculated
+        com.example.util.PrayerAudioNotifier.schedulePrayerAlarms(getApplication(), calculated)
+        try {
+            com.example.widget.AppWidgetUpdateHelper.updateAllWidgets(getApplication())
+        } catch (e: Exception) {
+            // Widget update safety
+        }
     }
 
     fun setSearchQuery(query: String) {
@@ -268,19 +328,162 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun downloadBook(book: BookEntity) {
-        viewModelScope.launch {
-            repository.setDownloadStatus(book.id, false, 0.3f)
-            kotlinx.coroutines.delay(800)
-            repository.setDownloadStatus(book.id, false, 0.7f)
-            kotlinx.coroutines.delay(800)
-            repository.setDownloadStatus(book.id, true, 1.0f)
+    suspend fun getThumbnail(book: BookEntity): Bitmap? {
+        return pdfManager.getOrExtractBookCover(
+            bookId = book.id,
+            pdfUrl = book.pdfUrl,
+            coverUrl = book.coverUrl,
+            book = book
+        )
+    }
+
+    fun downloadBook(book: BookEntity, onProgress: (Float) -> Unit = {}, onResult: (Boolean) -> Unit = {}) {
+        // Cancel existing active job for this book if any
+        downloadJobs[book.id]?.cancel()
+
+        _activeDownloads.update { map ->
+            map + (book.id to BookDownloadProgress(
+                bookId = book.id,
+                isDownloading = true,
+                progress = 0f,
+                isCancelled = false,
+                isCompleted = false
+            ))
+        }
+
+        val job = viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result = pdfManager.downloadOrGetPdf(
+                    bookId = book.id,
+                    pdfUrl = book.pdfUrl,
+                    onProgress = { bytesRead, totalBytes, prog ->
+                        val safeProg = if (prog >= 0f) prog else 0f
+                        _activeDownloads.update { map ->
+                            map + (book.id to BookDownloadProgress(
+                                bookId = book.id,
+                                isDownloading = true,
+                                progress = safeProg,
+                                bytesRead = bytesRead,
+                                totalBytes = totalBytes,
+                                isCancelled = false,
+                                isCompleted = false
+                            ))
+                        }
+                        onProgress(safeProg)
+                    }
+                )
+                if (result.isSuccess) {
+                    val downloadedFile = result.getOrNull()
+                    if (downloadedFile != null && downloadedFile.exists()) {
+                        pdfManager.invalidateCoverCache(book.id)
+                        pdfManager.extractAndSaveFirstPageCover(book.id, downloadedFile)
+                        // Directly copy to device's public Downloads folder (My Files / Downloads)
+                        pdfManager.copyPdfToDeviceDownloads(book.id, book.title)
+                    }
+                    repository.setDownloadStatus(book.id, true, 1.0f)
+                    _coverUpdateTrigger.update { System.currentTimeMillis() }
+                    _activeDownloads.update { map ->
+                        map + (book.id to BookDownloadProgress(
+                            bookId = book.id,
+                            isDownloading = false,
+                            progress = 1.0f,
+                            isCancelled = false,
+                            isCompleted = true
+                        ))
+                    }
+                    onResult(true)
+                } else {
+                    repository.setDownloadStatus(book.id, false, 0f)
+                    _activeDownloads.update { map ->
+                        map + (book.id to BookDownloadProgress(
+                            bookId = book.id,
+                            isDownloading = false,
+                            progress = 0f,
+                            isCancelled = false,
+                            isCompleted = false,
+                            errorMessage = result.exceptionOrNull()?.message ?: "Download failed"
+                        ))
+                    }
+                    onResult(false)
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                repository.setDownloadStatus(book.id, false, 0f)
+                _activeDownloads.update { map ->
+                    map + (book.id to BookDownloadProgress(
+                        bookId = book.id,
+                        isDownloading = false,
+                        progress = 0f,
+                        isCancelled = true,
+                        isCompleted = false,
+                        errorMessage = "Download cancelled"
+                    ))
+                }
+                onResult(false)
+            } catch (e: Exception) {
+                repository.setDownloadStatus(book.id, false, 0f)
+                _activeDownloads.update { map ->
+                    map + (book.id to BookDownloadProgress(
+                        bookId = book.id,
+                        isDownloading = false,
+                        progress = 0f,
+                        isCancelled = false,
+                        isCompleted = false,
+                        errorMessage = e.message ?: "Download failed"
+                    ))
+                }
+                onResult(false)
+            } finally {
+                downloadJobs.remove(book.id)
+            }
+        }
+        downloadJobs[book.id] = job
+    }
+
+    fun cancelDownload(bookId: String) {
+        val job = downloadJobs.remove(bookId)
+        job?.cancel()
+        _activeDownloads.update { map ->
+            val current = map[bookId]
+            if (current != null) {
+                map + (bookId to current.copy(
+                    isDownloading = false,
+                    isCancelled = true,
+                    progress = 0f,
+                    errorMessage = "Download cancelled"
+                ))
+            } else {
+                map + (bookId to BookDownloadProgress(
+                    bookId = bookId,
+                    isDownloading = false,
+                    isCancelled = true,
+                    progress = 0f,
+                    errorMessage = "Download cancelled"
+                ))
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.setDownloadStatus(bookId, false, 0f)
+            val file = pdfManager.getLocalPdfFile(bookId)
+            if (file.exists() && file.length() < 10000) {
+                file.delete()
+            }
         }
     }
 
     fun deleteDownload(bookId: String) {
-        viewModelScope.launch {
+        cancelDownload(bookId)
+        viewModelScope.launch(Dispatchers.IO) {
+            val file = pdfManager.getLocalPdfFile(bookId)
+            if (file.exists()) {
+                file.delete()
+            }
+            val downloadedCover = pdfManager.getDownloadedCoverFile(bookId)
+            if (downloadedCover.exists()) {
+                downloadedCover.delete()
+            }
+            pdfManager.invalidateCoverCache(bookId)
             repository.setDownloadStatus(bookId, false, 0f)
+            _coverUpdateTrigger.update { System.currentTimeMillis() }
         }
     }
 

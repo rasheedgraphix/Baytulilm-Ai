@@ -93,7 +93,8 @@ object PrayerTimeCalculator {
         val month = cal.get(Calendar.MONTH) + 1
         val day = cal.get(Calendar.DAY_OF_MONTH)
 
-        // Astronomical Julian Date
+        // University of Islamic Sciences, Karachi (Banuri Town) Astronomical Calculation
+        // Julian Day Calculation
         var y = year
         var m = month
         if (m <= 2) {
@@ -102,43 +103,52 @@ object PrayerTimeCalculator {
         }
         val a = y / 100
         val b = 2 - a + (a / 4)
-        val julianDate = (365.25 * (y + 4716)).toLong() + (30.6001 * (m + 1)).toLong() + day + b - 1524.5
+        val julianDate = kotlin.math.floor(365.25 * (y + 4716)).toLong() +
+                kotlin.math.floor(30.6001 * (m + 1)).toLong() + day + b - 1524.5
         val d = julianDate - 2451545.0
 
-        // Sun's mean anomaly and ecliptic longitude
+        // Mean anomaly of the Sun (degrees)
         val g = fixAngle(357.529 + 0.98560028 * d)
+        // Mean longitude of the Sun (degrees)
         val q = fixAngle(280.459 + 0.98564736 * d)
+        // Apparent ecliptic longitude of the Sun (degrees)
         val l = fixAngle(q + 1.915 * dSin(g) + 0.020 * dSin(2 * g))
 
+        // Mean obliquity of the ecliptic (degrees)
         val ob = 23.439 - 0.00000036 * d
-        val ra = fixAngle(dAtan2(dCos(ob) * dSin(l), dCos(l)) / 15.0)
+        // Right ascension of the Sun (in hours)
+        var ra = dAtan2(dCos(ob) * dSin(l), dCos(l)) / 15.0
+        ra = fixHour(ra)
+        // Declination of the Sun (in degrees)
         val declination = dAsin(dSin(ob) * dSin(l))
 
-        // Equation of Time (in hours)
-        var eotDiff = fixAngle(l) - fixAngle(ra * 15.0)
-        if (eotDiff > 180.0) eotDiff -= 360.0
-        if (eotDiff < -180.0) eotDiff += 360.0
-        val eqTimeHours = eotDiff / 15.0
+        // Equation of Time (in hours) according to standard astronomical ephemeris:
+        // EqT = (Sun's Mean Longitude in hours) - (Right Ascension in hours)
+        var eqTimeHours = (q / 15.0) - ra
+        if (eqTimeHours > 12.0) eqTimeHours -= 24.0
+        if (eqTimeHours < -12.0) eqTimeHours += 24.0
 
         // TimeZone offset in hours
         val timeZoneOffsetHours = timeZone.getOffset(cal.timeInMillis) / 3600000.0
 
-        // Solar Noon
-        val solarNoonHours = fixHour(12.0 + timeZoneOffsetHours - lng / 15.0 - eqTimeHours)
+        // Solar Noon (Zawal / Midday in hours)
+        val solarNoonHours = fixHour(12.0 + timeZoneOffsetHours - (lng / 15.0) - eqTimeHours)
 
-        // Dhuhr: Solar Noon + 1 minute (safety margin)
+        // Dhuhr: Solar Noon + 1 minute (safety margin / precaution for Zawal)
         val dhuhrHours = solarNoonHours + (1.0 / 60.0)
 
-        // Sunrise & Sunset (Maghrib) Angle = -0.833 degrees
+        // Sunrise & Sunset (Maghrib) Angle = -0.833 degrees (atmospheric refraction + sun disk radius)
         val sunAlt = -0.833
         val sunriseHour = solarNoonHours - sunAngleTime(sunAlt, lat, declination)
         val sunsetHour = solarNoonHours + sunAngleTime(sunAlt, lat, declination)
 
-        // University of Karachi Method ONLY for Fajr & Isha (18.0 degrees)
+        // University of Islamic Sciences, Karachi (Banuri Town) Method:
+        // Fajr angle = 18.0 degrees
+        // Isha angle = 18.0 degrees
         val fajrHour = solarNoonHours - sunAngleTime(-18.0, lat, declination)
         val ishaHour = solarNoonHours + sunAngleTime(-18.0, lat, declination)
 
-        // Asr: Hanafi juristic method (shadow factor = 2)
+        // Asr: Hanafi juristic method (shadow factor = 2, i.e. Mithlayn)
         val asrShadowFactor = 2.0
         val noonShadowTan = dTan(abs(lat - declination))
         val asrAlt = dAtan(1.0 / (asrShadowFactor + noonShadowTan))

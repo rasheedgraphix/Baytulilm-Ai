@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_circle1_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Perfectly centered 1:1 square container so it NEVER stretches into an oval -->
+    <RelativeLayout
+        android:layout_width="190dp"
+        android:layout_height="190dp"
+        android:layout_gravity="center">
+
+        <!-- Authentic Dial Face: Masjid al-Haram & Holy Kaaba at Night with Orange Ring, Minarets & Hands -->
+        <ImageView
+            android:id="@+id/iv_kaaba_dial"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/img_kaaba_clock_dial" />
+
+        <!-- LCD Screen Compartment (مخصوص خانہ) at 6 o'clock position (Matching Image Exactly) -->
+        <LinearLayout
+            android:id="@+id/ll_clock1_lcd"
+            android:layout_width="106dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="22dp"
+            android:background="@drawable/bg_kaaba_lcd_screen"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="2dp">
+
+            <!-- LCD Top Line: Temp / City + Active Prayer Name (e.g. 28°C | DHUHR | 🕌) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_clock1_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="28°C"
+                    android:textColor="#E2E8F0"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_clock1_prayer_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:text="DHUHR"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_clock1_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="🕌"
+                    android:textSize="8sp" />
+            </LinearLayout>
+
+            <!-- LCD Middle Line: Digital Clock (e.g. 11:57 AM) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextClock
+                    android:id="@+id/tc_clock1_digital"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:format12Hour="h:mm"
+                    android:format24Hour="HH:mm"
+                    android:includeFontPadding="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextClock
+                    android:id="@+id/tc_clock1_ampm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:format12Hour="a"
+                    android:format24Hour=""
+                    android:includeFontPadding="false"
+                    android:textColor="#E2E8F0"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- LCD Bottom Line: Date (Gregorian & Hijri Date like 21 / 8 / 2026 in photo) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_clock1_gregorian"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="12/9/2026"
+                    android:textColor="#CBD5E1"
+                    android:textSize="8sp" />
+
+                <TextView
+                    android:id="@+id/tv_clock1_hijri"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:includeFontPadding="false"
+                    android:text="۲۹ صفر ۱۴۴۸"
+                    android:textColor="#FDE047"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</FrameLayout>

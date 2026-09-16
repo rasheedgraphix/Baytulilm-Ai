@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Minute Hand pointing straight up at 12 o'clock, pivot at (100, 100) -->
+    <!-- Tail behind center pivot -->
+    <path
+        android:pathData="M 97.5,100 L 97.5,120 A 2.5,2.5 0 0,0 102.5,120 L 102.5,100 Z"
+        android:fillColor="#94A3B8" />
+
+    <!-- Silver Baton Outer Frame (longer than hour hand) -->
+    <path
+        android:pathData="M 97,100 L 97,28 L 103,28 L 103,100 Z"
+        android:fillColor="#E2E8F0"
+        android:strokeWidth="1"
+        android:strokeColor="#64748B" />
+
+    <!-- White Luminous Center Inset Strip -->
+    <path
+        android:pathData="M 98.2,96 L 98.2,32 L 101.8,32 L 101.8,96 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Red Center Second Hand Pivot Pin (matching the red second hand in the reference photo) -->
+    <path
+        android:pathData="M 100,100 m -3, 0 a 3,3 0 1,0 6,0 a 3,3 0 1,0 -6,0"
+        android:fillColor="#EF4444" />
+</vector>

@@ -12,8 +12,8 @@ sealed class Screen(val route: String, val title: String) {
     object Profile : Screen("profile", "Profile")
 
     object Darjat : Screen("darjat", "Darjat Curriculum")
-    object DarjaDetail : Screen("darja_detail/{darjaName}", "Darja Books") {
-        fun createRoute(darjaName: String) = "darja_detail/$darjaName"
+    object DarjaDetail : Screen("darja_detail/{darjaName}?mode={mode}", "Darja Books") {
+        fun createRoute(darjaName: String, mode: String = "all") = "darja_detail/$darjaName?mode=$mode"
     }
 
     object Subjects : Screen("subjects", "Subjects")
@@ -39,7 +39,34 @@ sealed class Screen(val route: String, val title: String) {
     object About : Screen("about", "About & Contact")
     object Login : Screen("login", "Sign In")
     object Register : Screen("register", "Create Account")
+    object Signup : Screen("signup", "Sign Up")
     object ForgotPassword : Screen("forgot_password", "Reset Password")
+
+    // New Islamic Features
+    object AsmaUlHusna : Screen("asma_ul_husna", "Asma-ul-Husna")
+    object AsmaUnNabi : Screen("asma_un_nabi", "Asma-u-Nabi")
+    object HaramainLive : Screen("haramain_live", "Haramain Live")
+    object IslamicCalendar : Screen("islamic_calendar", "Islamic Calendar")
+    object QiblaCompass : Screen("qibla_compass", "Qibla Compass")
+    object Tasbeeh : Screen("tasbeeh", "Digital Tasbeeh")
+    object QuranPak : Screen("quran_pak", "Quran Pak")
+    object DuaBook : Screen("dua_book", "100 Famous Duas")
+    object FamousDuas : Screen("famous_duas", "100 Famous Duas")
+    
+    // Tafaseer
+    object Tafaseer : Screen("tafaseer", "Quran Tafaseer")
+    object TafseerDetail : Screen("tafseer_detail/{tafseerId}", "Tafseer Volumes") {
+        fun createRoute(tafseerId: String) = "tafseer_detail/$tafseerId"
+    }
+
+    // Fatawa & Fiqh
+    object Fatawa : Screen("fatawa", "Fatawa Collections")
+    object FatawaDetail : Screen("fatawa_detail/{fatawaId}", "Fatawa Volumes") {
+        fun createRoute(fatawaId: String) = "fatawa_detail/$fatawaId"
+    }
+
+    // Lughat & Dictionaries
+    object Lughat : Screen("lughat", "Lughat & Dictionaries")
 
     // Student Dashboard & LMS Routes
     object StudentDashboard : Screen("student_dashboard", "Student Dashboard")
@@ -75,4 +102,5 @@ sealed class Screen(val route: String, val title: String) {
     object AdminCertificates : Screen("admin_certificates", "Certificates Management")
     object AdminBackupSettings : Screen("admin_backup_settings", "Database Backup & Remote Settings")
     object AdminSecurity : Screen("admin_security", "Firestore Rules & App Check")
+    object PrivacyPolicy : Screen("privacy_policy", "Privacy Policy")
 }

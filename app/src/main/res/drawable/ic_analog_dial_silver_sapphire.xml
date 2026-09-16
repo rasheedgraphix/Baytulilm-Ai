@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Outer Chrome Metallic Bezel -->
+    <path
+        android:pathData="M 100 100 m -96, 0 a 96,96 0 1,0 192,0 a 96,96 0 1,0 -192,0"
+        android:strokeWidth="7"
+        android:strokeColor="#CBD5E1" />
+
+    <!-- Dark Titanium / Sapphire Dial Face -->
+    <path
+        android:pathData="M 100 100 m -91, 0 a 91,91 0 1,0 182,0 a 91,91 0 1,0 -182,0"
+        android:fillColor="#070E1E"
+        android:strokeWidth="2"
+        android:strokeColor="#64748B" />
+
+    <!-- Inner Sapphire Ring -->
+    <path
+        android:pathData="M 100 100 m -84, 0 a 84,84 0 1,0 168,0 a 84,84 0 1,0 -168,0"
+        android:strokeWidth="1.2"
+        android:strokeColor="#0284C7" />
+
+    <!-- Subtle Islamic Star Pattern Inset Ring -->
+    <path
+        android:pathData="M 100 100 m -66, 0 a 66,66 0 1,0 132,0 a 66,66 0 1,0 -132,0"
+        android:strokeWidth="0.8"
+        android:strokeColor="#1E293B" />
+
+    <!-- 12 Hour Major Marker Ticks -->
+    <!-- 12 o'clock double tick -->
+    <path android:pathData="M 97,16 L 97,30 M 103,16 L 103,30" android:strokeWidth="2.5" android:strokeColor="#FFFFFF" android:strokeLineCap="round"/>
+    <!-- 3 o'clock -->
+    <path android:pathData="M 170,100 L 184,100" android:strokeWidth="3.5" android:strokeColor="#FFFFFF" android:strokeLineCap="round"/>
+    <!-- 6 o'clock (shortened so it doesn't collide with date window) -->
+    <path android:pathData="M 100,172 L 100,184" android:strokeWidth="3.5" android:strokeColor="#FFFFFF" android:strokeLineCap="round"/>
+    <!-- 9 o'clock -->
+    <path android:pathData="M 16,100 L 30,100" android:strokeWidth="3.5" android:strokeColor="#FFFFFF" android:strokeLineCap="round"/>
+
+    <!-- Other Hour Markers -->
+    <path android:pathData="M 141,29 L 133,42" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+    <path android:pathData="M 171,59 L 158,67" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+    <path android:pathData="M 171,141 L 158,133" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+    <path android:pathData="M 141,171 L 133,158" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+    <path android:pathData="M 59,171 L 67,158" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+    <path android:pathData="M 29,141 L 42,133" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+    <path android:pathData="M 29,59 L 42,67" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+    <path android:pathData="M 59,29 L 67,42" android:strokeWidth="2" android:strokeColor="#38BDF8"/>
+
+    <!-- Top Emblem: Golden Crescent & Star at 12 o'clock -->
+    <path
+        android:pathData="M 100,42 a 6,6 0 1,1 0,12 a 7,7 0 1,0 0,-12 Z"
+        android:fillColor="#FDE047" />
+    <path
+        android:pathData="M 103,47 L 104,49 L 106,49 L 104.5,50 L 105,52 L 103,50.5 L 101,52 L 101.5,50 L 100,49 L 102,49 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Built-in Recessed Date Window Aperture (خانہ) at 6 o'clock -->
+    <!-- Outer Bevel Rim -->
+    <path
+        android:pathData="M 56,124 L 144,124 A 6,6 0 0,1 150,130 L 150,158 A 6,6 0 0,1 144,164 L 56,164 A 6,6 0 0,1 50,158 L 50,130 A 6,6 0 0,1 56,124 Z"
+        android:fillColor="#040914"
+        android:strokeWidth="1.5"
+        android:strokeColor="#94A3B8" />
+
+    <!-- Center Pivot Pin -->
+    <path
+        android:pathData="M 100,100 m -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0"
+        android:fillColor="#38BDF8"
+        android:strokeWidth="1"
+        android:strokeColor="#FFFFFF" />
+</vector>

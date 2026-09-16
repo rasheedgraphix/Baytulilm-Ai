@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Deep Carbon / Obsidian Black AMOLED Dial -->
+    <path
+        android:pathData="M 100 100 m -96, 0 a 96,96 0 1,0 192,0 a 96,96 0 1,0 -192,0"
+        android:fillColor="#040608"
+        android:strokeWidth="2.5"
+        android:strokeColor="#0E1726" />
+
+    <!-- Textured Inset Dial -->
+    <path
+        android:pathData="M 100 100 m -86, 0 a 86,86 0 1,0 172,0 a 86,86 0 1,0 -172,0"
+        android:fillColor="#070A0F"
+        android:strokeWidth="1"
+        android:strokeColor="#1E293B" />
+
+    <!-- 60 Minute Radial Ticks (Glowing Cyan) -->
+    <!-- 12, 3, 6, 9 Cardinal Outer Ticks -->
+    <path android:pathData="M 100,16 L 100,28" android:strokeWidth="3" android:strokeColor="#2DD4BF" android:strokeLineCap="round"/>
+    <path android:pathData="M 184,100 L 172,100" android:strokeWidth="3" android:strokeColor="#2DD4BF" android:strokeLineCap="round"/>
+    <path android:pathData="M 100,184 L 100,172" android:strokeWidth="3" android:strokeColor="#2DD4BF" android:strokeLineCap="round"/>
+    <path android:pathData="M 16,100 L 28,100" android:strokeWidth="3" android:strokeColor="#2DD4BF" android:strokeLineCap="round"/>
+
+    <!-- 5-min major ticks -->
+    <path android:pathData="M 142,27 L 136,37" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+    <path android:pathData="M 173,58 L 163,64" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+    <path android:pathData="M 173,142 L 163,136" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+    <path android:pathData="M 142,173 L 136,163" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+    <path android:pathData="M 58,173 L 64,163" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+    <path android:pathData="M 27,142 L 37,136" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+    <path android:pathData="M 27,58 L 37,64" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+    <path android:pathData="M 58,27 L 64,37" android:strokeWidth="2.2" android:strokeColor="#14B8A6" android:strokeLineCap="round"/>
+
+    <!-- Additional fine minute ray ticks around circumference -->
+    <path android:pathData="M 116,18 L 115,25" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 125,20 L 123,27" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 134,23 L 131,30" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 152,34 L 147,40" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 160,41 L 154,47" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 167,49 L 160,54" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 179,72 L 172,74" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 182,81 L 175,82" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 183,90 L 176,91" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+
+    <path android:pathData="M 183,110 L 176,109" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 182,119 L 175,118" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 179,128 L 172,126" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 167,151 L 160,146" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 160,159 L 154,153" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 152,166 L 147,160" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+
+    <path android:pathData="M 84,18 L 85,25" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 75,20 L 77,27" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 66,23 L 69,30" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 48,34 L 53,40" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 40,41 L 46,47" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 33,49 L 40,54" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 21,72 L 28,74" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 18,81 L 25,82" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 17,90 L 24,91" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+
+    <path android:pathData="M 17,110 L 24,109" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 18,119 L 25,118" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 21,128 L 28,126" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 33,151 L 40,146" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 40,159 L 46,153" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+    <path android:pathData="M 48,166 L 53,160" android:strokeWidth="1.2" android:strokeColor="#0F766E"/>
+
+    <!-- Inner Red Dotted Ring (matching reference photo) -->
+    <path
+        android:pathData="M 100 100 m -46, 0 a 46,46 0 1,0 92,0 a 46,46 0 1,0 -92,0"
+        android:strokeWidth="1.4"
+        android:strokeColor="#EF4444" />
+
+    <!-- Center Black Hub Base -->
+    <path
+        android:pathData="M 100 100 m -16, 0 a 16,16 0 1,0 32,0 a 16,16 0 1,0 -32,0"
+        android:fillColor="#040608"
+        android:strokeWidth="1.2"
+        android:strokeColor="#1E293B" />
+
+</vector>

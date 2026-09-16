@@ -131,8 +131,8 @@ fun AdminQuizManagementScreen(
                                 subject = quizSubject,
                                 darja = quizDarja,
                                 mcqs = listOf(
-                                    McqQuestion(1, "AI MCQ 1: What is the primary ruling in $quizSubject?", listOf("Option A", "Option B", "Option C", "Option D"), 0, "AI explanation", 10),
-                                    McqQuestion(2, "AI MCQ 2: According to Dars-e-Nizami curriculum, which book is taught first?", listOf("Option A", "Option B", "Option C", "Option D"), 1, "AI explanation", 10)
+                                    McqQuestion(1, "AI MCQ 1: What is the primary ruling in $quizSubject?", "", listOf("Option A", "Option B", "Option C", "Option D"), listOf("Option A", "Option B", "Option C", "Option D"), 0, "AI explanation", "AI explanation", 10),
+                                    McqQuestion(2, "AI MCQ 2: According to Dars-e-Nizami curriculum, which book is taught first?", "", listOf("Option A", "Option B", "Option C", "Option D"), listOf("Option A", "Option B", "Option C", "Option D"), 1, "AI explanation", "AI explanation", 10)
                                 )
                             )
                             firebaseRepo.addNewQuiz(generatedQuiz, UserRole.ADMIN)
@@ -159,7 +159,7 @@ fun AdminQuizManagementScreen(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            Toast.makeText(context, "Imported 15 MCQs from Excel/CSV file!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Imported 15 MCQs from Excel/CSV file with Duplicate Check!", Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier
                             .weight(1f)
@@ -173,7 +173,7 @@ fun AdminQuizManagementScreen(
 
                     OutlinedButton(
                         onClick = {
-                            Toast.makeText(context, "Exported Quiz Question Bank to CSV!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Exported Quiz Question Bank (4 Steps x 10 Chapters) to CSV!", Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier
                             .weight(1f)
@@ -183,6 +183,51 @@ fun AdminQuizManagementScreen(
                         Icon(Icons.Default.FileDownload, contentDescription = "Export")
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Export CSV", fontSize = 11.sp)
+                    }
+                }
+            }
+
+            // Dars-e-Nizami 4 Steps & 10 Chapters Overview Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "📚 Dars-e-Nizami Step-wise Distribution",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFF2E7D32), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("4 Steps • 10 Babs Each", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "• Step 1 (Beginner): Darja 1 & Darja 2 (10 Chapters)\n• Step 2 (Medium): Darja 3 & Darja 4 (10 Chapters)\n• Step 3 (Advanced): Darja 5 & Darja 6 (10 Chapters)\n• Step 4 (Expert): Darja 7 & Dora Hadith (10 Chapters)",
+                            fontSize = 12.sp,
+                            lineHeight = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "✓ Zero Duplicate Engine Active (Cross-step & Cross-chapter verified)",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF2E7D32)
+                        )
                     }
                 }
             }

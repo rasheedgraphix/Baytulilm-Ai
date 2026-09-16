@@ -117,12 +117,13 @@ fun SearchScreen(
                 items(searchResults, key = { it.id }) { book ->
                     BookCard(
                         book = book,
+                        onLoadThumbnail = { viewModel.getThumbnail(it) },
                         onReadClick = { onNavigate(Screen.BookViewer.createRoute(book.id)) },
                         onDetailClick = { onNavigate(Screen.BookDetail.createRoute(book.id)) },
                         onFavoriteToggle = { viewModel.toggleFavorite(book) },
                         onBookmarkToggle = { viewModel.toggleBookmark(book) },
                         onDownloadClick = { viewModel.downloadBook(book) },
-                        onShareClick = { /* Share */ }
+                        onNavigate = onNavigate
                     )
                 }
             }

@@ -119,12 +119,15 @@ fun AdminBookManagementScreen(
             }
         }
 
+        val lang = com.example.util.LocalAppLanguage.current
+        val langCode = lang.code
+
         TabRow(selectedTabIndex = selectedTab) {
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text("Book Catalog CMS", modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                Text(when (langCode) { "ps" -> "د کتابونو مدیریت"; "ur" -> "کتب لسٹ مینیجر"; else -> "Book Catalog CMS" }, modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
             }
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                Text("PDF & File Storage", modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                Text(when (langCode) { "ps" -> "د پی ډی ایف ذخیره"; "ur" -> "پی ڈی ایف و فائل اسٹوریج"; else -> "PDF & File Storage" }, modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
             }
         }
 

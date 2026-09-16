@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="120dp"
+    android:viewportWidth="240"
+    android:viewportHeight="120">
+
+    <!-- Primary Diagonal Glass Highlight Sheen -->
+    <path
+        android:fillAlpha="0.18"
+        android:fillColor="#FFFFFF"
+        android:pathData="M 0,0 L 240,0 L 240,38 L 0,86 Z" />
+
+    <!-- Secondary Specular Reflection Edge -->
+    <path
+        android:fillAlpha="0.10"
+        android:fillColor="#FFFFFF"
+        android:pathData="M 0,0 L 160,0 L 0,65 Z" />
+</vector>

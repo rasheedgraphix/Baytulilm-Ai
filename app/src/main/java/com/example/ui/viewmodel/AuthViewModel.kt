@@ -22,6 +22,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun loginAsGuest() {
+        viewModelScope.launch {
+            authRepository.loginAsGuest()
+        }
+    }
+
     fun registerWithEmail(
         fullName: String,
         email: String,
@@ -29,11 +35,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         country: String,
         province: String,
         city: String,
-        pass: String,
-        role: String
+        pass: String
     ) {
         viewModelScope.launch {
-            authRepository.registerWithEmail(fullName, email, phone, country, province, city, pass, role)
+            authRepository.registerWithEmail(fullName, email, phone, country, province, city, pass)
         }
     }
 
@@ -105,6 +110,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             authRepository.deleteAccount()
         }
+    }
+
+    fun continueAsGuest() {
+        authRepository.continueAsGuest()
+    }
+
+    fun setUserProfile(user: UserProfile) {
+        authRepository.setUserProfile(user)
     }
 
     fun logout() {

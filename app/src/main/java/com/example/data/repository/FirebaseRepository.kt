@@ -22,7 +22,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -84,7 +87,7 @@ class FirebaseRepository {
     )
 
     // Books Database Collection
-    private val _booksDatabase = MutableStateFlow<List<BookDoc>>(initialBooksList())
+    private val _booksDatabase = MutableStateFlow<List<BookDoc>>(emptyList())
     val booksDatabase: StateFlow<List<BookDoc>> = _booksDatabase.asStateFlow()
 
     // Quizzes Collection
@@ -95,11 +98,19 @@ class FirebaseRepository {
     private val _quizResults = MutableStateFlow<List<QuizResultDoc>>(emptyList())
     val quizResults: StateFlow<List<QuizResultDoc>> = _quizResults.asStateFlow()
 
+    private val lazyInitialBooksList: List<BookDoc> by lazy { initialBooksList() }
+
     init {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (_booksDatabase.value.isEmpty()) {
+                _booksDatabase.value = lazyInitialBooksList
+            }
+        }
         setupFirestoreRealtimeListeners()
     }
 
     private fun setupFirestoreRealtimeListeners() {
+        if (listeners.isNotEmpty()) return
         val firestore = db ?: return
 
         // 1. Listen to 'books' collection
@@ -485,9 +496,9 @@ class FirebaseRepository {
             subject = "Nahw",
             darja = "Darja-e-Ula",
             mcqs = listOf(
-                McqQuestion(1, "What is the definition of Al-Kalam in Arabic Grammar?", listOf("A single word", "A compound phrase that gives complete benefit", "A letter", "A verb without subject"), 1, "Al-Kalam is a compound statement providing complete understanding to the listener.", 10),
-                McqQuestion(2, "How many signs of Ism (Noun) are mentioned in Nahw?", listOf("3", "5", "More than 7", "None"), 2, "Ism has signs like Alif-Lam, Tanween, Harf-Jar, Hafadh, etc.", 10),
-                McqQuestion(3, "Which of the following is Marfoo' (Nominated)?", listOf("Fa'il (Subject)", "Maf'ool (Object)", "Mudaf Ilaihi", "Majroor"), 0, "Fa'il is always in the state of Raf' (Nominated).", 10)
+                McqQuestion(1, "What is the definition of Al-Kalam in Arabic Grammar?", "", listOf("A single word", "A compound phrase that gives complete benefit", "A letter", "A verb without subject"), listOf("A single word", "A compound phrase that gives complete benefit", "A letter", "A verb without subject"), 1, "Al-Kalam is a compound statement providing complete understanding to the listener.", "Al-Kalam is a compound statement providing complete understanding to the listener.", 10),
+                McqQuestion(2, "How many signs of Ism (Noun) are mentioned in Nahw?", "", listOf("3", "5", "More than 7", "None"), listOf("3", "5", "More than 7", "None"), 2, "Ism has signs like Alif-Lam, Tanween, Harf-Jar, Hafadh, etc.", "Ism has signs like Alif-Lam, Tanween, Harf-Jar, Hafadh, etc.", 10),
+                McqQuestion(3, "Which of the following is Marfoo' (Nominated)?", "", listOf("Fa'il (Subject)", "Maf'ool (Object)", "Mudaf Ilaihi", "Majroor"), listOf("Fa'il (Subject)", "Maf'ool (Object)", "Mudaf Ilaihi", "Majroor"), 0, "Fa'il is always in the state of Raf' (Nominated).", "Fa'il is always in the state of Raf' (Nominated).", 10)
             ),
             difficulty = "Medium",
             marks = 30
@@ -499,8 +510,8 @@ class FirebaseRepository {
             subject = "Fiqh",
             darja = "Darja-e-Ula",
             mcqs = listOf(
-                McqQuestion(1, "How many obligatory acts (Fara'id) are there in Wudu according to Hanafi Fiqh?", listOf("3", "4", "6", "7"), 1, "The 4 Farz acts are: washing face, washing arms to elbows, wiping 1/4th head, washing feet to ankles.", 10),
-                McqQuestion(2, "What invalidates Tayammum?", listOf("Anything that invalidates Wudu or availability of water", "Sleeping on a chair", "Laughter outside prayer", "Reciting Quran"), 0, "Tayammum breaks when water becomes accessible or Wudu breaks.", 10)
+                McqQuestion(1, "How many obligatory acts (Fara'id) are there in Wudu according to Hanafi Fiqh?", "", listOf("3", "4", "6", "7"), listOf("3", "4", "6", "7"), 1, "The 4 Farz acts are: washing face, washing arms to elbows, wiping 1/4th head, washing feet to ankles.", "The 4 Farz acts are: washing face, washing arms to elbows, wiping 1/4th head, washing feet to ankles.", 10),
+                McqQuestion(2, "What invalidates Tayammum?", "", listOf("Anything that invalidates Wudu or availability of water", "Sleeping on a chair", "Laughter outside prayer", "Reciting Quran"), listOf("Anything that invalidates Wudu or availability of water", "Sleeping on a chair", "Laughter outside prayer", "Reciting Quran"), 0, "Tayammum breaks when water becomes accessible or Wudu breaks.", "Tayammum breaks when water becomes accessible or Wudu breaks.", 10)
             ),
             difficulty = "Easy",
             marks = 20
@@ -540,13 +551,13 @@ class FirebaseRepository {
     )
 
     private fun initialDarjatList() = listOf(
-        DarjaDoc("darja_ula", "Darja Ula", "اولی", "درجہ اولیٰ", "First Year Dars-e-Nizami (Foundation Arabic Syntax, Morphology, Tajweed & Fiqh)", "پہلا سال درسِ نظامی (بنیادی عربی نحو، صرف، تجوید اور فقہ)", "https://images.unsplash.com/photo-1585036156171-384164a8c675?auto=format&fit=crop&w=400&q=80", 94, 4, 1, 0.25f),
-        DarjaDoc("darja_sania", "Darja Sania", "ثانیہ", "درجہ ثانیہ", "Second Year Dars-e-Nizami (Mukhtasar al-Quduri, Mantiq & Sarf In-Depth)", "دوسرا سال درسِ نظامی (مختصر القدوری، منطق اور تفصیلی صرف)", "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=400&q=80", 7, 5, 2, 0.15f),
-        DarjaDoc("darja_salisa", "Darja Salisa", "ثالثہ", "درجہ ثالثہ", "Third Year Dars-e-Nizami (Kanz al-Daqaiq, Usul al-Shashi & Kafiyah Syntax)", "تیسرا سال درسِ نظامی (کنز الدقائق، اصول الشاشی اور کافیہ نحو)", "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80", 9, 6, 3, 0.10f),
-        DarjaDoc("darja_rabia", "Darja Rabia", "رابعہ", "درجہ رابعہ", "Fourth Year Dars-e-Nizami (Riyad as-Salihin, Sharh Wiqayah & Noor al-Anwar)", "چوتھا سال درسِ نظامی (ریاض الصالحین، شرح وقایہ اور نور الانوار)", "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80", 8, 5, 4, 0.05f),
-        DarjaDoc("darja_khamisa", "Darja Khamisa", "خامسہ", "درجہ خامسہ", "Fifth Year Dars-e-Nizami (Sharh Aqeedah Tahawiyyah, Al-Hidayah, Aasaar us-Sunan & Balagha)", "پانچواں سال درسِ نظامی (شرح العقیدہ الطحاویہ، الہدایہ، آثار السنن اور بلاغت)", "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=80", 19, 7, 5, 0.0f),
-        DarjaDoc("darja_sadisa", "Class 6th", "سادسہ", "درجہ سادسہ", "Sixth Year Dars-e-Nizami (Al-Hidayah, Tafseer Jalalain, Siraji, Aqeedah & Usul Fiqh)", "چھٹا سال درسِ نظامی (الہدایہ، تفسیر جلالین، سراجی میراث، عقائد اور اصول فقہ)", "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=400&q=80", 58, 7, 6, 0.0f),
-        DarjaDoc("darja_sabia", "Darja Sabi'a", "سابعہ", "درجہ سابعہ", "Seventh Year Dars-e-Nizami (Tafseer Baizawi, Mishkat al-Masabih & Nukhbat al-Fikar)", "ساتواں سال درسِ نظامی (تفسیر بیضاوی، مشکوۃ المصابیح اور نخبۃ الفکر)", "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=400&q=80", 18, 7, 7, 0.0f),
-        DarjaDoc("dora_hadith", "Dora-e-Hadith", "دورۂ حدیث", "دورۂ حدیث شریف", "Final Master Graduation Year (Sahih Bukhari, Sahih Muslim, Sunan Books & Shurooh)", "آخری سال تکمیلی (صحیح البخاری، صحیح المسلم، صحاح ستہ اور شروحات)", "https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&w=400&q=80", 19, 6, 8, 0.0f)
+        DarjaDoc("darja_ula", "Darja Ula", "الصف الأول", "درجہ اولیٰ", "First Year Dars-e-Nizami (Foundation Arabic Syntax, Morphology, Tajweed & Fiqh)", "پہلا سال درسِ نظامی (بنیادی عربی نحو، صرف، تجوید اور فقہ)", "https://images.unsplash.com/photo-1585036156171-384164a8c675?auto=format&fit=crop&w=400&q=80", 102, 8, 1, 0.25f),
+        DarjaDoc("darja_sania", "Darja Sania", "الصف الثاني", "درجہ ثانیہ", "Second Year Dars-e-Nizami (Mukhtasar al-Quduri, Mantiq & Sarf In-Depth)", "دوسرا سال درسِ نظامی (مختصر القدوری، منطق اور تفصیلی صرف)", "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=400&q=80", 190, 11, 2, 0.15f),
+        DarjaDoc("darja_salisa", "Darja Salisa", "الصف الثالث", "درجہ ثالثہ", "Third Year Dars-e-Nizami (Kanz al-Daqaiq, Usul al-Shashi & Kafiyah Syntax)", "تیسرا سال درسِ نظامی (کنز الدقائق، اصول الشاشی اور کافیہ نحو)", "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80", 123, 9, 3, 0.10f),
+        DarjaDoc("darja_rabia", "Darja Rabia", "الصف الرابع", "درجہ رابعہ", "Fourth Year Dars-e-Nizami (Riyad as-Salihin, Sharh Wiqayah & Noor al-Anwar)", "چوتھا سال درسِ نظامی (ریاض الصالحین، شرح وقایہ اور نور الانوار)", "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80", 88, 9, 4, 0.05f),
+        DarjaDoc("darja_khamisa", "Darja Khamisa", "الصف الخامس", "درجہ خامسہ", "Fifth Year Dars-e-Nizami (Sharh Aqeedah Tahawiyyah, Al-Hidayah, Aasaar us-Sunan & Balagha)", "پانچواں سال درسِ نظامی (شرح العقیدہ الطحاویہ، الہدایہ، آثار السنن اور بلاغت)", "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=80", 190, 12, 5, 0.0f),
+        DarjaDoc("darja_sadisa", "Darja Sadisa", "الصف السادس", "درجہ سادسہ", "Sixth Year Dars-e-Nizami (Al-Hidayah, Tafseer Jalalain, Siraji, Aqeedah & Usul Fiqh)", "چھٹا سال درسِ نظامی (الہدایہ، تفسیر جلالین، سراجی میراث، عقائد اور اصول فقہ)", "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=400&q=80", 137, 11, 6, 0.0f),
+        DarjaDoc("darja_sabia", "Darja Sabi'a", "الصف السابع", "درجہ سابعہ", "Seventh Year Dars-e-Nizami (Tafseer Baizawi, Mishkat al-Masabih & Nukhbat al-Fikar)", "ساتواں سال درسِ نظامی (تفسیر بیضاوی، مشکوۃ المصابیح اور نخبۃ الفکر)", "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=400&q=80", 148, 6, 7, 0.0f),
+        DarjaDoc("dora_hadith", "Dora-e-Hadith", "الصف الثامن", "دورۂ حدیث شریف", "Final Master Graduation Year (Sahih Bukhari, Sahih Muslim, Sunan Books & Shurooh)", "آخری سال تکمیلی (صحیح البخاری، صحیح المسلم، صحاح ستہ اور شروحات)", "https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&w=400&q=80", 120, 3, 8, 0.0f)
     )
 }

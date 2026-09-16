@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_simple_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Centered Glassmorphic Clock Card (Wrapping tightly without unnecessary height) -->
+    <RelativeLayout
+        android:id="@+id/rl_simple_glass_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_widget_glass_sense"
+        android:padding="12dp">
+
+        <!-- Authentic Diagonal Glossy Glass Reflection Overlay (Matching Uploaded Image) -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/ll_simple_content"
+            android:layout_alignTop="@+id/ll_simple_content"
+            android:contentDescription="Glass Reflection"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_glass_reflection_sheen" />
+
+        <!-- Main Content Row -->
+        <LinearLayout
+            android:id="@+id/ll_simple_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Left Side: Bold White Digital Clock & Cyan Gregorian Date (Matching Image 2) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.15"
+                android:gravity="start|center_vertical"
+                android:orientation="vertical">
+
+                <!-- Crisp White Digital Clock Time: 12:45 -->
+                <TextClock
+                    android:id="@+id/tc_simple_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:format12Hour="h:mm"
+                    android:format24Hour="HH:mm"
+                    android:includeFontPadding="false"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="2"
+                    android:shadowRadius="5"
+                    android:textColor="#FFFFFF"
+                    android:textSize="35sp"
+                    android:textStyle="bold" />
+
+                <!-- Vibrant Cyan Date: e.g. 19/01/2015 (Matching uploaded image) -->
+                <TextClock
+                    android:id="@+id/tc_simple_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:format12Hour="dd/MM/yyyy"
+                    android:format24Hour="dd/MM/yyyy"
+                    android:includeFontPadding="false"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:textColor="#2DD4BF"
+                    android:textSize="12.5sp"
+                    android:textStyle="bold" />
+
+                <!-- Hijri Calendar Date in Golden/Mint accent -->
+                <TextView
+                    android:id="@+id/tv_simple_hijri"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="2"
+                    android:text="۲۹ ربیع الاول ۱۴۴۸ ھ"
+                    android:textColor="#FDE047"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Right Side: Cyan Temperature & Weather Status (20°C ☀️) & City Location -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1.05"
+                android:gravity="end|center_vertical"
+                android:orientation="vertical">
+
+                <!-- Cyan Temperature & Weather Icon: e.g. 20°C ☀️ (Matching uploaded image) -->
+                <TextView
+                    android:id="@+id/tv_simple_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="4"
+                    android:text="20°C ☀️"
+                    android:textColor="#2DD4BF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <!-- Day of Week & AM/PM indicator in soft white -->
+                <TextClock
+                    android:id="@+id/tc_simple_day"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:format12Hour="EEEE · a"
+                    android:format24Hour="EEEE"
+                    android:includeFontPadding="false"
+                    android:textColor="#E2E8F0"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold" />
+
+                <!-- City Location Badge -->
+                <TextView
+                    android:id="@+id/tv_simple_city"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:gravity="end"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="2"
+                    android:text="📍 اسلام آباد"
+                    android:textColor="#99F6E4"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</FrameLayout>

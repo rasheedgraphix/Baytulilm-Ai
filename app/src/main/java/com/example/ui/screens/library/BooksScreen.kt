@@ -64,6 +64,7 @@ import com.example.data.model.BookEntity
 import com.example.ui.components.BookCard
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
+import com.example.util.DarsNizamiMatcher
 import com.example.util.LocalAppLanguage
 import com.example.util.lStr
 
@@ -88,22 +89,25 @@ enum class SortOption(val key: String) {
 @Composable
 fun BooksScreen(
     darjaId: String,
+    initialMode: String = "all",
     viewModel: MainViewModel,
     onNavigate: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val allBooks by viewModel.allBooks.collectAsStateWithLifecycle()
+    val activeDownloads by viewModel.activeDownloads.collectAsStateWithLifecycle()
     val darjatList by viewModel.firebaseRepository.darjatListStream.collectAsStateWithLifecycle()
     val lang = LocalAppLanguage.current
-    val isUrdu = lang.code == "ur" || lang.isRtl
+    val langCode = lang.code
 
     // Find Darja meta
     val darjaItem = darjatList.find { 
         it.id.equals(darjaId, ignoreCase = true) || 
         it.name.equals(darjaId, ignoreCase = true)
     }
-    val darjaTitle = if (darjaItem != null) darjaItem.getDisplayName(isUrdu) else darjaId.ifBlank { lStr("books") }
+    val darjaTitle = if (darjaItem != null) darjaItem.getDisplayName(langCode) else darjaId.ifBlank { lStr("books") }
 
+    var selectedContentMode by remember { mutableStateOf(initialMode) } // "all", "books", "shuroohat"
     var searchQuery by remember { mutableStateOf("") }
     var selectedSubject by remember { mutableStateOf("All") }
     var isGridView by remember { mutableStateOf(false) }
@@ -113,32 +117,27 @@ fun BooksScreen(
     var showSortMenu by remember { mutableStateOf(false) }
 
     val subjectsList = listOf(
-        "All", "Nahw", "Sarf", "Fiqh", "Usul-ul-Fiqh", "Hadith",
-        "Tafseer", "Balagha", "Mantiq", "Aqeedah", "Arabic Literature", "Insha"
+        "All", "اصول فقہ", "نحو", "صرف", "فقہ", "تجوید", "عربی ادب", "انشاء", "اخلاقیات", "فارسی", "حدیث", "تفسیر", "بلاغت", "منطق", "عقائد"
     )
 
     // Filter books matching current Darja, search, subject, favorites, and downloads
     val filteredBooks = allBooks.filter { book ->
-        val matchesDarja = book.darja.contains(darjaTitle, ignoreCase = true) || 
-                           darjaTitle.contains(book.darja, ignoreCase = true) ||
-                           book.darja.contains(darjaId, ignoreCase = true) ||
-                           ((darjaId.contains("6", ignoreCase = true) || darjaTitle.contains("6", ignoreCase = true) || darjaId.contains("sadisa", ignoreCase = true)) &&
-                            (book.darja.contains("6", ignoreCase = true) || book.darja.contains("Sadisa", ignoreCase = true))) ||
-                           (darjaItem != null && (
-                               book.darja.contains(darjaItem.id, ignoreCase = true) ||
-                               book.darja.contains(darjaItem.name, ignoreCase = true) ||
-                               book.darja.contains(darjaItem.urduName, ignoreCase = true)
-                           ))
+        val matchesDarja = DarsNizamiMatcher.matchesClass(book.darja, darjaId, darjaItem?.order) ||
+                (darjaTitle.isNotBlank() && DarsNizamiMatcher.matchesClass(book.darja, darjaTitle, darjaItem?.order))
         val matchesSearch = searchQuery.isBlank() ||
                 book.title.contains(searchQuery, ignoreCase = true) ||
                 book.author.contains(searchQuery, ignoreCase = true) ||
                 book.subject.contains(searchQuery, ignoreCase = true)
-
-        val matchesSubject = selectedSubject == "All" || book.subject.equals(selectedSubject, ignoreCase = true)
+        val matchesSubject = DarsNizamiMatcher.matchesSubject(book.subject, selectedSubject)
         val matchesFav = !favoriteOnly || book.isFavorite
         val matchesDownloaded = !downloadedOnly || book.isDownloaded
+        val matchesMode = when (selectedContentMode) {
+            "books" -> DarsNizamiMatcher.isOriginalBook(book.title, book.type, book.description)
+            "shuroohat" -> DarsNizamiMatcher.isSharah(book.title, book.type, book.description)
+            else -> true
+        }
 
-        matchesDarja && matchesSearch && matchesSubject && matchesFav && matchesDownloaded
+        matchesDarja && matchesSearch && matchesSubject && matchesFav && matchesDownloaded && matchesMode
     }.let { list ->
         when (currentSortOption) {
             SortOption.TITLE_ASC -> list.sortedBy { it.title }
@@ -159,8 +158,9 @@ fun BooksScreen(
                             fontSize = 18.sp
                         )
                         if (darjaItem != null && darjaItem.arabicName.isNotBlank()) {
+                            val subText = if (langCode == "ur" || langCode == "ps") darjaItem.arabicName else "${darjaItem.name} • ${darjaItem.arabicName}"
                             Text(
-                                text = "${darjaItem.getDisplayName(!isUrdu)} • ${darjaItem.arabicName}",
+                                text = subText,
                                 fontSize = 11.sp,
                                 color = Color.White.copy(alpha = 0.85f)
                             )
@@ -232,6 +232,52 @@ fun BooksScreen(
                         singleLine = true
                     )
                 }
+            }
+
+            // Mode Selector Bar (کتب / شروحات / تمام)
+            androidx.compose.material3.TabRow(
+                selectedTabIndex = when (selectedContentMode) {
+                    "books" -> 1
+                    "shuroohat" -> 2
+                    else -> 0
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                androidx.compose.material3.Tab(
+                    selected = selectedContentMode == "all",
+                    onClick = { selectedContentMode = "all" },
+                    text = {
+                        Text(
+                            text = if (langCode == "ur" || langCode == "ps") "تمام مواد" else "All",
+                            fontWeight = if (selectedContentMode == "all") FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    }
+                )
+                androidx.compose.material3.Tab(
+                    selected = selectedContentMode == "books",
+                    onClick = { selectedContentMode = "books" },
+                    text = {
+                        Text(
+                            text = if (langCode == "ur" || langCode == "ps") "اصل کتب (متون)" else "Books (Matan)",
+                            fontWeight = if (selectedContentMode == "books") FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    }
+                )
+                androidx.compose.material3.Tab(
+                    selected = selectedContentMode == "shuroohat",
+                    onClick = { selectedContentMode = "shuroohat" },
+                    text = {
+                        Text(
+                            text = if (langCode == "ur" || langCode == "ps") "شروحات و حواشی" else "Shuroohat",
+                            fontWeight = if (selectedContentMode == "shuroohat") FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    }
+                )
             }
 
             // Subject Filters Horizontal Row
@@ -379,7 +425,11 @@ fun BooksScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = if (isUrdu) "$darjaTitle میں فی الحال کوئی کتابیں موجود نہیں ہیں۔" else "There are currently no books in $darjaTitle. Books, Shurooh, and PDF materials will appear here once added.",
+                                text = when (langCode) {
+                                    "ps" -> "په $darjaTitle کې فی الحال هیڅ کتابونه نشته."
+                                    "ur" -> "$darjaTitle میں فی الحال کوئی کتابیں موجود نہیں ہیں۔"
+                                    else -> "There are currently no books in $darjaTitle. Books, Shurooh, and PDF materials will appear here once added."
+                                },
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(horizontal = 8.dp)
@@ -397,17 +447,22 @@ fun BooksScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(filteredBooks, key = { it.id }) { book ->
+                            val downloadState = activeDownloads[book.id]
                             BookCard(
                                 book = book,
+                                downloadProgress = downloadState?.progress,
+                                isDownloading = downloadState?.isDownloading == true,
+                                onCancelDownload = { viewModel.cancelDownload(book.id) },
+                                onLoadThumbnail = { viewModel.getThumbnail(it) },
                                 onReadClick = { onNavigate(Screen.BookViewer.createRoute(book.id)) },
                                 onDetailClick = { onNavigate(Screen.BookDetail.createRoute(book.id)) },
                                 onFavoriteToggle = { viewModel.toggleFavorite(book) },
                                 onBookmarkToggle = { viewModel.toggleBookmark(book) },
                                 onDownloadClick = { viewModel.downloadBook(book) },
-                                onShareClick = { },
                                 onAiChatClick = { onNavigate(Screen.AiAssistant.route) },
                                 onAiQuizClick = { onNavigate(Screen.Quiz.route) },
-                                onAiNotesClick = { onNavigate(Screen.LmsNotes.route) }
+                                onAiNotesClick = { onNavigate(Screen.LmsNotes.route) },
+                                onNavigate = onNavigate
                             )
                         }
                     }
@@ -418,17 +473,22 @@ fun BooksScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(filteredBooks, key = { it.id }) { book ->
+                            val downloadState = activeDownloads[book.id]
                             BookCard(
                                 book = book,
+                                downloadProgress = downloadState?.progress,
+                                isDownloading = downloadState?.isDownloading == true,
+                                onCancelDownload = { viewModel.cancelDownload(book.id) },
+                                onLoadThumbnail = { viewModel.getThumbnail(it) },
                                 onReadClick = { onNavigate(Screen.BookViewer.createRoute(book.id)) },
                                 onDetailClick = { onNavigate(Screen.BookDetail.createRoute(book.id)) },
                                 onFavoriteToggle = { viewModel.toggleFavorite(book) },
                                 onBookmarkToggle = { viewModel.toggleBookmark(book) },
                                 onDownloadClick = { viewModel.downloadBook(book) },
-                                onShareClick = { },
                                 onAiChatClick = { onNavigate(Screen.AiAssistant.route) },
                                 onAiQuizClick = { onNavigate(Screen.Quiz.route) },
-                                onAiNotesClick = { onNavigate(Screen.LmsNotes.route) }
+                                onAiNotesClick = { onNavigate(Screen.LmsNotes.route) },
+                                onNavigate = onNavigate
                             )
                         }
                     }

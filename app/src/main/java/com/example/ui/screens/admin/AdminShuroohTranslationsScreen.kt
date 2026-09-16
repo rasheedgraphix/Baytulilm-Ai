@@ -93,12 +93,15 @@ fun AdminShuroohTranslationsScreen(
             }
         }
 
+        val lang = com.example.util.LocalAppLanguage.current
+        val langCode = lang.code
+
         TabRow(selectedTabIndex = selectedTab) {
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text("Shurooh Linking", modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                Text(when (langCode) { "ps" -> "شروحات"; "ur" -> "شروحات کا ربط"; else -> "Shurooh Linking" }, modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
             }
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                Text("Translations Linking", modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                Text(when (langCode) { "ps" -> "ژباړې"; "ur" -> "تراجم کا ربط"; else -> "Translations Linking" }, modifier = Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
             }
         }
 

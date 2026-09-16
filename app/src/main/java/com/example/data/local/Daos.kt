@@ -33,6 +33,9 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE title LIKE '%' || :query || '%'")
     fun searchBooks(query: String): Flow<List<BookEntity>>
 
+    @Query("SELECT COUNT(*) FROM books")
+    suspend fun getBooksCount(): Int
+
     @Query("SELECT * FROM books WHERE id = :id")
     suspend fun getBookById(id: String): BookEntity?
 

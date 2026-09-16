@@ -27,7 +27,7 @@ fun ExamResultsScreen(
     onNavigateBack: () -> Unit
 ) {
     val examResults by lmsRepository.examResults.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
 
     Scaffold(
         topBar = {
@@ -136,19 +136,13 @@ fun ExamResultsScreen(
                                     Remarks: ${result.remarks}
                                 """.trimIndent()
 
-                                val shareIntent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_SUBJECT, "Result Card - ${result.studentName}")
-                                    putExtra(Intent.EXTRA_TEXT, reportText)
-                                    type = "text/plain"
-                                }
-                                context.startActivity(Intent.createChooser(shareIntent, "Share Result Card PDF"))
+                                clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(reportText))
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.Print, contentDescription = null)
+                            Icon(Icons.Default.ContentCopy, contentDescription = null)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Print / Share PDF Report Card")
+                            Text("Copy Result Card Report")
                         }
                     }
                 }
