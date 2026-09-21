@@ -18,8 +18,8 @@ android {
     applicationId = "com.baytulilmai.app"
     minSdk = 24
     targetSdk = 36
-    versionCode = 16
-    versionName = "1.4.3"
+    versionCode = 18
+    versionName = "1.4.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -120,6 +120,7 @@ dependencies {
   implementation(libs.moshi.kotlin)
   implementation(libs.okhttp)
   implementation(libs.play.services.location)
+  implementation(libs.play.services.ads)
   implementation(libs.retrofit)
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)

@@ -1,9 +1,12 @@
 package com.example.ui.screens.book
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import com.example.util.AdMobManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -80,6 +83,23 @@ fun BookViewerScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val pdfManager = remember { PdfManager(context) }
+
+    val handleBackWithAd = remember(context, onBack) {
+        {
+            val activity = context as? Activity
+            if (activity != null) {
+                AdMobManager.showInterstitial(activity) {
+                    onBack()
+                }
+            } else {
+                onBack()
+            }
+        }
+    }
+
+    BackHandler {
+        handleBackWithAd()
+    }
 
     var book by remember { mutableStateOf<BookEntity?>(null) }
     var currentPage by rememberSaveable { mutableIntStateOf(1) }
@@ -348,7 +368,7 @@ fun BookViewerScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = handleBackWithAd) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },

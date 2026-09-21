@@ -102,6 +102,7 @@ import com.example.ui.screens.ai.AiAssistantScreen
 import com.example.ui.screens.ai.AiTeacherScreen
 import com.example.ui.screens.islamic.AsmaUlHusnaScreen
 import com.example.ui.screens.islamic.AsmaUnNabiScreen
+import com.example.ui.screens.islamic.DaimeAuqatScreen
 import com.example.ui.screens.islamic.HaramainLiveScreen
 import com.example.ui.screens.islamic.IslamicCalendarScreen
 import com.example.ui.screens.islamic.QiblaCompassScreen
@@ -174,12 +175,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LanguageManager.init(this)
-        try {
-            com.example.data.fcm.BaytulIlmFirebaseMessagingService.initializeFCM(this)
-        } catch (t: Throwable) {
-            // Log as info/debug, or ignore to avoid noise, as this is expected in some environments
-            android.util.Log.d("MainActivity", "FCM init skipped: ${t.message}")
+        com.example.ui.screens.islamic.HijriHelper.init(this)
+        
+        // Optimize cold start: Run heavy AdMob & FCM initializations asynchronously on background thread
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            try {
+                com.example.util.AdMobManager.initialize(applicationContext)
+                com.example.util.AdMobManager.loadInterstitial(applicationContext)
+            } catch (t: Throwable) {
+                android.util.Log.d("MainActivity", "AdMob init error: ${t.message}")
+            }
+            try {
+                com.example.data.fcm.BaytulIlmFirebaseMessagingService.initializeFCM(applicationContext)
+            } catch (t: Throwable) {
+                android.util.Log.d("MainActivity", "FCM init skipped: ${t.message}")
+            }
         }
+        
         enableEdgeToEdge()
         setContent {
             LocalizedApp(context = this) {
@@ -270,6 +282,15 @@ fun BaytulIlmApp() {
 
     androidx.compose.runtime.LaunchedEffect(Unit) {
         com.example.util.KalimaShahadatPlayer.playOnAppLaunch(context)
+    }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        com.example.util.BookDownloadManager.downloadCompletedEvent.collect {
+            val activity = context as? android.app.Activity
+            if (activity != null) {
+                com.example.util.AdMobManager.showInterstitial(activity)
+            }
+        }
     }
 
     val mainViewModel: MainViewModel = viewModel()
@@ -572,6 +593,9 @@ fun BaytulIlmApp() {
                         isTopLevel = true,
                         onFullscreenChange = { isLiveFullscreen = it }
                     )
+                }
+                composable(Screen.DaimeAuqat.route) {
+                    DaimeAuqatScreen(onNavigateBack = { navController.popBackStack() })
                 }
                 composable(Screen.IslamicCalendar.route) {
                     IslamicCalendarScreen(onNavigateBack = { navController.popBackStack() })

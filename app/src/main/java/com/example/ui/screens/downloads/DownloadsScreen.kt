@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.BookEntity
 import com.example.ui.components.BookCoverThumbnailView
+import com.example.ui.components.AdBannerView
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
 
@@ -41,9 +42,12 @@ fun DownloadsScreen(
     onNavigate: (String) -> Unit
 ) {
     val downloadedBooks by viewModel.downloadedBooks.collectAsStateWithLifecycle()
+    val allBooks by viewModel.allBooks.collectAsStateWithLifecycle()
+    val activeDownloadsMap by viewModel.activeDownloads.collectAsStateWithLifecycle()
+
     var selectedTab by remember { mutableStateOf(0) } // 0: Active, 1: Offline Library, 2: Storage Manager, 3: Settings, 4: History
 
-    // State for simulated active downloads & settings
+    // State for download settings
     var wifiOnly by remember { mutableStateOf(true) }
     var allowMobileData by remember { mutableStateOf(false) }
     var downloadChargingOnly by remember { mutableStateOf(false) }
@@ -51,13 +55,22 @@ fun DownloadsScreen(
 
     var cacheClearedToast by remember { mutableStateOf(false) }
 
-    // Mock active downloads state
-    val activeDownloads = remember {
-        mutableStateListOf(
-            ActiveDownloadItem("d1", "Sahih al-Bukhari (Vol 1)", 45.2f, 28.4f, "Downloading", 1250, "Full PDF"),
-            ActiveDownloadItem("d2", "Al-Hidayah Sharh Bidayat al-Mubtadi", 62.0f, 12.1f, "Paused", 0, "Chapters 1-5"),
-            ActiveDownloadItem("d3", "Sharh Ibn 'Aqil (Nahw)", 18.5f, 0f, "Queued", 0, "Quiz Pack & Notes")
-        )
+    val runningDownloads = remember(activeDownloadsMap, allBooks) {
+        activeDownloadsMap.values.filter { it.isDownloading }.map { progress ->
+            val book = allBooks.find { it.id == progress.bookId }
+            val title = book?.title ?: "کتاب"
+            val totalMb = if (progress.totalBytes > 0) progress.totalBytes / (1024f * 1024f) else 10f
+            val downloadedMb = if (progress.totalBytes > 0) progress.bytesRead / (1024f * 1024f) else (progress.progress * totalMb)
+            ActiveDownloadItem(
+                id = progress.bookId,
+                title = title,
+                totalSizeMb = totalMb,
+                downloadedMb = downloadedMb,
+                status = "Downloading",
+                speedKbps = 1250,
+                type = "Full PDF"
+            )
+        }
     }
 
     Column(
@@ -100,7 +113,7 @@ fun DownloadsScreen(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp)) {
                     Icon(Icons.Default.Downloading, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    val title = when (langCode) { "ps" -> "فعال (${activeDownloads.size})"; "ur" -> "جاری ڈاؤنلوڈز (${activeDownloads.size})"; else -> "Active (${activeDownloads.size})" }
+                    val title = when (langCode) { "ps" -> "فعال (${runningDownloads.size})"; "ur" -> "جاری ڈاؤنلوڈز (${runningDownloads.size})"; else -> "Active (${runningDownloads.size})" }
                     Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -140,10 +153,13 @@ fun DownloadsScreen(
 
         when (selectedTab) {
             0 -> ActiveDownloadsView(
-                downloads = activeDownloads,
-                onPause = { item -> item.status = "Paused"; item.speedKbps = 0 },
-                onResume = { item -> item.status = "Downloading"; item.speedKbps = 1450 },
-                onCancel = { item -> activeDownloads.remove(item) }
+                downloads = runningDownloads,
+                onPause = { item -> viewModel.cancelDownload(item.id) },
+                onResume = { item ->
+                    val book = allBooks.find { it.id == item.id }
+                    if (book != null) viewModel.downloadBook(book)
+                },
+                onCancel = { item -> viewModel.cancelDownload(item.id) }
             )
             1 -> OfflineLibraryView(
                 downloadedBooks = downloadedBooks,
@@ -168,6 +184,9 @@ fun DownloadsScreen(
             )
             4 -> DownloadHistoryView()
         }
+
+        Spacer(modifier = Modifier.weight(1f, fill = false))
+        AdBannerView(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
     }
 }
 

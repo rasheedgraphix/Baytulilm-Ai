@@ -16,6 +16,7 @@ import com.example.data.model.TasbeehRecordEntity
 import com.example.data.repository.BookRepository
 import com.example.data.repository.VerifiedIslamicContentRepository
 import com.example.util.CityLocation
+import com.example.util.BookDownloadManager
 import com.example.util.PdfManager
 import com.example.util.PrayerTimeCalculator
 import com.example.util.PrayerTimeData
@@ -99,13 +100,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         initialValue = emptyList()
     )
 
-    private val _activeDownloads = MutableStateFlow<Map<String, BookDownloadProgress>>(emptyMap())
-    val activeDownloads: StateFlow<Map<String, BookDownloadProgress>> = _activeDownloads.asStateFlow()
+    val activeDownloads: StateFlow<Map<String, BookDownloadProgress>> = BookDownloadManager.activeDownloads
 
     private val _coverUpdateTrigger = MutableStateFlow(0L)
     val coverUpdateTrigger: StateFlow<Long> = _coverUpdateTrigger.asStateFlow()
-
-    private val downloadJobs = ConcurrentHashMap<String, Job>()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -145,18 +143,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadSavedCity(): CityLocation {
         val cityNameEng = prefs.getString("city_name_eng", null)
-        if (cityNameEng != null) {
-            val found = PrayerTimeCalculator.defaultCities.find { it.nameEnglish.equals(cityNameEng, ignoreCase = true) }
-            if (found != null) return found
-        }
         val lat = prefs.getFloat("city_lat", -999f).toDouble()
         val lng = prefs.getFloat("city_lng", -999f).toDouble()
-        if (lat != -999.0 && lng != -999.0) {
-            val nameUrdu = prefs.getString("city_name_urdu", "شہر") ?: "شہر"
-            val tz = prefs.getString("city_tz", "Asia/Karachi") ?: "Asia/Karachi"
-            return CityLocation(nameUrdu, cityNameEng ?: "Selected City", lat, lng, tz)
+
+        if (cityNameEng != null && !cityNameEng.equals("Ukiah", ignoreCase = true)) {
+            val found = PrayerTimeCalculator.defaultCities.find { it.nameEnglish.equals(cityNameEng, ignoreCase = true) }
+            if (found != null && lat == -999.0) return found
         }
-        return PrayerTimeCalculator.defaultCities.first { it.nameEnglish == "Islamabad" }
+        if (lat != -999.0 && lng != -999.0) {
+            val nameUrdu = prefs.getString("city_name_urdu", "راولپنڈی") ?: "راولپنڈی"
+            val tz = when {
+                lat in 23.0..37.5 && lng in 60.0..78.0 -> "Asia/Karachi"
+                lat in 16.0..32.0 && lng in 34.0..55.0 -> "Asia/Riyadh"
+                lat in 8.0..37.0 && lng in 68.0..97.0 -> "Asia/Kolkata"
+                lat in 20.0..27.0 && lng in 88.0..93.0 -> "Asia/Dhaka"
+                lat in 24.0..26.5 && lng in 51.0..56.5 -> "Asia/Dubai"
+                else -> prefs.getString("city_tz", "Asia/Karachi") ?: "Asia/Karachi"
+            }
+            return CityLocation(nameUrdu, cityNameEng ?: "Rawalpindi", lat, lng, tz)
+        }
+        val defaultCity = PrayerTimeCalculator.defaultCities.first { it.nameEnglish == "Rawalpindi" }
+        saveCityToPrefs(defaultCity)
+        return defaultCity
     }
 
     private fun saveCityToPrefs(city: CityLocation) {
@@ -338,129 +346,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun downloadBook(book: BookEntity, onProgress: (Float) -> Unit = {}, onResult: (Boolean) -> Unit = {}) {
-        // Cancel existing active job for this book if any
-        downloadJobs[book.id]?.cancel()
-
-        _activeDownloads.update { map ->
-            map + (book.id to BookDownloadProgress(
-                bookId = book.id,
-                isDownloading = true,
-                progress = 0f,
-                isCancelled = false,
-                isCompleted = false
-            ))
-        }
-
-        val job = viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val result = pdfManager.downloadOrGetPdf(
-                    bookId = book.id,
-                    pdfUrl = book.pdfUrl,
-                    onProgress = { bytesRead, totalBytes, prog ->
-                        val safeProg = if (prog >= 0f) prog else 0f
-                        _activeDownloads.update { map ->
-                            map + (book.id to BookDownloadProgress(
-                                bookId = book.id,
-                                isDownloading = true,
-                                progress = safeProg,
-                                bytesRead = bytesRead,
-                                totalBytes = totalBytes,
-                                isCancelled = false,
-                                isCompleted = false
-                            ))
-                        }
-                        onProgress(safeProg)
-                    }
-                )
-                if (result.isSuccess) {
-                    val downloadedFile = result.getOrNull()
-                    if (downloadedFile != null && downloadedFile.exists()) {
-                        pdfManager.invalidateCoverCache(book.id)
-                        pdfManager.extractAndSaveFirstPageCover(book.id, downloadedFile)
-                        // Directly copy to device's public Downloads folder (My Files / Downloads)
-                        pdfManager.copyPdfToDeviceDownloads(book.id, book.title)
-                    }
-                    repository.setDownloadStatus(book.id, true, 1.0f)
-                    _coverUpdateTrigger.update { System.currentTimeMillis() }
-                    _activeDownloads.update { map ->
-                        map + (book.id to BookDownloadProgress(
-                            bookId = book.id,
-                            isDownloading = false,
-                            progress = 1.0f,
-                            isCancelled = false,
-                            isCompleted = true
-                        ))
-                    }
-                    onResult(true)
-                } else {
-                    repository.setDownloadStatus(book.id, false, 0f)
-                    _activeDownloads.update { map ->
-                        map + (book.id to BookDownloadProgress(
-                            bookId = book.id,
-                            isDownloading = false,
-                            progress = 0f,
-                            isCancelled = false,
-                            isCompleted = false,
-                            errorMessage = result.exceptionOrNull()?.message ?: "Download failed"
-                        ))
-                    }
-                    onResult(false)
-                }
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                repository.setDownloadStatus(book.id, false, 0f)
-                _activeDownloads.update { map ->
-                    map + (book.id to BookDownloadProgress(
-                        bookId = book.id,
-                        isDownloading = false,
-                        progress = 0f,
-                        isCancelled = true,
-                        isCompleted = false,
-                        errorMessage = "Download cancelled"
-                    ))
-                }
-                onResult(false)
-            } catch (e: Exception) {
-                repository.setDownloadStatus(book.id, false, 0f)
-                _activeDownloads.update { map ->
-                    map + (book.id to BookDownloadProgress(
-                        bookId = book.id,
-                        isDownloading = false,
-                        progress = 0f,
-                        isCancelled = false,
-                        isCompleted = false,
-                        errorMessage = e.message ?: "Download failed"
-                    ))
-                }
-                onResult(false)
-            } finally {
-                downloadJobs.remove(book.id)
-            }
-        }
-        downloadJobs[book.id] = job
+        BookDownloadManager.startDownload(getApplication(), book)
     }
 
     fun cancelDownload(bookId: String) {
-        val job = downloadJobs.remove(bookId)
-        job?.cancel()
-        _activeDownloads.update { map ->
-            val current = map[bookId]
-            if (current != null) {
-                map + (bookId to current.copy(
-                    isDownloading = false,
-                    isCancelled = true,
-                    progress = 0f,
-                    errorMessage = "Download cancelled"
-                ))
-            } else {
-                map + (bookId to BookDownloadProgress(
-                    bookId = bookId,
-                    isDownloading = false,
-                    isCancelled = true,
-                    progress = 0f,
-                    errorMessage = "Download cancelled"
-                ))
-            }
-        }
+        BookDownloadManager.cancelDownload(getApplication(), bookId)
         viewModelScope.launch(Dispatchers.IO) {
             repository.setDownloadStatus(bookId, false, 0f)
             val file = pdfManager.getLocalPdfFile(bookId)
@@ -471,7 +361,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteDownload(bookId: String) {
-        cancelDownload(bookId)
+        BookDownloadManager.cancelDownload(getApplication(), bookId)
         viewModelScope.launch(Dispatchers.IO) {
             val file = pdfManager.getLocalPdfFile(bookId)
             if (file.exists()) {

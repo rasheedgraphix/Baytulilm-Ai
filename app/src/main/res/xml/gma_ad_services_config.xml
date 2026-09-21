@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ad-services-config>
+    <!-- Disable Topics, Attribution, and Protected Audience when running on devices/emulators without full AdServices runtime -->
+    <attribution allowAdPartners="false" />
+    <topics allowAdPartners="false" />
+    <protected-audiences allowAdPartners="false" />
+</ad-services-config>

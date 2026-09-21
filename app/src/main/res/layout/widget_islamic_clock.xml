@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_islamic_clock_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Perfectly centered 1:1 circular container with grand size -->
+    <LinearLayout
+        android:id="@+id/ll_islamic_clock_circle"
+        android:layout_width="236dp"
+        android:layout_height="236dp"
+        android:layout_gravity="center"
+        android:background="@drawable/widget_bg_circle"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
+
+        <!-- Top: Location with Pin -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📍"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tvLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:maxLines="1"
+                android:text="Rawalpindi"
+                android:textColor="#FFD54F"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Center Time (TextClock) -->
+        <TextClock
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:format12Hour="hh:mm a"
+            android:format24Hour="HH:mm"
+            android:textColor="#FFFFFF"
+            android:textSize="27sp"
+            android:textStyle="bold" />
+
+        <!-- Golden accent divider -->
+        <ImageView
+            android:layout_width="130dp"
+            android:layout_height="1.5dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:background="#44FFD54F"
+            android:contentDescription="@null" />
+
+        <!-- Gregorian Date -->
+        <TextView
+            android:id="@+id/tvGregorian"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="19 Sep 2026, Sat"
+            android:textColor="#E0E0E0"
+            android:textSize="11.5sp" />
+
+        <!-- Hijri Date -->
+        <TextView
+            android:id="@+id/tvHijri"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:text="٢٦ ربيع الأول ١٤٤۸ هـ"
+            android:textColor="#FFD54F"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <!-- Next Prayer Badge -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:background="@drawable/bg_next_prayer_pill"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="3.5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3.5dp">
+
+            <TextView
+                android:id="@+id/tvNextPrayerLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Next: Fajr"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tvNextPrayerTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_prayer_time_badge"
+                android:paddingStart="7dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="7dp"
+                android:paddingBottom="2dp"
+                android:text="04:58 AM"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

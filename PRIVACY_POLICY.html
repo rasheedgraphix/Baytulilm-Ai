@@ -6,132 +6,130 @@
     <title>Privacy Policy - Baytul Ilm (بیت العلم)</title>
     <style>
         :root {
-            --primary: #1b5e20;
-            --primary-light: #e8f5e9;
-            --accent: #c5a059;
-            --text-dark: #1f2937;
-            --text-muted: #4b5563;
-            --bg-light: #f9fafb;
-            --card-bg: #ffffff;
-            --border-color: #e5e7eb;
+            --primary: #047857;
+            --primary-dark: #065F46;
+            --primary-light: #D1FAE5;
+            --secondary: #D97706;
+            --text: #1F2937;
+            --text-muted: #4B5563;
+            --bg: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --border: #E5E7EB;
         }
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         body {
-            background-color: var(--bg-light);
-            color: var(--text-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.65;
-            padding: 24px 16px;
+            color: var(--text);
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background-color: var(--bg);
         }
         .container {
-            max-width: 860px;
-            margin: 0 auto;
-            background: var(--card-bg);
+            background-color: var(--card-bg);
+            padding: 40px;
             border-radius: 16px;
-            padding: 36px 32px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
         }
         .header {
-            text-align: center;
             border-bottom: 2px solid var(--primary-light);
-            padding-bottom: 24px;
-            margin-bottom: 28px;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
         }
-        .header h1 {
-            color: var(--primary);
-            font-size: 28px;
-            margin-bottom: 6px;
-        }
-        .header .subtitle {
-            color: var(--text-muted);
-            font-size: 15px;
-        }
-        .badge-row {
+        h1 {
+            color: var(--primary-dark);
+            margin-top: 0;
+            font-size: 30px;
             display: flex;
+            align-items: center;
             gap: 10px;
-            justify-content: center;
+        }
+        .urdu-subtitle {
+            font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Scheherazade New", Tahoma, sans-serif;
+            font-size: 22px;
+            color: var(--secondary);
+            margin-top: -6px;
+            direction: rtl;
+        }
+        .badges-row {
+            display: flex;
             flex-wrap: wrap;
+            gap: 10px;
             margin-top: 14px;
         }
         .badge {
+            display: inline-block;
             background: var(--primary-light);
-            color: var(--primary);
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 12px;
+            color: var(--primary-dark);
+            padding: 5px 14px;
             border-radius: 20px;
-            border: 1px solid rgba(27, 94, 32, 0.2);
+            font-size: 13px;
+            font-weight: 600;
         }
-        .section {
-            margin-bottom: 28px;
+        .badge-alt {
+            background: #FEF3C7;
+            color: #92400E;
         }
-        .section h2 {
+        h2 {
             color: var(--primary);
-            font-size: 19px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 6px;
+            margin-top: 32px;
+            font-size: 20px;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
         }
-        .section p, .section li {
+        h3 {
+            color: var(--primary-dark);
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        p, li {
+            font-size: 15px;
             color: var(--text-muted);
-            font-size: 14.5px;
-            margin-bottom: 10px;
         }
         ul {
-            padding-left: 20px;
+            padding-left: 24px;
         }
         li {
-            margin-bottom: 6px;
+            margin-bottom: 10px;
         }
-        .permission-box {
-            background: var(--bg-light);
-            border-left: 4px solid var(--primary);
-            padding: 12px 16px;
-            border-radius: 4px;
+        .permission-card {
+            background-color: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 14px 18px;
             margin-bottom: 12px;
         }
         .permission-name {
             font-family: monospace;
             font-weight: bold;
-            color: #111827;
-            font-size: 13.5px;
-            margin-bottom: 4px;
+            color: var(--primary-dark);
+            font-size: 14px;
         }
-        .urdu-text {
-            font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", Tahoma, sans-serif;
-            direction: rtl;
-            text-align: right;
-            line-height: 1.9;
-            color: #1f2937;
-            background: #fdfbf7;
-            border: 1px solid #f0e6d2;
-            padding: 16px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-size: 14.5px;
+        .highlight-box {
+            background-color: #ECFDF5;
+            border: 1px solid #A7F3D0;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0;
         }
-        .footer {
-            margin-top: 36px;
-            text-align: center;
-            font-size: 13px;
-            color: #9ca3af;
-            border-top: 1px solid var(--border-color);
-            padding-top: 18px;
+        .highlight-box h3 {
+            margin-top: 0;
+            color: #065F46;
         }
         .contact-box {
-            background: #f3f4f6;
-            border-radius: 8px;
-            padding: 14px;
-            text-align: center;
-            font-weight: 500;
+            background-color: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+        .contact-box p {
+            margin: 6px 0;
+            color: var(--text);
         }
         a {
             color: var(--primary);
@@ -141,122 +139,131 @@
         a:hover {
             text-decoration: underline;
         }
+        .urdu-section {
+            direction: rtl;
+            text-align: right;
+            font-family: "Noto Nastaliq Urdu", Tahoma, sans-serif;
+            border-top: 2px dashed #D1D5DB;
+            margin-top: 40px;
+            padding-top: 30px;
+            line-height: 2.1;
+        }
+        .urdu-section h2 {
+            border-left: none;
+            border-right: 4px solid var(--primary);
+            padding-left: 0;
+            padding-right: 10px;
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="header">
-        <h1>Baytul Ilm (بیت العلم)</h1>
-        <div class="subtitle">Official Privacy Policy & Data Safety Disclosures</div>
-        <div class="subtitle">Last Updated: September 2026 | Compliant with Google Play, Amazon Appstore, Uptodown & APKPure</div>
-        <div class="badge-row">
-            <span class="badge">✓ 100% Ad-Free</span>
-            <span class="badge">✓ Zero Data Monetization</span>
-            <span class="badge">✓ Children & Family Safe</span>
-            <span class="badge">✓ Offline Room Persistence</span>
+        <h1>Baytul Ilm - Privacy Policy</h1>
+        <div class="urdu-subtitle">بیت العلم - تحفظِ کوائف و رازداری کی پالیسی</div>
+        <div class="badges-row">
+            <span class="badge">Google Play Developer Policy Compliant</span>
+            <span class="badge">Amazon Appstore Compliant</span>
+            <span class="badge badge-alt">COPPA & GDPR Aligned</span>
+            <span class="badge">100% Ad-Free</span>
+            <span class="badge badge-alt">Effective Date: September 2026</span>
         </div>
     </div>
 
-    <!-- 1. Introduction -->
-    <div class="section">
-        <h2>1. Introduction & App Purpose / تعارف اور مقصد</h2>
-        <p><strong>Baytul Ilm (بیت العلم)</strong> is an authentic Islamic educational application developed to provide students, scholars, and Muslims worldwide with verified Dars-e-Nizami Islamic textbooks, Quran Pak recitation & translations, authentic Hadith collections, Daily Azkar, accurate Prayer Times (University of Islamic Sciences, Banuri Town Karachi method), Qibla Compass, and official Haramain (Makkah & Madinah) live broadcasts.</p>
-        
-        <div class="urdu-text">
-            <strong>بیت العلم (Baytul Ilm)</strong> ایک مستند دینی، علمی اور تعلیمی پلیٹ فارم ہے جو طلبہ، علماء اور عام مسلمانوں کے لیے درجاتِ نظامیہ کی درسی کتب، قرآن پاک، احادیثِ نبویہ، تفاسیر، اذکار، قبلہ کمپاس اور حرمین شریفین (مکہ مکرمہ و مدینہ منورہ) کی براہِ راست نشریات فراہم کرتا ہے۔ ہم اپنے صارفین کے ذاتی و نجی کوائف کے مکمل تحفظ اور شفافیت کے لیے سختی سے پرعزم ہیں۔
-        </div>
-    </div>
+    <p><strong>Baytul Ilm ("we", "our", or "us")</strong> is an Islamic educational and spiritual mobile application developed by <strong>Hafiz Nouman Ur Rasheed</strong>. The platform provides curriculum textbooks for Dars-e-Nizami, Quran Pak with tafseer, authentic hadith collections, daily supplications, digital Tasbeeh counter, Qibla compass, prayer times, and live official broadcasts from Makkah and Madinah (Haramain Live).</p>
 
-    <!-- 2. Data Collection & Local Storage -->
-    <div class="section">
-        <h2>2. Data Collection & Storage / ڈیٹا کا اندراج اور اسٹوریج</h2>
+    <p>We hold user privacy in the highest regard. This Privacy Policy discloses our exact practices regarding data collection, permissions usage, storage, and user control, in full adherence to the <strong>Google Play Developer Program Policies</strong>, <strong>Google Play Families Policy</strong>, and the <strong>Amazon Appstore Content Guidelines</strong>.</p>
+
+    <div class="highlight-box">
+        <h3>🔒 Our Core Privacy Principles</h3>
         <ul>
-            <li><strong>No Compulsory Account:</strong> Users can browse, search, and read all books, Quran, and Hadith in Guest Mode without submitting an email or creating an account.</li>
-            <li><strong>Optional Firebase Authentication:</strong> If a user chooses to register or log in, their display name and email address are authenticated securely via Google Firebase Authentication.</li>
-            <li><strong>Local Room Database Storage:</strong> All bookmarks, reading history, personal notes, and digital tasbeeh counts are stored strictly locally on the user's device via Android Room SQLite and are NEVER transmitted to external analytics servers.</li>
-        </ul>
-        <div class="urdu-text">
-            • مہمان صارف (Guest Mode) کے طور پر بغیر لاگ ان کیے بھی تمام درسی و دینی مواد پڑھا جا سکتا ہے۔<br>
-            • ذاتی بک مارکس، مطالعہ کی تاریخ اور تسبیح کا ریکارڈ صرف اور صرف آپ کے موبائل میں محفوظ رہتا ہے اور کبھی کسی بیرونی سرور پر منتقل نہیں ہوتا۔
-        </div>
-    </div>
-
-    <!-- 3. Explicit Permissions Rationale -->
-    <div class="section">
-        <h2>3. Device Permissions Disclosures / موبائل اجازت ناموں کی وضاحت</h2>
-        <p>In full compliance with app store developer policies, here is the exact operational purpose for each device permission:</p>
-
-        <div class="permission-box">
-            <div class="permission-name">android.permission.ACCESS_FINE_LOCATION & COARSE_LOCATION</div>
-            <p><strong>Purpose:</strong> Used exclusively in real-time on-device to compute exact Islamic prayer times (Fajr, Dhuhr, Asr, Maghrib, Isha) and calculate the precise Qibla azimuth toward the Kaaba in Makkah. Location is NOT tracked in the background, NOT recorded on remote servers, and NEVER shared with any advertiser or third party.</p>
-            <div class="urdu-text">
-                مقام کی اجازت صرف اور صرف نماز کے درست اوقات اور قبلہ رخ کے تعین کے لیے استعمال ہوتی ہے۔ ایپ بیک گراؤنڈ میں ٹریکنگ نہیں کرتی اور نہ ہی ڈیٹا فروخت ہوتا ہے۔
-            </div>
-        </div>
-
-        <div class="permission-box">
-            <div class="permission-name">android.permission.CAMERA</div>
-            <p><strong>Purpose:</strong> Requested solely when the user opens the optional "Book Page OCR / Scanner" feature to capture a picture of an Arabic or Urdu textbook page for text extraction. Images are processed locally and discarded immediately—they are NEVER used for biometric identification.</p>
-            <div class="urdu-text">
-                کیمرے کی اجازت صرف اس وقت طلب کی جاتی ہے جب آپ کتاب کے صفحے کی تصویر کھینچ کر اس کی عربی یا اردو عبارت کو اسکین (OCR) کرنا چاہیں۔
-            </div>
-        </div>
-
-        <div class="permission-box">
-            <div class="permission-name">android.permission.INTERNET & ACCESS_NETWORK_STATE</div>
-            <p><strong>Purpose:</strong> Required to stream authorized public live broadcasts from Makkah and Madinah, download official Islamic book PDFs for offline reading, and synchronize cloud announcements.</p>
-        </div>
-
-        <div class="permission-box">
-            <div class="permission-name">android.permission.POST_NOTIFICATIONS & SCHEDULE_EXACT_ALARM</div>
-            <p><strong>Purpose:</strong> Used strictly for optional prayer reminders, Adhan alerts, and daily Hadith notices. Users can configure or silence these notifications at any time.</p>
-        </div>
-
-        <div class="permission-box">
-            <div class="permission-name">android.permission.VIBRATE</div>
-            <p><strong>Purpose:</strong> Provides subtle haptic feedback when tapping the Digital Tasbeeh counter.</p>
-        </div>
-    </div>
-
-    <!-- 4. Zero Ads & No Sale of Personal Data -->
-    <div class="section">
-        <h2>4. Zero Advertisements & No Data Monetization / اشتہارات سے پاک</h2>
-        <p><strong>• 100% Ad-Free Experience:</strong> Baytul Ilm does NOT contain any third-party banner ads, popup videos, or commercial monetization networks (such as Google AdMob, Unity, etc.).</p>
-        <p><strong>• Explicit Zero Data Selling Guarantee:</strong> We never sell, lease, rent, trade, or monetize any user data, location records, or contact information with third-party brokers, marketing firms, or data aggregators.</p>
-    </div>
-
-    <!-- 5. Children & Family Safety -->
-    <div class="section">
-        <h2>5. Children's Privacy (COPPA & GDPR) / بچوں کا تحفظ</h2>
-        <p>Baytul Ilm complies fully with Google Play Families Policy and the Children's Online Privacy Protection Act (COPPA). The application contains wholesome, verified religious and educational material suitable for students and users of all ages. We do not knowingly solicit or collect personal identifiable information from children under the age of 13.</p>
-    </div>
-
-    <!-- 6. Account & Data Deletion -->
-    <div class="section">
-        <h2>6. Account & Data Deletion Policy / ڈیٹا و اکاؤنٹ کے خاتمے کا حق</h2>
-        <p>In accordance with global privacy regulations and Google Play's mandatory account deletion policy, users have full rights to wipe their data at any time:</p>
-        <ul>
-            <li><strong>In-App Self Service:</strong> You can delete your account or wipe all local cached databases directly via the Settings / Profile screen.</li>
-            <li><strong>Direct Developer Request:</strong> You can send an email to <a href="mailto:hafiznoumanurrasheed4@gmail.com">hafiznoumanurrasheed4@gmail.com</a> with the subject <em>"Delete My Baytul Ilm Account and Data"</em>. All associated cloud records will be permanently erased within 48 hours.</li>
+            <li><strong>Zero Commercial Ads:</strong> Baytul Ilm does NOT serve commercial third-party banner, interstitial, or tracking ads.</li>
+            <li><strong>We NEVER Sell or Monetize Your Data:</strong> We will never sell, lease, trade, or share your personal information with data brokers or marketing agencies.</li>
+            <li><strong>Guest Mode by Default:</strong> You do not need to register or create an account to read books, access Quranic tafseer, or use prayer times.</li>
         </ul>
     </div>
 
-    <!-- 7. Contact Information -->
-    <div class="section">
-        <h2>7. Contact Information / رابطہ</h2>
-        <div class="contact-box">
-            <p><strong>Developer:</strong> Nouman ur Rasheed (Hafiz Nouman)</p>
-            <p><strong>Email:</strong> <a href="mailto:hafiznoumanurrasheed4@gmail.com">hafiznoumanurrasheed4@gmail.com</a></p>
-            <p><strong>Application:</strong> Baytul Ilm (com.baytulilmai.app)</p>
-            <p><strong>Official Repository:</strong> <a href="https://rasheedgraphix.github.io/baytul-ilm-website/privacy_policy.html" target="_blank">rasheedgraphix.github.io/baytul-ilm-website</a></p>
-        </div>
+    <h2>1. Permissions Disclosed (Mandatory for Google Play & Amazon Appstore)</h2>
+    <p>To deliver core Islamic services, our application requests the following Android permissions. Each permission is strictly bounded to its designated functionality:</p>
+
+    <div class="permission-card">
+        <div class="permission-name">android.permission.ACCESS_FINE_LOCATION & ACCESS_COARSE_LOCATION</div>
+        <p><strong>Purpose:</strong> To calculate exact local prayer times (Fajr, Dhuhr, Asr, Maghrib, Isha), sunrise/sunset times, and determine the accurate azimuth heading for the Qibla Compass pointing to the Holy Kaaba in Makkah based on the user's geographic coordinates.</p>
+        <p><strong>Handling:</strong> Location data is processed <em>strictly on-device in real-time</em>. The app <strong>DOES NOT</strong> track location in the background when the app is closed, does not maintain a history of your whereabouts, and does not upload your coordinates to external ad networks or tracking servers.</p>
     </div>
 
-    <div class="footer">
-        © 2026 Baytul Ilm (بیت العلم). All rights reserved. Built with integrity for the Muslim Ummah.
+    <div class="permission-card">
+        <div class="permission-name">android.permission.CAMERA</div>
+        <p><strong>Purpose:</strong> Requested exclusively when the user accesses the optional "Book Page OCR / AI Scanner" feature to capture an image of an Arabic or Urdu book page for text recognition and study transcription.</p>
+        <p><strong>Handling:</strong> Captured images are processed solely for optical character extraction. Photos are <strong>NEVER</strong> stored permanently on remote servers and are <strong>NEVER</strong> used for facial or biometric recognition. The camera is marked with <code>android:required="false"</code> so devices without a camera can still run the app.</p>
+    </div>
+
+    <div class="permission-card">
+        <div class="permission-name">android.permission.INTERNET & ACCESS_NETWORK_STATE</div>
+        <p><strong>Purpose:</strong> Used to stream authorized public live feeds from Masjid al-Haram (Makkah) and Masjid an-Nabawi (Madinah), download Islamic books and PDF files for offline reading, and receive cloud database updates.</p>
+    </div>
+
+    <div class="permission-card">
+        <div class="permission-name">android.permission.POST_NOTIFICATIONS & SCHEDULE_EXACT_ALARM</div>
+        <p><strong>Purpose:</strong> Used optionally to trigger timely prayer alerts (Adhan reminders), daily Hadith notifications, and curriculum announcements at scheduled times even when the device is resting.</p>
+    </div>
+
+    <div class="permission-card">
+        <div class="permission-name">android.permission.VIBRATE</div>
+        <p><strong>Purpose:</strong> Provides subtle tactile haptic vibration when incrementing the digital Tasbeeh counter to allow eyes-free recitation.</p>
+    </div>
+
+    <h2>2. Information We Collect and How It Is Used</h2>
+    <ul>
+        <li><strong>Account Information (Optional):</strong> If you choose to register an account, your name and email are securely handled via Google Firebase Authentication.</li>
+        <li><strong>Local Persistence (Android Room SQLite):</strong> Your bookmarks, reading history, personal notes, quiz scores, and Tasbeeh counters are stored in an encrypted local database on your physical device.</li>
+        <li><strong>App Preferences:</strong> Language preferences (Urdu, English, Pashto, Arabic) and visual theme settings are preserved locally on-device.</li>
+        <li><strong>Crash & Performance Diagnostics:</strong> Anonymous technical logs, device model, OS version, and crash stack traces (via Google Firebase Crashlytics) to diagnose bugs and improve app reliability.</li>
+    </ul>
+
+    <h2>3. Third-Party Service Providers</h2>
+    <p>We partner only with industry-leading, privacy-certified infrastructure providers:</p>
+    <ul>
+        <li><strong>Google Firebase & Google Play Services:</strong> For authentication, cloud messaging (FCM), and crash diagnostic reports.</li>
+        <li><strong>Official Haramain Broadcasting:</strong> Official live streaming feeds directly from the official Haramain platforms and verified YouTube embeds.</li>
+    </ul>
+
+    <h2>4. Children's Privacy (COPPA & Google Play Families Policy)</h2>
+    <p>Baytul Ilm is an educational, wholesome Islamic application suitable for users of all ages, including children and madrasa students. In compliance with the <strong>Children's Online Privacy Protection Act (COPPA)</strong> and the <strong>Google Play Families Policy</strong>:</p>
+    <ul>
+        <li>We do not knowingly collect, solicit, or store personal information from children under 13 years of age.</li>
+        <li>The application contains zero inappropriate, offensive, or age-restricted content.</li>
+        <li>No behavioral profiling or interest-based advertising is performed.</li>
+    </ul>
+
+    <h2>5. Mandatory User Rights & Data Deletion (Google Play Compliance)</h2>
+    <p>In accordance with Google Play's mandatory Data Deletion Policy, users retain total control over their personal information:</p>
+    <ul>
+        <li><strong>In-App Deletion:</strong> You can wipe all locally stored reading records, bookmarks, and notes anytime via the Profile/Settings screen or by clearing the app cache in Android Settings.</li>
+        <li><strong>Cloud Account Deletion:</strong> To request complete and permanent deletion of your account and cloud records, email us at <a href="mailto:hafiznoumanurrasheed4@gmail.com">hafiznoumanurrasheed4@gmail.com</a> with the subject line <em>"Delete My Account / Data"</em>. All associated data will be permanently wiped from our systems within 48 hours.</li>
+    </ul>
+
+    <h2>6. Developer Identity and Official Contact</h2>
+    <div class="contact-box">
+        <p><strong>Application:</strong> Baytul Ilm (بیت العلم)</p>
+        <p><strong>Developer / Administrator:</strong> Hafiz Nouman Ur Rasheed</p>
+        <p><strong>Official Support Email:</strong> <a href="mailto:hafiznoumanurrasheed4@gmail.com">hafiznoumanurrasheed4@gmail.com</a></p>
+        <p><strong>Public Policy Hosted URL:</strong> <a href="https://rasheedgraphix.github.io/baytul-ilm-website/privacy_policy.html">https://rasheedgraphix.github.io/baytul-ilm-website/privacy_policy.html</a></p>
+        <p><strong>Jurisdiction & Policy Version:</strong> Version 1.0 (Updated September 2026)</p>
+    </div>
+
+    <div class="urdu-section">
+        <h2>اردو خلاصہ - رازداری کی پالیسی (Urdu Summary)</h2>
+        <p><strong>بیت العلم</strong> ایک دینی و تعلیمی پلیٹ فارم ہے جو طلبہ، علماء اور عام مسلمانوں کے لیے کتب، قرآن، اذکار اور حرمین شریفین کی لائیو نشریات پیش کرتا ہے۔ ہم صارفین کی نجی معلومات کے تحفظ کے لیے مکمل پرعزم ہیں:</p>
+        <ul>
+            <li><strong>لوکیشن پرمشن:</strong> صرف نماز کے درست اوقات اور قبلہ رخ کے تعین کے لیے موبائل کے اندر پروسیس ہوتی ہے۔ بیک گراؤنڈ میں ٹریکنگ نہیں ہوتی اور نہ ہی کسی کمپنی کو بیچی جاتی ہے۔</li>
+            <li><strong>کیمرہ پرمشن:</strong> صرف کتاب کے اسکینر (OCR) میں کتاب کا صفحہ اسکین کر کے عربی یا اردو عبارت پڑھنے کے لیے ہے۔ کوئی ذاتی تصویر محفوظ نہیں کی جاتی۔</li>
+            <li><strong>اشتہارات سے پاک:</strong> ایپ میں کوئی تجارتی بینر یا پاپ اپ اشتہار نہیں ہے۔</li>
+            <li><strong>ڈیٹا کی فروخت کا خاتمہ:</strong> ہم صارفین کا کوئی بھی ڈیٹا کسی تیسری پارٹی کو فروخت نہیں کرتے۔</li>
+            <li><strong>بچوں کی حفاظت:</strong> ایپ ہر عمر کے افراد اور بچوں کے لیے 100% محفوظ ہے۔</li>
+            <li><strong>ڈیٹا کے خاتمے کا حق:</strong> صارف کسی بھی وقت اپنا اکاؤنٹ اور ڈیٹا حذف کروا سکتا ہے۔ رابطہ ای میل: hafiznoumanurrasheed4@gmail.com</li>
+        </ul>
     </div>
 </div>
-
 </body>
 </html>

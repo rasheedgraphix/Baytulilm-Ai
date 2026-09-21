@@ -40,6 +40,7 @@ fun IslamicDrawerContent(
     onClose: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Column(
         modifier = modifier
@@ -241,9 +242,27 @@ fun IslamicDrawerContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Share & Footer info
+        OutlinedButton(
+            onClick = {
+                onClose()
+                com.example.util.AppConfig.shareAppWithWebsite(context)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Icon(Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("ایپ شیئر کریں", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         // Footer version info
         Text(
-            text = "بیت العلم ورژن 1.0",
+            text = "بیت العلم AI • ورژن 1.4.4",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.outline,
             modifier = Modifier

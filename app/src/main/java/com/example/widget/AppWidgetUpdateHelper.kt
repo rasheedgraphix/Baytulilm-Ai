@@ -21,27 +21,7 @@ object AppWidgetUpdateHelper {
     fun updateAllWidgets(context: Context) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
 
-        // 1. Circle Clock 1
-        val idsCircle1 = appWidgetManager.getAppWidgetIds(
-            ComponentName(context, IslamicCircleClockWidget1::class.java)
-        )
-        if (idsCircle1.isNotEmpty()) {
-            for (id in idsCircle1) {
-                updateCircleClock1(context, appWidgetManager, id)
-            }
-        }
-
-        // 2. Circle Clock 2
-        val idsCircle2 = appWidgetManager.getAppWidgetIds(
-            ComponentName(context, IslamicCircleClockWidget2::class.java)
-        )
-        if (idsCircle2.isNotEmpty()) {
-            for (id in idsCircle2) {
-                updateCircleClock2(context, appWidgetManager, id)
-            }
-        }
-
-        // 3. Simple Clock
+        // 1. Simple Clock
         val idsSimple = appWidgetManager.getAppWidgetIds(
             ComponentName(context, IslamicSimpleClockWidget::class.java)
         )
@@ -58,6 +38,26 @@ object AppWidgetUpdateHelper {
         if (idsPrayer.isNotEmpty()) {
             for (id in idsPrayer) {
                 updatePrayerTimesWidget(context, appWidgetManager, id)
+            }
+        }
+
+        // 5. Islamic Clock Widget
+        val idsIslamicClock = appWidgetManager.getAppWidgetIds(
+            ComponentName(context, IslamicClockWidget::class.java)
+        )
+        if (idsIslamicClock.isNotEmpty()) {
+            for (id in idsIslamicClock) {
+                IslamicClockWidget.updateWidget(context, appWidgetManager, id)
+            }
+        }
+
+        // 6. Islamic Clock Card Widget (Modern Card Style)
+        val idsIslamicClockCard = appWidgetManager.getAppWidgetIds(
+            ComponentName(context, IslamicClockCardWidget::class.java)
+        )
+        if (idsIslamicClockCard.isNotEmpty()) {
+            for (id in idsIslamicClockCard) {
+                IslamicClockCardWidget.updateWidget(context, appWidgetManager, id)
             }
         }
     }
@@ -77,18 +77,36 @@ object AppWidgetUpdateHelper {
     private fun getSavedCity(context: Context): CityLocation {
         val prefs = context.getSharedPreferences("prayer_city_prefs", Context.MODE_PRIVATE)
         val cityNameEng = prefs.getString("city_name_eng", null)
-        if (cityNameEng != null) {
-            val found = PrayerTimeCalculator.defaultCities.find { it.nameEnglish.equals(cityNameEng, ignoreCase = true) }
-            if (found != null) return found
-        }
         val lat = prefs.getFloat("city_lat", -999f).toDouble()
         val lng = prefs.getFloat("city_lng", -999f).toDouble()
-        if (lat != -999.0 && lng != -999.0) {
-            val nameUrdu = prefs.getString("city_name_urdu", "شہر") ?: "شہر"
-            val tz = prefs.getString("city_tz", "Asia/Karachi") ?: "Asia/Karachi"
-            return CityLocation(nameUrdu, cityNameEng ?: "Selected City", lat, lng, tz)
+
+        if (cityNameEng != null && !cityNameEng.equals("Ukiah", ignoreCase = true)) {
+            val found = PrayerTimeCalculator.defaultCities.find { it.nameEnglish.equals(cityNameEng, ignoreCase = true) }
+            if (found != null && lat == -999.0) return found
         }
-        return PrayerTimeCalculator.defaultCities.first { it.nameEnglish == "Islamabad" }
+
+        if (lat != -999.0 && lng != -999.0) {
+            val nameUrdu = prefs.getString("city_name_urdu", "راولپنڈی") ?: "راولپنڈی"
+            val tz = when {
+                lat in 23.0..37.5 && lng in 60.0..78.0 -> "Asia/Karachi"
+                lat in 16.0..32.0 && lng in 34.0..55.0 -> "Asia/Riyadh"
+                lat in 8.0..37.0 && lng in 68.0..97.0 -> "Asia/Kolkata"
+                lat in 20.0..27.0 && lng in 88.0..93.0 -> "Asia/Dhaka"
+                lat in 24.0..26.5 && lng in 51.0..56.5 -> "Asia/Dubai"
+                else -> prefs.getString("city_tz", "Asia/Karachi") ?: "Asia/Karachi"
+            }
+            return CityLocation(nameUrdu, cityNameEng ?: "Rawalpindi", lat, lng, tz)
+        }
+
+        val defaultCity = PrayerTimeCalculator.defaultCities.first { it.nameEnglish == "Rawalpindi" }
+        prefs.edit()
+            .putString("city_name_eng", defaultCity.nameEnglish)
+            .putString("city_name_urdu", defaultCity.nameUrdu)
+            .putFloat("city_lat", defaultCity.lat.toFloat())
+            .putFloat("city_lng", defaultCity.lng.toFloat())
+            .putString("city_tz", defaultCity.timeZoneId)
+            .apply()
+        return defaultCity
     }
 
     private fun getTodayPrayerTimes(city: CityLocation): List<PrayerTimeData> {
@@ -101,55 +119,6 @@ object AppWidgetUpdateHelper {
         )
     }
 
-    fun updateCircleClock1(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-        val views = RemoteViews(context.packageName, R.layout.widget_circle_clock1)
-        val pendingIntent = getLaunchPendingIntent(context)
-        views.setOnClickPendingIntent(R.id.widget_circle1_root, pendingIntent)
-
-        // Render composite Kaaba dial face + analog hands into ImageView (100% crash-free across all Android versions)
-        try {
-            val kaabaBitmap = ClockBitmapHelper.renderKaabaClockBitmap(context, size = 400)
-            views.setImageViewBitmap(R.id.iv_kaaba_dial, kaabaBitmap)
-        } catch (e: Throwable) {
-            views.setImageViewResource(R.id.iv_kaaba_dial, R.drawable.img_kaaba_clock_dial)
-        }
-
-        val city = getSavedCity(context)
-        val prayers = getTodayPrayerTimes(city)
-        val nextPrayer = prayers.firstOrNull { it.isNext } ?: prayers.firstOrNull { it.id != "sunrise" }
-
-        // Hijri Details & Gregorian Date for LCD Screen
-        val hijriDetails = HijriHelper.getHijriDetails(LocalDate.now(), "ur")
-        val now = LocalDate.now()
-        val gregorianFormatted = "${now.dayOfMonth}/${now.monthValue}/${now.year}"
-
-        views.setTextViewText(R.id.tv_clock1_temp, "📍 ${city.nameUrdu}")
-        views.setTextViewText(R.id.tv_clock1_prayer_name, nextPrayer?.nameEnglish?.uppercase() ?: "DHUHR")
-        views.setTextViewText(R.id.tv_clock1_gregorian, gregorianFormatted)
-        views.setTextViewText(R.id.tv_clock1_hijri, "${hijriDetails.day} ${hijriDetails.monthName}")
-
-        appWidgetManager.updateAppWidget(appWidgetId, views)
-    }
-
-    fun updateCircleClock2(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-        val views = RemoteViews(context.packageName, R.layout.widget_circle_clock2)
-        val pendingIntent = getLaunchPendingIntent(context)
-        views.setOnClickPendingIntent(R.id.widget_circle2_root, pendingIntent)
-
-        // Render high-res Neon Cyan Tactical clock face with glowing marks, hands and red pin
-        try {
-            val neonBitmap = ClockBitmapHelper.renderNeonTacticalClockBitmap(size = 400)
-            views.setImageViewBitmap(R.id.iv_clock2_face, neonBitmap)
-        } catch (e: Throwable) {
-            // fallback
-        }
-
-        val now = LocalDate.now()
-        val formattedDate = "${now.dayOfMonth}-${now.month.name.take(3)}"
-        views.setTextViewText(R.id.tv_clock2_date, formattedDate)
-
-        appWidgetManager.updateAppWidget(appWidgetId, views)
-    }
 
     fun updateSimpleClock(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
         val views = RemoteViews(context.packageName, R.layout.widget_simple_clock)
@@ -213,14 +182,13 @@ object AppWidgetUpdateHelper {
         views.setTextViewText(R.id.tv_prayer_city, "📍 ${city.nameUrdu} (${city.nameEnglish})")
         views.setTextViewText(R.id.tv_prayer_hijri_date, hijriDetails.formattedFull)
 
-        val nextPrayer = prayers.firstOrNull { it.isNext }
+        val nextPrayer = prayers.firstOrNull { it.isNext } ?: prayers.firstOrNull { it.id == "fajr" }
         if (nextPrayer != null) {
             views.setTextViewText(R.id.tv_prayer_next_label, "اگلی نماز: ${nextPrayer.nameUrdu}")
             views.setTextViewText(R.id.tv_prayer_next_time, nextPrayer.timeFormatted)
         } else {
-            val fajr = prayers.firstOrNull { it.id == "fajr" }
             views.setTextViewText(R.id.tv_prayer_next_label, "اگلی نماز: فجر")
-            views.setTextViewText(R.id.tv_prayer_next_time, fajr?.timeFormatted ?: "04:30 AM")
+            views.setTextViewText(R.id.tv_prayer_next_time, "04:36 AM")
         }
 
         val fajrData = prayers.firstOrNull { it.id == "fajr" }
@@ -252,14 +220,30 @@ object AppWidgetUpdateHelper {
         views.setTextViewText(R.id.tv_sp_city, "📍 ${city.nameUrdu}")
         views.setTextViewText(R.id.tv_sp_hijri_date, hijriDetails.formattedFull)
 
-        val nextPrayer = prayers.firstOrNull { it.isNext }
+        val nextPrayer = prayers.firstOrNull { it.isNext } ?: prayers.firstOrNull { it.id == "fajr" }
         if (nextPrayer != null) {
             views.setTextViewText(R.id.tv_sp_next_label, "· اگلی نماز: ${nextPrayer.nameUrdu}")
             views.setTextViewText(R.id.tv_sp_next_time, nextPrayer.timeFormatted)
         } else {
-            val fajr = prayers.firstOrNull { it.id == "fajr" }
             views.setTextViewText(R.id.tv_sp_next_label, "· اگلی نماز: فجر")
-            views.setTextViewText(R.id.tv_sp_next_time, fajr?.timeFormatted ?: "04:30 AM")
+            views.setTextViewText(R.id.tv_sp_next_time, "04:36 AM")
+        }
+
+        val activeId = nextPrayer?.id ?: "fajr"
+        val prayerBoxes = listOf(
+            "fajr" to R.id.ll_sp_fajr,
+            "sunrise" to R.id.ll_sp_sunrise,
+            "dhuhr" to R.id.ll_sp_zuhr,
+            "asr" to R.id.ll_sp_asr,
+            "maghrib" to R.id.ll_sp_maghrib,
+            "isha" to R.id.ll_sp_isha
+        )
+        for ((id, viewId) in prayerBoxes) {
+            if (id == activeId) {
+                views.setInt(viewId, "setBackgroundResource", R.drawable.bg_clean_prayer_box_active)
+            } else {
+                views.setInt(viewId, "setBackgroundResource", R.drawable.bg_clean_prayer_box)
+            }
         }
 
         val fajrData = prayers.firstOrNull { it.id == "fajr" }

@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -68,6 +70,17 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.MyApplication">
 
+        <!-- Google AdMob Production App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2572030302948748~6229008133" />
+
+        <!-- Disable AdServices Measurement and Attribution in environments without Play Services Attribution -->
+        <property
+            android:name="android.adservices.AD_SERVICES_CONFIG"
+            android:resource="@xml/gma_ad_services_config"
+            tools:replace="android:resource" />
+
         <!-- Disable automatic background GoogleApiManager calls for analytics and messaging in test/emulator environments -->
         <meta-data
             android:name="firebase_analytics_collection_deactivated"
@@ -90,38 +103,24 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name="com.example.service.BookDownloadService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <receiver
             android:name="com.example.util.PrayerAlarmReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIME_CHANGED" />
             </intent-filter>
         </receiver>
 
-        <!-- Islamic Circle Clock Widget (Style 1 - Gold & Emerald) -->
-        <receiver
-            android:name="com.example.widget.IslamicCircleClockWidget1"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_circle_clock1_info" />
-        </receiver>
-
-        <!-- Islamic Circle Clock Widget (Style 2 - Ring Clock) -->
-        <receiver
-            android:name="com.example.widget.IslamicCircleClockWidget2"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_circle_clock2_info" />
-        </receiver>
 
         <!-- Islamic Simple Clock Widget (Style 3 - Sada Bar) -->
         <receiver
@@ -169,6 +168,34 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_simple_prayer_times_info" />
+        </receiver>
+
+        <!-- Professional Islamic Clock App Widget -->
+        <receiver
+            android:name="com.example.widget.IslamicClockWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/islamic_clock_widget_info" />
+        </receiver>
+
+        <!-- Professional Islamic Clock Card Widget (Modern Horizontal Card Style) -->
+        <receiver
+            android:name="com.example.widget.IslamicClockCardWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/islamic_clock_card_widget_info" />
         </receiver>
 
         <activity

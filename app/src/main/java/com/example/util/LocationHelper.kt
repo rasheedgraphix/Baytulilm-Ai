@@ -37,25 +37,46 @@ object LocationHelper {
         if (!hasLocationPermission(context)) return@withContext null
 
         try {
-            val fusedClient = LocationServices.getFusedLocationProviderClient(context)
-            val cts = CancellationTokenSource()
-
             var loc: Location? = null
+
+            // 1. Try Google Play Services FusedLocationProviderClient first
             try {
-                // High accuracy current location request
-                val currentTask = fusedClient.getCurrentLocation(
-                    Priority.PRIORITY_HIGH_ACCURACY,
-                    cts.token
-                )
-                loc = com.google.android.gms.tasks.Tasks.await(currentTask, 4000, java.util.concurrent.TimeUnit.MILLISECONDS)
+                val fusedClient = LocationServices.getFusedLocationProviderClient(context)
+                val cts = CancellationTokenSource()
+
+                try {
+                    val currentTask = fusedClient.getCurrentLocation(
+                        Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                        cts.token
+                    )
+                    loc = com.google.android.gms.tasks.Tasks.await(currentTask, 3000, java.util.concurrent.TimeUnit.MILLISECONDS)
+                } catch (e: Exception) {
+                    // Fallback to last location
+                }
+
+                if (loc == null) {
+                    try {
+                        val lastTask = fusedClient.lastLocation
+                        loc = com.google.android.gms.tasks.Tasks.await(lastTask, 2000, java.util.concurrent.TimeUnit.MILLISECONDS)
+                    } catch (e: Exception) {
+                        // Ignored
+                    }
+                }
             } catch (e: Exception) {
-                // Fallback to last location
+                // Fused client not available
             }
 
+            // 2. Fallback to Android standard LocationManager (GPS, Network, Passive)
             if (loc == null) {
                 try {
-                    val lastTask = fusedClient.lastLocation
-                    loc = com.google.android.gms.tasks.Tasks.await(lastTask, 2000, java.util.concurrent.TimeUnit.MILLISECONDS)
+                    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? android.location.LocationManager
+                    if (locationManager != null) {
+                        val gpsLoc = try { locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER) } catch (e: SecurityException) { null }
+                        val netLoc = try { locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER) } catch (e: SecurityException) { null }
+                        val passiveLoc = try { locationManager.getLastKnownLocation(android.location.LocationManager.PASSIVE_PROVIDER) } catch (e: SecurityException) { null }
+                        
+                        loc = gpsLoc ?: netLoc ?: passiveLoc
+                    }
                 } catch (e: Exception) {
                     // Ignored
                 }
@@ -78,30 +99,47 @@ object LocationHelper {
 
         try {
             if (Geocoder.isPresent()) {
-                val geocoder = Geocoder(context, Locale("ur", "PK"))
-                val addresses = geocoder.getFromLocation(lat, lng, 1)
-                if (!addresses.isNullOrEmpty()) {
-                    val address = addresses[0]
-                    detectedCityUr = address.locality ?: address.subAdminArea ?: address.adminArea
+                try {
+                    val geocoderUr = Geocoder(context, Locale("ur", "PK"))
+                    val addressesUr = geocoderUr.getFromLocation(lat, lng, 1)
+                    if (!addressesUr.isNullOrEmpty()) {
+                        val address = addressesUr[0]
+                        detectedCityUr = address.locality ?: address.subAdminArea ?: address.adminArea
+                    }
+                } catch (e: Exception) {
+                    // Geocoder ur failed
                 }
 
-                val geocoderEn = Geocoder(context, Locale.ENGLISH)
-                val addressesEn = geocoderEn.getFromLocation(lat, lng, 1)
-                if (!addressesEn.isNullOrEmpty()) {
-                    val addressEn = addressesEn[0]
-                    detectedCityEn = addressEn.locality ?: addressEn.subAdminArea ?: addressEn.adminArea
+                try {
+                    val geocoderEn = Geocoder(context, Locale.ENGLISH)
+                    val addressesEn = geocoderEn.getFromLocation(lat, lng, 1)
+                    if (!addressesEn.isNullOrEmpty()) {
+                        val addressEn = addressesEn[0]
+                        detectedCityEn = addressEn.locality ?: addressEn.subAdminArea ?: addressEn.adminArea
+                    }
+                } catch (e: Exception) {
+                    // Geocoder en failed
                 }
             }
         } catch (e: Exception) {
             // Geocoder might fail if network is slow/offline
         }
 
-        // 2. Find closest known city from database to get authentic Urdu name & Timezone if missing
+        // 2. Find closest known city from database
         val nearest = findNearestDefaultCity(lat, lng)
 
-        val finalNameUrdu = detectedCityUr ?: nearest.nameUrdu
-        val finalNameEnglish = detectedCityEn ?: nearest.nameEnglish
-        val timeZoneId = nearest.timeZoneId.ifBlank { TimeZone.getDefault().id }
+        val finalNameUrdu = detectedCityUr?.ifBlank { null } ?: nearest.nameUrdu
+        val finalNameEnglish = detectedCityEn?.ifBlank { null } ?: nearest.nameEnglish
+        
+        // Exact timezone detection based on coordinates
+        val timeZoneId = when {
+            lat in 23.0..37.5 && lng in 60.0..78.0 -> "Asia/Karachi"
+            lat in 16.0..32.0 && lng in 34.0..55.0 -> "Asia/Riyadh"
+            lat in 8.0..37.0 && lng in 68.0..97.0 -> "Asia/Kolkata"
+            lat in 20.0..27.0 && lng in 88.0..93.0 -> "Asia/Dhaka"
+            lat in 24.0..26.5 && lng in 51.0..56.5 -> "Asia/Dubai"
+            else -> nearest.timeZoneId.ifBlank { TimeZone.getDefault().id }
+        }
 
         return CityLocation(
             nameUrdu = finalNameUrdu,
@@ -136,5 +174,14 @@ object LocationHelper {
                 sin(dLon / 2) * sin(dLon / 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return r * c
+    }
+
+    fun getCityName(context: Context): String {
+        val prefs = context.getSharedPreferences("prayer_city_prefs", Context.MODE_PRIVATE)
+        val cityNameEng = prefs.getString("city_name_eng", null)
+        if (!cityNameEng.isNullOrBlank() && !cityNameEng.equals("Ukiah", ignoreCase = true)) return cityNameEng
+        val nameUrdu = prefs.getString("city_name_urdu", null)
+        if (!nameUrdu.isNullOrBlank() && !nameUrdu.contains("Ukiah", ignoreCase = true)) return nameUrdu
+        return "راولپنڈی"
     }
 }

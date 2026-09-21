@@ -75,4 +75,6 @@
     <string name="widget_desc_minimal_clock">Islamic Minimal Clock (سادہ گھڑی و ہجری تاریخ)</string>
     <string name="widget_desc_prayer_times">Islamic Mosque Wall Clock (Al-Harameen Azan Clock)</string>
     <string name="widget_desc_simple_prayer_times">Islamic Simple Prayer Times (سادہ اوقاتِ نماز و گھڑی)</string>
+    <string name="widget_desc_islamic_clock">Islamic Clock Widget (Emerald Circle)</string>
+    <string name="widget_desc_islamic_clock_card">Islamic Colorful Circle Clock (رنگین خوبصورت گول گھڑی)</string>
 </resources>

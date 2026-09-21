@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Layer 1: Outermost Radiant Multicolor Halo Ring (Amber Gold to Neon Cyan) -->
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:angle="45"
+                android:startColor="#FF8F00"
+                android:centerColor="#FFD700"
+                android:endColor="#00E5FF"
+                android:type="linear" />
+            <stroke
+                android:width="2.5dp"
+                android:color="#FFD700" />
+        </shape>
+    </item>
+
+    <!-- Layer 2: Deep Cosmic Celestial Midnight Teal/Violet Disc -->
+    <item
+        android:bottom="2.5dp"
+        android:left="2.5dp"
+        android:right="2.5dp"
+        android:top="2.5dp">
+        <shape android:shape="oval">
+            <gradient
+                android:angle="135"
+                android:startColor="#09203F"
+                android:centerColor="#073B3A"
+                android:endColor="#1E1035"
+                android:type="linear" />
+            <stroke
+                android:width="1.5dp"
+                android:color="#5500F5D4" />
+        </shape>
+    </item>
+
+    <!-- Layer 3: Concentric Subtle Gold Decorative Orbit Line -->
+    <item
+        android:bottom="6.5dp"
+        android:left="6.5dp"
+        android:right="6.5dp"
+        android:top="6.5dp">
+        <shape android:shape="oval">
+            <stroke
+                android:width="1dp"
+                android:color="#33FFD54F" />
+        </shape>
+    </item>
+</layer-list>

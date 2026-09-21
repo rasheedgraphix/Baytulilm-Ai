@@ -37,91 +37,15 @@ fun BookCoverThumbnailView(
     width: androidx.compose.ui.unit.Dp = 92.dp,
     height: androidx.compose.ui.unit.Dp = 126.dp
 ) {
-    val lang = LocalAppLanguage.current
-    val displayTitle = book.getDisplayName(lang.code)
-    val scale = (width.value / 92f).coerceIn(0.8f, 2.8f)
-
-    // Straight, upright rectangular Book Cover (0° straight alignment, real first page)
-    Box(
-        modifier = modifier
-            .width(width)
-            .height(height)
-            .clip(RoundedCornerShape(6.dp))
-            .background(Color(0xFF1E293B)),
-        contentAlignment = Alignment.Center
-    ) {
-        if (thumbnail != null) {
-            // Actual first page / authentic cover of the book rendered straight and crisp
-            Image(
-                bitmap = thumbnail.asImageBitmap(),
-                contentDescription = book.title,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(6.dp)),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            // Clean, elegant reader placeholder until authentic PDF first page is rendered
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0xFF0F172A))
-                    .padding((6 * scale).dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Top subject tag
-                    Text(
-                        text = book.subject.ifBlank { book.darja },
-                        color = Color(0xFF38BDF8),
-                        fontSize = (8f * scale).sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    // Center book icon & title
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Book,
-                            contentDescription = null,
-                            tint = Color(0xFF94A3B8),
-                            modifier = Modifier.size((22 * scale).dp)
-                        )
-                        Spacer(modifier = Modifier.height((4 * scale).dp))
-                        Text(
-                            text = displayTitle,
-                            color = Color.White,
-                            fontSize = (9.5f * scale).sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                            lineHeight = (13f * scale).sp
-                        )
-                    }
-
-                    // Bottom authentic page hint
-                    Text(
-                        text = "صفحہ اول (PDF)",
-                        color = Color(0xFF64748B),
-                        fontSize = (7f * scale).sp,
-                        fontWeight = FontWeight.Normal,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        maxLines = 1
-                    )
-                }
-            }
-        }
-    }
+    IslamicBookCover(
+        bookTitle = book.titleUrdu.ifBlank { book.title },
+        yearNumber = 1,
+        pdfUrl = book.pdfUrl,
+        bookId = book.id,
+        modifier = modifier,
+        width = width,
+        height = height
+    )
 }
 
 @Composable
@@ -304,9 +228,11 @@ fun BookCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Book Cover (Rendered first page or authentic Islamic cover)
-                BookCoverThumbnailView(
-                    book = book,
-                    thumbnail = thumbnail,
+                IslamicBookCover(
+                    bookTitle = book.titleUrdu.ifBlank { book.title },
+                    yearNumber = 1,
+                    pdfUrl = book.pdfUrl,
+                    bookId = book.id,
                     width = 92.dp,
                     height = 126.dp
                 )

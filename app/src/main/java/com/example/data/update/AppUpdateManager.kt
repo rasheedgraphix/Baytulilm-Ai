@@ -44,7 +44,7 @@ object AppUpdateManager {
                     @Suppress("DEPRECATION")
                     packageInfo.versionCode
                 }
-                val currentVersionName = packageInfo.versionName ?: "1.4.3"
+                val currentVersionName = packageInfo.versionName ?: "1.4.4"
 
                 // Fetch JSON from GitHub
                 val connection = URL(GITHUB_JSON_URL).openConnection() as java.net.HttpURLConnection

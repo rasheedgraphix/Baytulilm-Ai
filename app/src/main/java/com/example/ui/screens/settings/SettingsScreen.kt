@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,6 +68,7 @@ fun SettingsScreen(
 
     var showLanguagePicker by remember { mutableStateOf(false) }
     var showThemePicker by remember { mutableStateOf(false) }
+    var showHijriAdjustmentDialog by remember { mutableStateOf(false) }
 
     val currentLang by LanguageManager.currentLanguage.collectAsState()
     val currentTheme by LanguageManager.currentTheme.collectAsState()
@@ -186,6 +188,54 @@ fun SettingsScreen(
                                     "Dark" -> LanguageManager.getString("dark_theme", currentLang.code)
                                     else -> LanguageManager.getString("system_theme", currentLang.code)
                                 },
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Open",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Hijri Date Adjustment Row
+                val hijriAdjustment by com.example.ui.screens.islamic.HijriHelper.adjustmentDays.collectAsState()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showHijriAdjustmentDialog = true }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Event,
+                            contentDescription = "Hijri Adjustment",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "ہجری تاریخ ایڈجسٹمنٹ (Hijri Date Adjustment)",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            val adjustmentText = when (hijriAdjustment) {
+                                0 -> "0 دن (طبعی / ڈیفالٹ)"
+                                1 -> "+1 دن آگے"
+                                2 -> "+2 دن آگے"
+                                -1 -> "-1 دن پیچھے"
+                                -2 -> "-2 دن پیچھے"
+                                else -> "$hijriAdjustment دن"
+                            }
+                            Text(
+                                text = "$adjustmentText • ${com.example.ui.screens.islamic.HijriHelper.getTodayHijriDate(currentLang.code)}",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
@@ -476,17 +526,31 @@ fun SettingsScreen(
 
                 Button(
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://rasheedgraphix.github.io/baytul-ilm-website/"))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(com.example.util.AppConfig.APKPURE_DOWNLOAD_URL))
                         context.startActivity(intent)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Icon(Icons.Default.Update, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Check for Update")
+                    Text("APKPure پر نیا ورژن دیکھیں")
                 }
                 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        com.example.util.AppConfig.shareAppWithWebsite(context)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("ایپ دوستوں سے شیئر کریں")
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
@@ -632,6 +696,12 @@ fun SettingsScreen(
                     )
                 }
             }
+        )
+    }
+
+    if (showHijriAdjustmentDialog) {
+        com.example.ui.components.HijriAdjustmentDialog(
+            onDismissRequest = { showHijriAdjustmentDialog = false }
         )
     }
 }

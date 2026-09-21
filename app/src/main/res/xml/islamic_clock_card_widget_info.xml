@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="200dp"
+    android:minHeight="200dp"
+    android:minResizeWidth="140dp"
+    android:minResizeHeight="140dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="3"
+    android:updatePeriodMillis="60000"
+    android:initialLayout="@layout/widget_islamic_clock_card"
+    android:previewLayout="@layout/widget_islamic_clock_card"
+    android:description="@string/widget_desc_islamic_clock_card"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen|keyguard" />

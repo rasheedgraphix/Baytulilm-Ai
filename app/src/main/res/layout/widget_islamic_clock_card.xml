@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_luxury_clock_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Perfectly centered 1:1 circular container with grand size -->
+    <LinearLayout
+        android:id="@+id/ll_luxury_clock_circle"
+        android:layout_width="236dp"
+        android:layout_height="236dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_widget_circle_colorful"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
+
+        <!-- 1. Top Location Pill (Glowing Cyan & Dark Teal) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_widget_colorful_location_pill"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="9dp"
+            android:paddingVertical="3dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:text="📍"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_lux_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="Rawalpindi"
+                android:textColor="#00F5D4"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 2. Current Time (TextClock, Large Crisp Pure White with Glow) -->
+        <TextClock
+            android:id="@+id/tv_lux_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:format12Hour="hh:mm a"
+            android:format24Hour="HH:mm"
+            android:includeFontPadding="false"
+            android:shadowColor="#B3000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="5"
+            android:textColor="#FFFFFF"
+            android:textSize="27sp"
+            android:textStyle="bold" />
+
+        <!-- Delicate Golden-Cyan Accent Divider -->
+        <ImageView
+            android:layout_width="130dp"
+            android:layout_height="1.5dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:background="#40FFD54F"
+            android:contentDescription="@null" />
+
+        <!-- 3. Gregorian Date (Celestial Sky Blue) -->
+        <TextView
+            android:id="@+id/tv_lux_gregorian"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="19 Sep 2026, Sat"
+            android:textColor="#BAE6FD"
+            android:textSize="11.5sp" />
+
+        <!-- 4. Hijri Date (Radiant Gold Accent) -->
+        <TextView
+            android:id="@+id/tv_lux_hijri"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:shadowColor="#80000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="۲۶ ربیع الاول ۱۴۴۸ ھ"
+            android:textColor="#FFD54F"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <!-- 5. Next Prayer Pod (Sunset Orange to Amber Gradient Pod) -->
+        <LinearLayout
+            android:id="@+id/ll_lux_next_prayer_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:background="@drawable/bg_widget_colorful_prayer_pod"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="9dp"
+            android:paddingVertical="3.5dp">
+
+            <TextView
+                android:id="@+id/tv_lux_next_prayer_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:text="Next: Fajr"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_lux_next_prayer_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_widget_colorful_prayer_time"
+                android:includeFontPadding="false"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="1.5dp"
+                android:text="04:36 AM"
+                android:textColor="#BF360C"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.BookEntity
 import com.example.ui.components.BookCard
+import com.example.ui.components.AdBannerView
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
 import com.example.util.DarsNizamiMatcher
@@ -182,6 +183,9 @@ fun BooksScreen(
                     navigationIconContentColor = Color.White
                 )
             )
+        },
+        bottomBar = {
+            AdBannerView()
         }
     ) { innerPadding ->
         Column(

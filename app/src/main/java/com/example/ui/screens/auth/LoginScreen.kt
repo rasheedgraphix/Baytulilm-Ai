@@ -130,7 +130,13 @@ fun LoginScreen(
             onLoginSuccess()
             authViewModel.resetState()
         } else if (authState is AuthResultState.Error) {
-            android.util.Log.d("LoginScreen", "Firebase failure: ${(authState as AuthResultState.Error).errorMessage}")
+            val err = (authState as AuthResultState.Error).errorMessage
+            android.util.Log.d("LoginScreen", "Firebase failure: $err")
+            if (err.contains("verification", ignoreCase = true) ||
+                err.contains("verify", ignoreCase = true) ||
+                err.contains("verified", ignoreCase = true)) {
+                showUnverifiedDialog = true
+            }
         }
     }
 

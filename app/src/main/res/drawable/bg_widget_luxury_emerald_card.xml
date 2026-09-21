@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Outer Deep Forest Emerald Card with Luxurious Gold Border -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#0D5C33"
+                android:centerColor="#136F3F"
+                android:endColor="#1B8A4C"
+                android:type="linear" />
+            <stroke
+                android:width="2dp"
+                android:color="#FFD54F" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+
+    <!-- Subtle Inner Soft Gold Rim Highlight -->
+    <item
+        android:bottom="2dp"
+        android:left="2dp"
+        android:right="2dp"
+        android:top="2dp">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="1dp"
+                android:color="#33FFD54F" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -30,6 +30,31 @@ data class PrayerTimeData(
     val timeFormatted: String,
     val dateObj: Date,
     val isNext: Boolean = false
+) {
+    val name: String get() = nameEnglish
+    val time: String get() = timeFormatted
+}
+
+data class DaimeDaySchedule(
+    val dayOfMonth: Int,
+    val month: Int,
+    val year: Int,
+    val dayOfWeekUrdu: String,
+    val dateFormatted: String,
+    val date: Date,
+    val sehriEnds: String,      // صبح صادق / سحر کا اختتام
+    val sunrise: String,        // طلوعِ آفتاب
+    val ishraq: String,         // اشراق (طلوع + 15 منٹ)
+    val chasht: String,         // چاشت (طلوع + 45 منٹ)
+    val zawal: String,          // نصف النہار / وقتِ زوال
+    val dhuhr: String,          // ظہر
+    val asrHanafi: String,      // عصر حنفی (مثلین)
+    val asrShafi: String,       // عصر شافعی (مثل اول)
+    val sunsetIftar: String,    // غروبِ آفتاب / افطار
+    val isha: String,           // عشاء
+    val makroohSunrise: String, // طلوع تا 15 منٹ بعد
+    val makroohZawal: String,   // زوال سے 10 منٹ قبل تا آغازِ ظہر
+    val makroohSunset: String   // غروب سے 15 منٹ قبل تا غروب
 )
 
 object PrayerTimeCalculator {
@@ -177,6 +202,159 @@ object PrayerTimeCalculator {
 
         return rawList.map { prayer ->
             prayer.copy(isNext = prayer.id == nextPrayer.id)
+        }
+    }
+
+    fun getNextPrayer(context: android.content.Context): PrayerTimeData {
+        val prefs = context.getSharedPreferences("prayer_city_prefs", android.content.Context.MODE_PRIVATE)
+        val cityNameEng = prefs.getString("city_name_eng", null)
+        val city = if (cityNameEng != null && !cityNameEng.equals("Ukiah", ignoreCase = true)) {
+            defaultCities.find { it.nameEnglish.equals(cityNameEng, ignoreCase = true) }
+                ?: defaultCities.first { it.nameEnglish == "Rawalpindi" }
+        } else {
+            defaultCities.first { it.nameEnglish == "Rawalpindi" }
+        }
+        val tz = TimeZone.getTimeZone(city.timeZoneId)
+        val prayers = calculatePrayerTimes(city.lat, city.lng, Date(), tz)
+        val now = Date()
+        return prayers.firstOrNull { it.dateObj.after(now) } ?: prayers.first()
+    }
+
+    fun calculateDaySchedule(
+        lat: Double,
+        lng: Double,
+        year: Int,
+        month: Int,
+        day: Int,
+        overrideTimeZone: TimeZone? = null
+    ): DaimeDaySchedule {
+        val timeZone: TimeZone = overrideTimeZone ?: when {
+            lat in 23.0..37.0 && lng in 60.0..78.0 -> TimeZone.getTimeZone("Asia/Karachi")
+            else -> TimeZone.getDefault()
+        }
+
+        val cal = Calendar.getInstance(timeZone)
+        cal.set(Calendar.YEAR, year)
+        cal.set(Calendar.MONTH, month - 1)
+        cal.set(Calendar.DAY_OF_MONTH, day)
+        cal.set(Calendar.HOUR_OF_DAY, 12)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+
+        var y = year
+        var m = month
+        if (m <= 2) {
+            y -= 1
+            m += 12
+        }
+        val a = y / 100
+        val b = 2 - a + (a / 4)
+        val julianDate = kotlin.math.floor(365.25 * (y + 4716)).toLong() +
+                kotlin.math.floor(30.6001 * (m + 1)).toLong() + day + b - 1524.5
+        val d = julianDate - 2451545.0
+
+        val g = fixAngle(357.529 + 0.98560028 * d)
+        val q = fixAngle(280.459 + 0.98564736 * d)
+        val l = fixAngle(q + 1.915 * dSin(g) + 0.020 * dSin(2 * g))
+
+        val ob = 23.439 - 0.00000036 * d
+        var ra = dAtan2(dCos(ob) * dSin(l), dCos(l)) / 15.0
+        ra = fixHour(ra)
+        val declination = dAsin(dSin(ob) * dSin(l))
+
+        var eqTimeHours = (q / 15.0) - ra
+        if (eqTimeHours > 12.0) eqTimeHours -= 24.0
+        if (eqTimeHours < -12.0) eqTimeHours += 24.0
+
+        val timeZoneOffsetHours = timeZone.getOffset(cal.timeInMillis) / 3600000.0
+        val solarNoonHours = fixHour(12.0 + timeZoneOffsetHours - (lng / 15.0) - eqTimeHours)
+
+        val dhuhrHours = solarNoonHours + (1.0 / 60.0)
+
+        val sunAlt = -0.833
+        val sunriseHour = solarNoonHours - sunAngleTime(sunAlt, lat, declination)
+        val sunsetHour = solarNoonHours + sunAngleTime(sunAlt, lat, declination)
+
+        val fajrHour = solarNoonHours - sunAngleTime(-18.0, lat, declination)
+        val ishaHour = solarNoonHours + sunAngleTime(-18.0, lat, declination)
+
+        val ishraqHour = sunriseHour + (15.0 / 60.0)
+        val chashtHour = sunriseHour + (45.0 / 60.0)
+
+        val noonShadowTan = dTan(abs(lat - declination))
+        val asrAltHanafi = dAtan(1.0 / (2.0 + noonShadowTan))
+        val asrHourHanafi = solarNoonHours + sunAngleTime(asrAltHanafi, lat, declination)
+
+        val asrAltShafi = dAtan(1.0 / (1.0 + noonShadowTan))
+        val asrHourShafi = solarNoonHours + sunAngleTime(asrAltShafi, lat, declination)
+
+        val fajrDate = createDate(cal, fajrHour, timeZone)
+        val sunriseDate = createDate(cal, sunriseHour, timeZone)
+        val ishraqDate = createDate(cal, ishraqHour, timeZone)
+        val chashtDate = createDate(cal, chashtHour, timeZone)
+        val zawalDate = createDate(cal, solarNoonHours, timeZone)
+        val dhuhrDate = createDate(cal, dhuhrHours, timeZone)
+        val asrHanafiDate = createDate(cal, asrHourHanafi, timeZone)
+        val asrShafiDate = createDate(cal, asrHourShafi, timeZone)
+        val sunsetDate = createDate(cal, sunsetHour, timeZone)
+        val ishaDate = createDate(cal, ishaHour, timeZone)
+
+        val makroohSunriseEnd = createDate(cal, sunriseHour + (15.0 / 60.0), timeZone)
+        val makroohZawalStart = createDate(cal, solarNoonHours - (10.0 / 60.0), timeZone)
+        val makroohSunsetStart = createDate(cal, sunsetHour - (15.0 / 60.0), timeZone)
+
+        val dayOfWeekUrdu = when (cal.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> "اتوار"
+            Calendar.MONDAY -> "پیر"
+            Calendar.TUESDAY -> "منگل"
+            Calendar.WEDNESDAY -> "بدھ"
+            Calendar.THURSDAY -> "جمعرات"
+            Calendar.FRIDAY -> "جمعہ"
+            Calendar.SATURDAY -> "ہفتہ"
+            else -> ""
+        }
+
+        val dateFormatted = String.format(Locale.ENGLISH, "%02d/%02d/%04d", day, month, year)
+
+        return DaimeDaySchedule(
+            dayOfMonth = day,
+            month = month,
+            year = year,
+            dayOfWeekUrdu = dayOfWeekUrdu,
+            dateFormatted = dateFormatted,
+            date = cal.time,
+            sehriEnds = formatTime(fajrDate, timeZone),
+            sunrise = formatTime(sunriseDate, timeZone),
+            ishraq = formatTime(ishraqDate, timeZone),
+            chasht = formatTime(chashtDate, timeZone),
+            zawal = formatTime(zawalDate, timeZone),
+            dhuhr = formatTime(dhuhrDate, timeZone),
+            asrHanafi = formatTime(asrHanafiDate, timeZone),
+            asrShafi = formatTime(asrShafiDate, timeZone),
+            sunsetIftar = formatTime(sunsetDate, timeZone),
+            isha = formatTime(ishaDate, timeZone),
+            makroohSunrise = "${formatTime(sunriseDate, timeZone)} تا ${formatTime(makroohSunriseEnd, timeZone)}",
+            makroohZawal = "${formatTime(makroohZawalStart, timeZone)} تا ${formatTime(dhuhrDate, timeZone)}",
+            makroohSunset = "${formatTime(makroohSunsetStart, timeZone)} تا ${formatTime(sunsetDate, timeZone)}"
+        )
+    }
+
+    fun calculateMonthSchedule(
+        lat: Double,
+        lng: Double,
+        year: Int,
+        month: Int,
+        overrideTimeZone: TimeZone? = null
+    ): List<DaimeDaySchedule> {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.YEAR, year)
+        cal.set(Calendar.MONTH, month - 1)
+        cal.set(Calendar.DAY_OF_MONTH, 1)
+        val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+        return (1..daysInMonth).map { day ->
+            calculateDaySchedule(lat, lng, year, month, day, overrideTimeZone)
         }
     }
 

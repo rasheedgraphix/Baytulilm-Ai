@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -58,15 +59,18 @@ fun IslamicCalendarScreen(
     val emptyCells = List(emptyCellsCount) { null }
     val allCells = emptyCells + daysInMonth
 
-    val hijriMonthSpan = remember(currentMonth, currentLang.code) {
+    val hijriAdjustment by HijriHelper.adjustmentDays.collectAsState()
+    var showAdjustmentDialog by remember { mutableStateOf(false) }
+
+    val hijriMonthSpan = remember(currentMonth, currentLang.code, hijriAdjustment) {
         HijriHelper.getHijriMonthSpan(currentMonth, currentLang.code)
     }
 
-    val todayHijri = remember(currentLang.code) {
+    val todayHijri = remember(currentLang.code, hijriAdjustment) {
         HijriHelper.getTodayHijriDate(currentLang.code)
     }
 
-    val selectedHijriDetails = remember(selectedDate, currentLang.code) {
+    val selectedHijriDetails = remember(selectedDate, currentLang.code, hijriAdjustment) {
         HijriHelper.getHijriDetails(selectedDate, currentLang.code)
     }
 
@@ -115,10 +119,21 @@ fun IslamicCalendarScreen(
                             viewModel.today()
                             selectedDate = LocalDate.now()
                         },
-                        modifier = Modifier.padding(end = 8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(end = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Text(todayBtnText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(todayBtnText, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    IconButton(
+                        onClick = { showAdjustmentDialog = true },
+                        modifier = Modifier.padding(end = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Adjust Hijri Date",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )
@@ -241,7 +256,7 @@ fun IslamicCalendarScreen(
                                         if (date != null) {
                                             val isToday = date == LocalDate.now()
                                             val isSelected = date == selectedDate
-                                            val hijriInfo = remember(date, currentLang.code) {
+                                            val hijriInfo = remember(date, currentLang.code, hijriAdjustment) {
                                                 HijriHelper.getHijriDetails(date, currentLang.code)
                                             }
                                             val eventForDay = events.find { it.gregorianDate == date.toString() }
@@ -496,5 +511,11 @@ fun IslamicCalendarScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+
+    if (showAdjustmentDialog) {
+        com.example.ui.components.HijriAdjustmentDialog(
+            onDismissRequest = { showAdjustmentDialog = false }
+        )
     }
 }

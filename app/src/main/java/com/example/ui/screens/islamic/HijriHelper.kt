@@ -1,5 +1,9 @@
 package com.example.ui.screens.islamic
 
+import android.content.Context
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.chrono.HijrahChronology
@@ -9,6 +13,40 @@ import java.time.temporal.ChronoField
 object HijriHelper {
     private val hijrahChronology = HijrahChronology.INSTANCE
 
+    private const val PREFS_NAME = "hijri_calendar_prefs"
+    private const val KEY_ADJUSTMENT = "hijri_adjustment_days"
+
+    private val _adjustmentDays = MutableStateFlow(0)
+    val adjustmentDays: StateFlow<Int> = _adjustmentDays.asStateFlow()
+
+    fun init(context: Context) {
+        try {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            _adjustmentDays.value = prefs.getInt(KEY_ADJUSTMENT, 0)
+        } catch (_: Exception) {}
+    }
+
+    fun getAdjustmentDays(context: Context? = null): Int {
+        if (context != null && _adjustmentDays.value == 0) {
+            try {
+                val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                _adjustmentDays.value = prefs.getInt(KEY_ADJUSTMENT, 0)
+            } catch (_: Exception) {}
+        }
+        return _adjustmentDays.value
+    }
+
+    fun setAdjustmentDays(context: Context, days: Int) {
+        _adjustmentDays.value = days
+        try {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            prefs.edit().putInt(KEY_ADJUSTMENT, days).apply()
+        } catch (_: Exception) {}
+        try {
+            com.example.widget.AppWidgetUpdateHelper.updateAllWidgets(context)
+        } catch (_: Exception) {}
+    }
+
     val monthNamesUrdu = listOf(
         "محرم الحرام", "صفر المظفر", "ربیع الاول", "ربیع الثانی",
         "جمادی الاولیٰ", "جمادی الثانیہ", "رجب المرجب", "شعبان المعظم",
@@ -16,8 +54,8 @@ object HijriHelper {
     )
 
     val monthNamesUrduShort = listOf(
-        "محرم", "صفر", "ر۔الاول", "ر۔الثانی",
-        "ج۔الاولیٰ", "ج۔الثانیہ", "رجب", "شعبان",
+        "محرم", "صفر", "ربیع الاول", "ربیع الثانی",
+        "جمادی الاولیٰ", "جمادی الثانیہ", "رجب", "شعبان",
         "رمضان", "شوال", "ذوالقعدہ", "ذوالحجہ"
     )
 
@@ -48,9 +86,10 @@ object HijriHelper {
         val shortFormatted: String
     )
 
-    fun getHijriDetails(gregorianDate: LocalDate, langCode: String = "ur"): HijriDateDetails {
+    fun getHijriDetailsWithOffset(gregorianDate: LocalDate, offsetDays: Int, langCode: String = "ur"): HijriDateDetails {
         return try {
-            val hijrahDate: HijrahDate = hijrahChronology.date(gregorianDate)
+            val adjustedDate = if (offsetDays != 0) gregorianDate.plusDays(offsetDays.toLong()) else gregorianDate
+            val hijrahDate: HijrahDate = hijrahChronology.date(adjustedDate)
             val day = hijrahDate.get(ChronoField.DAY_OF_MONTH)
             val month = hijrahDate.get(ChronoField.MONTH_OF_YEAR)
             val year = hijrahDate.get(ChronoField.YEAR_OF_ERA)
@@ -79,8 +118,12 @@ object HijriHelper {
         }
     }
 
+    fun getHijriDetails(gregorianDate: LocalDate, langCode: String = "ur"): HijriDateDetails {
+        return getHijriDetailsWithOffset(gregorianDate, _adjustmentDays.value, langCode)
+    }
+
     /**
-     * Dynamically calculates today's Hijri date based on current system Gregorian date.
+     * Dynamically calculates today's Hijri date based on current system Gregorian date and user adjustment.
      */
     fun getTodayHijriDate(langCode: String = "ur"): String {
         return getHijriDetails(LocalDate.now(), langCode).formattedFull

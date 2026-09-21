@@ -82,6 +82,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -111,7 +112,9 @@ import com.example.data.repository.VerifiedAyah
 import com.example.data.repository.VerifiedHadith
 import com.example.ui.components.BookCoverThumbnailView
 import com.example.ui.components.GenericBookCover
+import com.example.ui.components.IslamicBookCover
 import com.example.ui.components.DarjaClassIconBadge
+import com.example.ui.components.AdBannerView
 import com.example.ui.navigation.Screen
 import com.example.ui.viewmodel.MainViewModel
 import com.example.util.CityLocation
@@ -153,6 +156,8 @@ fun HomeScreen(
     }
 
     var showCityPicker by remember { mutableStateOf(false) }
+    var showHijriAdjustmentDialog by remember { mutableStateOf(false) }
+    val hijriAdjustment by com.example.ui.screens.islamic.HijriHelper.adjustmentDays.collectAsState()
     var updateInfoState by remember { mutableStateOf<AppUpdateInfo?>(null) }
     val locationPrefs = remember { context.getSharedPreferences("location_prompt_prefs", Context.MODE_PRIVATE) }
     var showLocationPrompt by remember { mutableStateOf(false) }
@@ -187,6 +192,8 @@ fun HomeScreen(
             viewModel.detectAndSetCurrentLocation(context)
         }
 
+        // Defer network update check by 3 seconds so home screen renders instantly without network blocking
+        kotlinx.coroutines.delay(3000L)
         try {
             val info = AppUpdateManager.checkForAppUpdate(context)
             if (info.isUpdateAvailable) {
@@ -245,7 +252,8 @@ fun HomeScreen(
                     Surface(
                         shape = RoundedCornerShape(14.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        border = BorderStroke(1.dp, IslamicGold.copy(alpha = 0.35f))
+                        border = BorderStroke(1.dp, IslamicGold.copy(alpha = 0.35f)),
+                        modifier = Modifier.clickable { showHijriAdjustmentDialog = true }
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
@@ -257,7 +265,9 @@ fun HomeScreen(
                                 fontSize = 12.sp
                             )
                             Text(
-                                text = com.example.ui.screens.islamic.HijriHelper.getTodayHijriDate(currentLang.code),
+                                text = remember(currentLang.code, hijriAdjustment) {
+                                    com.example.ui.screens.islamic.HijriHelper.getTodayHijriDate(currentLang.code)
+                                },
                                 fontSize = 11.5.sp,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold
@@ -498,7 +508,7 @@ fun HomeScreen(
                 )
             }
 
-            // Row 7: All Darjat & Islamic Library
+            // Row 7: All Darjat & Daimi Awqat-e-Namaz
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -510,9 +520,9 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
                 IslamicServiceCard(
-                    title = if (currentLang.code == "en") "Islamic Library" else "کتب خانہ و لائبریری",
-                    iconEmoji = "🏛️",
-                    onClick = { onNavigate(Screen.Library.route) },
+                    title = if (currentLang.code == "en") "Perpetual Prayer Times" else "دائمی اوقاتِ نماز",
+                    iconEmoji = "🕌",
+                    onClick = { onNavigate(Screen.DaimeAuqat.route) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -592,6 +602,15 @@ fun HomeScreen(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // AdMob Banner Ad
+        AdBannerView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+        )
     }
 
     if (showCityPicker) {
@@ -615,6 +634,12 @@ fun HomeScreen(
                 }
             },
             onDismiss = { showCityPicker = false }
+        )
+    }
+
+    if (showHijriAdjustmentDialog) {
+        com.example.ui.components.HijriAdjustmentDialog(
+            onDismissRequest = { showHijriAdjustmentDialog = false }
         )
     }
 
@@ -1591,9 +1616,11 @@ private fun HomeBookCard(
                     .background(Color(0xFF0F172A)),
                 contentAlignment = Alignment.Center
             ) {
-                BookCoverThumbnailView(
-                    book = book,
-                    thumbnail = null,
+                IslamicBookCover(
+                    bookTitle = book.titleUrdu.ifBlank { book.title },
+                    yearNumber = 1,
+                    pdfUrl = book.pdfUrl,
+                    bookId = book.id,
                     width = 82.dp,
                     height = 115.dp
                 )

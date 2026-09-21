@@ -36,14 +36,18 @@ object AppConfig {
     const val DEFAULT_OPENROUTER_KEY: String = ""
 
     const val OFFICIAL_WEBSITE_URL = "https://rasheedgraphix.github.io/baytul-ilm-website/"
+    const val APKPURE_DOWNLOAD_URL = "https://apkpure.com/baytul-ilm-ai/com.baytulilmai.app"
     const val APP_NAME_URDU = "بیت العلم AI"
     const val APP_TAGLINE_URDU = "اسلامی تعلیم کا جدید پلیٹ فارم"
 
-    const val SHARE_MESSAGE = """بیت العلم AI — اسلامی تعلیم کا جدید پلیٹ فارم
+    val SHARE_MESSAGE = """بیت العلم AI — اسلامی تعلیم کا جدید پلیٹ فارم
 
 دینی کتب، قرآن، دعائیں، Quiz، AI Assistant اور دیگر اسلامی تعلیمی سہولیات ایک ہی app میں۔
 
-Website:
+ڈاؤن لوڈ کریں (APKPure):
+$APKPURE_DOWNLOAD_URL
+
+ویب سائٹ:
 $OFFICIAL_WEBSITE_URL"""
 
     fun shareAppWithWebsite(context: Context) {

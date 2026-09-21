@@ -23,14 +23,6 @@ class ExampleRobolectricTest {
   fun testWidgetInflation() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val root = android.widget.FrameLayout(context)
-    val rv1 = android.widget.RemoteViews(context.packageName, R.layout.widget_circle_clock1)
-    val v1 = rv1.apply(context, root)
-    org.junit.Assert.assertNotNull(v1)
-
-    val rv2 = android.widget.RemoteViews(context.packageName, R.layout.widget_circle_clock2)
-    val v2 = rv2.apply(context, root)
-    org.junit.Assert.assertNotNull(v2)
-
     val rvSimple = android.widget.RemoteViews(context.packageName, R.layout.widget_simple_clock)
     val vSimple = rvSimple.apply(context, root)
     org.junit.Assert.assertNotNull(vSimple)
@@ -39,10 +31,30 @@ class ExampleRobolectricTest {
     val vPrayer = rvPrayer.apply(context, root)
     org.junit.Assert.assertNotNull(vPrayer)
 
-    val bitmap1 = com.example.widget.ClockBitmapHelper.renderKaabaClockBitmap(context, 400)
-    org.junit.Assert.assertNotNull(bitmap1)
+    val rvSimplePrayer = android.widget.RemoteViews(context.packageName, R.layout.widget_simple_prayer_times)
+    val vSimplePrayer = rvSimplePrayer.apply(context, root)
+    org.junit.Assert.assertNotNull(vSimplePrayer)
 
-    val bitmap2 = com.example.widget.ClockBitmapHelper.renderNeonTacticalClockBitmap(400)
-    org.junit.Assert.assertNotNull(bitmap2)
+    val rvIslamicClock = android.widget.RemoteViews(context.packageName, R.layout.widget_islamic_clock)
+    val vIslamicClock = rvIslamicClock.apply(context, root)
+    org.junit.Assert.assertNotNull(vIslamicClock)
+
+    val rvIslamicClockCard = android.widget.RemoteViews(context.packageName, R.layout.widget_islamic_clock_card)
+    val vIslamicClockCard = rvIslamicClockCard.apply(context, root)
+    org.junit.Assert.assertNotNull(vIslamicClockCard)
+  }
+
+  @Test
+  fun testPrayerCalculation() {
+    val city = com.example.util.PrayerTimeCalculator.defaultCities.first { it.nameEnglish == "Rawalpindi" }
+    val times = com.example.util.PrayerTimeCalculator.calculatePrayerTimes(
+      lat = city.lat,
+      lng = city.lng,
+      date = java.util.Date(),
+      overrideTimeZone = java.util.TimeZone.getTimeZone(city.timeZoneId)
+    )
+    for (p in times) {
+      println("TEST_PRAYER: ${p.id} -> ${p.timeFormatted}")
+    }
   }
 }

@@ -43,6 +43,7 @@ sealed class Screen(val route: String, val title: String) {
     object ForgotPassword : Screen("forgot_password", "Reset Password")
 
     // New Islamic Features
+    object DaimeAuqat : Screen("daime_auqat", "دائمی اوقاتِ نماز")
     object AsmaUlHusna : Screen("asma_ul_husna", "Asma-ul-Husna")
     object AsmaUnNabi : Screen("asma_un_nabi", "Asma-u-Nabi")
     object HaramainLive : Screen("haramain_live", "Haramain Live")

@@ -39,6 +39,16 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.CustomCredential
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.example.data.repository.AuthRepository
+import com.example.data.repository.AuthResultState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -72,6 +82,55 @@ fun SignupScreen(
     // الرٹس (Alert Dialogs) کی اسٹیٹس
     var showSuccessDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isGoogleLoading by remember { mutableStateOf(false) }
+
+    val onGoogleSignInClick: () -> Unit = {
+        coroutineScope.launch {
+            try {
+                isGoogleLoading = true
+                val credentialManager = CredentialManager.create(context)
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(AuthRepository.GOOGLE_WEB_CLIENT_ID)
+                    .setAutoSelectEnabled(false)
+                    .build()
+
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = context
+                )
+
+                val credential = result.credential
+                if (credential is CustomCredential &&
+                    credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                ) {
+                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    val idToken = googleIdTokenCredential.idToken
+                    isGoogleLoading = false
+                    authViewModel?.loginWithGoogleIdToken(idToken)
+                    onSignupSuccess()
+                } else {
+                    isGoogleLoading = false
+                    errorMessage = "گوگل کی اسناد درست نہیں ملیں۔"
+                }
+            } catch (e: GetCredentialCancellationException) {
+                isGoogleLoading = false
+            } catch (e: NoCredentialException) {
+                isGoogleLoading = false
+                errorMessage = "ڈیوائس پر کوئی گوگل اکاؤنٹ دستیاب نہیں ملا۔"
+            } catch (e: GetCredentialException) {
+                isGoogleLoading = false
+                errorMessage = "Google Sign-In میں دشواری: ${e.localizedMessage ?: "دوبارہ کوشش کریں"}"
+            } catch (e: Throwable) {
+                isGoogleLoading = false
+                errorMessage = e.localizedMessage ?: "Google Sign-In failed."
+            }
+        }
+    }
 
     // رنگوں کا خوبصورت اسلامی انتخاب
     val primaryGreen = Color(0xFF0F5132)
@@ -144,6 +203,14 @@ fun SignupScreen(
                         .set(userData, SetOptions.merge())
                         .await()
 
+                    // ای میل تصدیقی لنک بھیجیں تاکہ یوزر اپنے اکاؤنٹ کی تصدیق کر سکے
+                    runCatching {
+                        user.sendEmailVerification().await()
+                        android.util.Log.d("SignupScreen", "Verification email sent to ${user.email}")
+                    }.onFailure { ex ->
+                        android.util.Log.w("SignupScreen", "Failed to send verification email: ${ex.localizedMessage}")
+                    }
+
                     // اگر AuthViewModel دستیاب ہو تو ایپ کی لوکل اسٹیٹ اپڈیٹ کریں
                     authViewModel?.let { vm ->
                         val userProfile = UserProfile(
@@ -209,8 +276,9 @@ fun SignupScreen(
             },
             text = {
                 Text(
-                    text = "Sign-up کامیاب ہو گیا!",
-                    fontSize = 16.sp,
+                    text = "آپ کا اکاؤنٹ کامیابی سے بن گیا ہے!\n\nہم نے آپ کی ای میل پر تصدیقی لنک (Verification Link) بھیج دیا ہے۔\n\nبراہِ کرم اپنا Inbox چیک کریں۔ اگر ای میل نہ ملے تو Spam / Junk فولڈر ضرور دیکھیں۔",
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -621,6 +689,54 @@ fun SignupScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Divider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // گوگل سائن ان / سائن اپ بٹن
+                OutlinedButton(
+                    onClick = { onGoogleSignInClick() },
+                    enabled = !isGoogleLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (isGoogleLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = primaryGreen
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "جاری ہے...",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "Google Sign Up",
+                                modifier = Modifier.size(20.dp),
+                                tint = primaryGreen
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Google کے ساتھ سائن اپ کریں",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
 

@@ -1,5 +1,6 @@
 package com.example.ui.screens.quiz
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -72,6 +73,8 @@ import com.example.data.repository.ChapterResultOutcome
 import com.example.data.repository.DarsENizamiQuizGenerator
 import com.example.ui.viewmodel.QuizViewModel
 import com.example.ui.viewmodel.QuizViewState
+import androidx.compose.ui.platform.LocalContext
+import com.example.util.AdMobManager
 import com.example.util.LocalAppLanguage
 
 @Composable
@@ -79,9 +82,19 @@ fun QuizScreen(
     viewModel: QuizViewModel,
     onNavigate: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val selectedDifficulty by viewModel.selectedDifficulty.collectAsStateWithLifecycle()
     val chapterProgressMap by viewModel.chapterProgressMap.collectAsStateWithLifecycle()
+
+    androidx.compose.runtime.LaunchedEffect(viewState) {
+        if (viewState == QuizViewState.QUIZ_RESULT) {
+            val activity = context as? Activity
+            if (activity != null) {
+                AdMobManager.showInterstitial(activity)
+            }
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
