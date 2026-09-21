@@ -1,0 +1,310 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Jameel Noori Nastaleeq';
+  src: local('Jameel Noori Nastaleeq'),
+       local('Jameel Noori Nastaleeq Kasheeda'),
+       local('Jameel Nastaleeq'),
+       url('https://cdn.jsdelivr.net/gh/urdutext/fonts@main/jameel-noori-nastaleeq.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/urdutext/fonts@main/jameel-noori-nastaleeq.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kror Asiatype';
+  src: local('Kror Asiatype'),
+       local('Pashto Kror Asiatype'),
+       local('Krore Asiatype'),
+       local('Pashto Kror AsiaType');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  *, ::before, ::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Times New Roman', Times, serif;
+    line-height: 1.75;
+    background-color: #021c17;
+    color: #f8fafc;
+    overflow-x: hidden;
+    max-width: 100vw;
+    min-width: 320px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  h1, h2, h3, h4, h5, h6, p, span, a, button {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  /* Safe interactive sizing on touch devices */
+  @media (pointer: coarse) {
+    button, [role="button"], a.btn {
+      touch-action: manipulation;
+    }
+  }
+
+  html[lang="en"], html[lang="en"] body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    line-height: 1.7;
+  }
+
+  /* Urdu & Nastaliq Typography */
+  html[lang="ur"], 
+  html[lang="ur"] body, 
+  html[lang="ur"] .font-urdu, 
+  .font-urdu,
+  .font-nastaliq,
+  [lang="ur"] {
+    font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Gulzar', 'Noto Naskh Arabic', 'Amiri', 'Urdu Typesetting', serif;
+    letter-spacing: 0 !important;
+    word-spacing: 0.08em;
+  }
+
+  html[lang="ur"] p, 
+  html[lang="ur"] .font-urdu p,
+  .font-urdu p,
+  .font-nastaliq p,
+  [lang="ur"] p {
+    line-height: 2.3 !important;
+    word-spacing: 0.1em;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+  }
+
+  html[lang="ur"] h1,
+  html[lang="ur"] h2,
+  html[lang="ur"] h3,
+  html[lang="ur"] h4,
+  html[lang="ur"] h5,
+  html[lang="ur"] h6,
+  .font-urdu h1,
+  .font-urdu h2,
+  .font-urdu h3,
+  .font-urdu h4,
+  .font-nastaliq h1,
+  .font-nastaliq h2 {
+    line-height: 1.85 !important;
+    word-spacing: 0.06em;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  html[lang="ur"] button,
+  html[lang="ur"] a,
+  html[lang="ur"] .btn-label,
+  html[lang="ur"] input,
+  html[lang="ur"] select {
+    line-height: 1.6;
+    word-spacing: 0.04em;
+  }
+
+  /* Pashto Typography */
+  html[lang="ps"], 
+  html[lang="ps"] body, 
+  .font-pashto,
+  [lang="ps"] {
+    font-family: 'Noto Sans Arabic', 'Scheherazade New', 'Amiri', 'Kror Asiatype', Tahoma, sans-serif;
+    letter-spacing: 0 !important;
+    word-spacing: 0.05em;
+  }
+
+  html[lang="ps"] p, 
+  .font-pashto p {
+    line-height: 1.9 !important;
+    word-spacing: 0.06em;
+  }
+
+  html[lang="ps"] h1,
+  html[lang="ps"] h2,
+  html[lang="ps"] h3,
+  html[lang="ps"] h4 {
+    line-height: 1.5 !important;
+  }
+
+  html[lang="ps"] .font-quran,
+  html[lang="ps"] .font-arabic,
+  html[lang="ur"] .font-quran,
+  html[lang="ur"] .font-arabic {
+    font-family: 'Amiri Quran', 'Scheherazade New', 'Amiri', serif !important;
+  }
+
+  /* General RTL & Arabic Script safety */
+  [dir="rtl"] {
+    letter-spacing: 0;
+  }
+
+  .font-serif, .font-arabic {
+    font-family: 'Amiri', 'Noto Sans Arabic', 'Scheherazade New', serif;
+    line-height: 2.1;
+  }
+
+  .font-quran {
+    font-family: 'Amiri Quran', 'Scheherazade New', 'Amiri', serif;
+    line-height: 2.4;
+    word-spacing: 0.15em;
+  }
+
+  .font-heading-en {
+    font-family: 'Cinzel', 'Plus Jakarta Sans', serif;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* Islamic Aesthetic Classes & Royal Accents */
+.islamic-glow {
+  box-shadow: 0 0 35px -5px rgba(16, 185, 129, 0.25), 0 0 15px -3px rgba(251, 191, 36, 0.15);
+}
+
+.islamic-gold-border {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, rgba(6, 78, 59, 0.7) 0%, rgba(2, 44, 34, 0.95) 100%);
+}
+
+.islamic-gold-text {
+  background: linear-gradient(135deg, #fef08a 0%, #fbbf24 45%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.islamic-emerald-text {
+  background: linear-gradient(135deg, #6ee7b7 0%, #34d399 50%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.islamic-arch-top {
+  border-top-left-radius: 2.5rem;
+  border-top-right-radius: 2.5rem;
+}
+
+.islamic-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.islamic-divider::before,
+.islamic-divider::after {
+  content: "";
+  height: 1px;
+  width: 4rem;
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.6), transparent);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounceSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.45);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 2s infinite ease-in-out;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+/* Hide scrollbar for clean horizontal tab navigation on Mobile & Tablet */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Fluid responsive container safety */
+.responsive-container {
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+

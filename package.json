@@ -1,0 +1,35 @@
+{
+  "name": "baytul-ilm-ai-portal",
+  "private": true,
+  "version": "1.4.4",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "start": "node dist/server.cjs",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "express": "^5.2.1",
+    "hls.js": "^1.7.3",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "pdfjs-dist": "^6.3.289",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "react-router-dom": "^7.18.2",
+    "vite": "^6.2.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.14.0",
+    "autoprefixer": "^10.4.21",
+    "esbuild": "^0.28.2",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.23.12",
+    "typescript": "~5.8.2"
+  }
+}
